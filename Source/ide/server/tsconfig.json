@@ -1,0 +1,15 @@
+// FlowScript Server
+{
+    "extends": "../tsconfig.common.json",
+    "compilerOptions": {
+        "target": "es2017", // (Makes sure we take advantage of Node's built-in async functionality.)
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "lib": [
+            "es2017", "es2015.promise"
+        ]
+    },
+    "include": [
+        "**/*.ts"
+    ]
+}

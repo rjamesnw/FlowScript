@@ -1,0 +1,19 @@
+// FlowScript Core
+{
+    "extends": "../tsconfig.common.json",
+    "compilerOptions": {
+        "outFile": "flowscript.js",
+        "declaration": true,
+        "lib": [
+            "es5", "dom"
+        ],
+        "types": [
+        ]
+    },
+    "include": [
+        "_references.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

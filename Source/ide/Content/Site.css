@@ -1,0 +1,150 @@
+﻿html {
+}
+
+body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+    background-color: #f8f8f8;
+    font-size: 13pt;
+}
+
+h1 {
+    font-size: 20pt;
+}
+
+h2 {
+    font-size: 20pt;
+}
+
+h3 {
+    font-size: 20pt;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+
+.navbar-inverse {
+    background-color: #222222;
+    border-color: #080808;
+}
+
+    .navbar-inverse .navbar-brand {
+        color: #6acdff;
+    }
+
+        .navbar-inverse .navbar-brand:hover,
+        .navbar-inverse .navbar-brand:focus {
+            color: #a0dfff;
+            background-color: transparent;
+        }
+
+    .navbar-inverse .navbar-text {
+        color: #c2c2c2;
+    }
+
+    .navbar-inverse .navbar-nav > li > a {
+        color: #999999;
+    }
+
+        .navbar-inverse .navbar-nav > li > a:hover,
+        .navbar-inverse .navbar-nav > li > a:focus {
+            color: #ffffff;
+            background-color: transparent;
+        }
+
+    .navbar-inverse .navbar-nav > .active > a,
+    .navbar-inverse .navbar-nav > .active > a:hover,
+    .navbar-inverse .navbar-nav > .active > a:focus {
+        color: #ffffff;
+        background-color: #080808;
+    }
+
+    .navbar-inverse .navbar-nav > .disabled > a,
+    .navbar-inverse .navbar-nav > .disabled > a:hover,
+    .navbar-inverse .navbar-nav > .disabled > a:focus {
+        color: #444444;
+        background-color: transparent;
+    }
+
+    .navbar-inverse .navbar-toggle {
+        border-color: #333333;
+    }
+
+        .navbar-inverse .navbar-toggle:hover,
+        .navbar-inverse .navbar-toggle:focus {
+            background-color: #333333;
+        }
+
+        .navbar-inverse .navbar-toggle .icon-bar {
+            background-color: #ffffff;
+        }
+
+    .navbar-inverse .navbar-collapse,
+    .navbar-inverse .navbar-form {
+        border-color: #101010;
+    }
+
+    .navbar-inverse .navbar-nav > .open > a,
+    .navbar-inverse .navbar-nav > .open > a:hover,
+    .navbar-inverse .navbar-nav > .open > a:focus {
+        color: #ffffff;
+        background-color: #606060;
+    }
+
+    .navbar-inverse .navbar-nav > .dropdown > a:hover .caret {
+        border-top-color: #ffffff;
+        border-bottom-color: #ffffff;
+    }
+
+    .navbar-inverse .navbar-nav > .dropdown > a .caret {
+        border-top-color: #999999;
+        border-bottom-color: #999999;
+    }
+
+    .navbar-inverse .navbar-nav > .open > a .caret,
+    .navbar-inverse .navbar-nav > .open > a:hover .caret,
+    .navbar-inverse .navbar-nav > .open > a:focus .caret {
+        border-top-color: #ffffff;
+        border-bottom-color: #ffffff;
+    }
+
+/* Some Bootstrap modifications are needed to allow updating of content hidden behind non-visible panels. */
+
+.tab-content > .tab-pane.active {
+    position: relative;
+    pointer-events: auto;
+    left: auto;
+    /*left: -9999px;*/
+    /*-webkit-transition: display 0.15s linear;
+    transition: display 0.15s linear;
+    -webkit-transition: display 0.15s linear;
+    transition: display 0.15s linear;*/
+}
+
+.tab-content > .tab-pane {
+    display: block;
+    position: absolute;
+    pointer-events: none;
+    left: -9999px;
+}

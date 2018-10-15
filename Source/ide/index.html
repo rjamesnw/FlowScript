@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html data-view>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><!-- Makes sure the correct version for HTML5 is used. -->
+    <meta charset="utf-8" />
+    <meta http-equiv="no-cache">
+    <meta http-equiv="Expires" content="-1">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="description" content="FlowScript IDE - A visual programming editor." />
+    <title>FlowScript</title>
+    <script>
+        FlowScript_debugging = true; // (if true, then a reset ["clean slate"] is created on each run, such as clearing the web storage and any other caches, as well as enabling special debug features, if any)
+
+        var require = {
+            // The base path for all require calls. If this is absent it is assumed to be same as the location of require.js
+            baseUrl: window.location.protocol + "//" + window.location.host + window.location.pathname.split("/").slice(0, -1).join("/") + '/scripts',
+            paths: {
+                ace: "ace" // path of ace relative to baseUrl
+            }
+        };
+    </script>
+    <link rel="stylesheet" type="text/css" href="Content/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="Content/site.css">
+    <script src="~/Scripts/modernizr-{version}.js"></script> 
+    <script src="~/Scripts/jquery-{version}.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <script src="~/Scripts/require.js"></script>
+    <script src="~/Scripts/dust-core-{version}.js"></script> 
+    <script src="~/Scripts/bootstrap.js"></script>
+    <script src="~/FlowScript/flowscript.js"></script>
+</head>
+
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @Html.ActionLink("FlowScript", "Index", "Home", new { area = "" }, new { @class = "navbar-brand", onclick =
+                "return false;" })
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">System<span
+                                class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a onclick="newProject()">New Project</a></li>
+                            <li class="divider"></li>
+                            <li><a onclick="openProject()">Open Project</a></li>
+                            <li><a onclick="saveProject()">Save Project</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Project<span
+                                class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a onclick="newComponent()">New Component</a></li>
+                            <li class="divider"></li>
+                            <li><a onclick="saveComponent()">Save Component</a></li>
+                            <li><a onclick="saveComponentAs()">Save Component As...</a></li>
+                            <li><a onclick="saveAll()">Save All</a></li>
+                            <li class="divider"></li>
+                            <li><a onclick="addResource()">Add Resource</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Graphs<span
+                                class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a onclick="addGraph()">Add Graph</a></li>
+                            <li class="divider">Graphs:</li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Help<span
+                                class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a onclick="loadForum()">Open Community Forum</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <br />
+
+    <div class="body-content">
+        <div id="renderBody" data-view-container>
+            @RenderBody()
+        </div>
+    </div>
+
+    <hr />
+
+    <footer>
+        <p>FlowScript © 2016</p>
+    </footer>
+
+</body>
+<script src="~/Scripts/FlowScript/projectui.js"></script>
+<script src="~/Scripts/app.js"></script>
+<script src="~/Scripts/app_forum.js"></script>
+<script src="~/Scripts/tests.js"></script>

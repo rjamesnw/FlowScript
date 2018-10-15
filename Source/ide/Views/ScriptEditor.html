@@ -1,0 +1,172 @@
+﻿<link href="~/Content/editor.css" rel="stylesheet" />
+<link href="~/Scripts/ace/css/editor.css" rel="stylesheet" />
+<link href="~/Content/scripteditor.css" rel="stylesheet" />
+
+<div>
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        @*<li role="presentation" class="dropdown active">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-controls="project" role="button" aria-expanded="false">
+                    Project<span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li role="presentation"><a href="#project-details" aria-controls="profile" role="tab" data-toggle="tab">Profile</a></li>
+                </ul>
+            </li>*@
+        <li role="presentation" class="active"><a href="#editor" aria-controls="editor" role="tab" data-toggle="tab">Editor</a></li>
+        <li role="presentation"><a href="#properties" aria-controls="properties" role="tab" data-toggle="tab">Properties</a></li>
+        <li role="presentation"><a href="#types" aria-controls="types" role="tab" data-toggle="tab">Types</a></li>
+        <li role="presentation"><a href="#output" aria-controls="output" role="tab" data-toggle="tab">Output</a></li>
+        <li role="presentation"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a></li>
+    </ul>
+
+    <div>&nbsp;</div>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane fade in active" id="editor">
+            Script:<br /><br />
+            <div id="editorContainer">
+                <div id="blocksContainer" class="blocksContainer active">[]</div>
+
+                <div id="codeContainer" class="codeContainer">
+                    <div>
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a href="#editorPanel" aria-controls="editor" role="tab" data-toggle="tab">Code</a></li>
+                            <li role="presentation"><a href="#outputPanel" aria-controls="profile" role="tab" data-toggle="tab">Output</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane fade in active editor-container" id="editorPanel">
+                                <div id="tseditor" class="editor">
+                                </div>
+                            </div>
+                            <div role="tabpanel" class="tab-pane fade editor-container" id="outputPanel">
+                                <div id="tsoutput" class="output">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    <input type="text" placeholder="Version Description" style="width:600px" /> <button id="btnSaveCode" type="button" class="btn btn-primary">Save</button>
+                    <div title="Enable/disable automatically saving changes." style="display:inline-block"><input type="checkbox" /> Auto Save</div>
+                    <input type="text" placeholder="Auto Save Seconds" value="30" style="width:50px" title="The number of seconds between each auto save." />
+                    <br />Versions:
+                    <select></select>
+                </div>
+            </div>
+        </div>
+
+        <div role="tabpanel" class="tab-pane fade" id="properties">
+            <table>
+                <tr>
+                    <td valign="top">
+                        Parameters:<br /><input type="text" id="tbParam" /><button id="btnAddParam">+</button><button id="btnRemoveParam">-</button><br /><select id="selParams" size="10"></select>
+                        <button id="btnSelectParam" class="btn btn-primary" style="display: none; vertical-align: top">Select</button>
+                    </td>
+                    <td valign="top">
+                        Local Variables:<br /><input type="text" id="tbLocal" /><button id="btnAddLocal">+</button><button id="btnRemoveLocal">-</button><br /><select id="selLocals" size="10"></select>
+                        <button id="btnSelectLocal" class="btn btn-primary" style="display: none; vertical-align: top">Select</button>
+                    </td>
+                    <td valign="top">
+                        Return Variables:<br /><input type="text" id="tbReturn" /><button id="btnAddReturn">+</button><button id="btnRemoveReturn">-</button><br /><select id="selReturns" size="10"></select>
+                        <button id="btnSelectReturn" class="btn btn-primary" style="display: none; vertical-align: top">Select</button>
+                    </td>
+                    <td valign="top">
+                        Instance Variables:<br /><input type="text" id="tbInstance" /><button id="btnAddInstance">+</button><button id="btnRemoveInstance">-</button><br /><select id="selInstances" size="10"></select>
+                        <button id="btnSelectInstance" class="btn btn-primary" style="display: none; vertical-align: top">Select</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div role="tabpanel" class="tab-pane fade" id="types">
+            <table>
+                <tr>
+                    <td valign="top">
+                        <div id="treeViewContainer" style="margin: 2px;" data-view-container>
+                            <div id="tvTypes" class="tree" data-view></div>
+                        </div>
+                    </td>
+                    <td valign="top">
+                        <div class="alert alert-info" style="margin: 2px;">
+                            <span style="font-weight: bold;">Selection:</span>
+                            <table style="margin-left: 8px">
+                                <tr><td>Title:</td><td><span id="compTitle">...</span></td></tr>
+                                <tr><td>Component Type:</td><td><select id="compType">...</select></td></tr>
+                                <tr><td title="The instance type this component is designed to work with.">Works On:</td><td><span id="instType">...</span></td></tr>
+                            </table>
+                            <br />
+                            <button id="btnCancelTypeSelect" class="btn btn-danger" style="display: none;">Cancel type select</button>
+                            <button id="btnNoTypeSelect" class="btn btn-warning" style="display: none;">None</button>
+                        </div>
+                        <button id="btnAddComponent" type="button" class="btn btn-default">Add Component</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div role="tabpanel" class="tab-pane fade" id="output">
+            Global Script Output:<br /><br />
+            <div id="blockCodeOutput" style="font-family:Courier New, Courier, Lucida Console, Monaco, monospace"></div>
+        </div>
+
+        <div role="tabpanel" class="tab-pane fade" id="settings">
+            <div><b>Project: </b><span id="txtProjTitle">...</span></div>
+            <div><b>Description: </b><span id="txtProjDesc">...</span></div>
+            <hr />
+            <div><b>Namespace: </b><span id="compNamespace">...</span></div>
+            <div><b>Component Name: </b><span id="compName">...</span></div>
+        </div>
+    </div>
+
+    <hr />
+    <div title="The item that was 'picked' via the context menu (to be dropped somewhere else).">
+        Picked: <span id="pickedItem">[The Picked ITEM]</span>
+    </div>
+    <hr />
+    <div>
+        Scratch space <i>(global space for dumping components and expressions)</i>:<br />
+        <div id="scratchContainer" class="blockContainer" style="font-family:Courier New, Courier, Lucida Console, Monaco, monospace"></div>
+    </div>
+
+</div>
+
+<div id="menu" class="panel panel-default noselect" style="position: absolute; display: none">
+    <div class="panel-heading">
+        <div style="max-width:600px; white-space:nowrap;" class="alert-dismissable">
+            <button id="menuClose" type="button" class="close" aria-label="Close" style="right: -32px; font-size: 32px; display: inline;"><span aria-hidden="true">&times;</span></button>
+            <span id="menuTitle">Expression Menu</span>&nbsp;
+        </div>
+    </div>
+    <div id="menuBody" class="panel-body" data-view-container>
+        <!-- The menu body is the view container; Each DIV here will be a view within it -->
+
+        <div id="exprMenu" data-view title="Expression Menu">
+            <button id="exprMenu_Pick" class="btn btn-primary btn-sm btn-block" title="Pick a block to drop elsewhere.">Pick</button>
+            <button id="exprMenu_Drop" class="btn btn-primary btn-sm btn-block" title="Drop the block you just picked here.">Drop</button>
+            <button id="exprMenu_Remove" class="btn btn-primary btn-sm btn-block" title="Moves expression to scratch space, or deletes it from the scratch space.">Remove</button>
+            @*<button id="exprMenu_move" class="btn btn-primary btn-sm btn-block">Move</button>*@
+            <button id="exprMenu_Clone" class="btn btn-primary btn-sm btn-block">Clone Expression</button>
+            <button id="exprMenu_SetConstant" class="btn btn-primary btn-sm btn-block">Set Constant Value</button>
+            <button id="exprMenu_AddLineAbove" class="btn btn-primary btn-sm btn-block">Add Line Above</button>
+            <button id="exprMenu_AddLineBelow" class="btn btn-primary btn-sm btn-block">Add Line Below</button>
+        </div>
+
+        <div id="typeMenu" data-view title="Component Menu">
+            <button id="typeMenu_Edit" class="btn btn-primary btn-sm btn-block">Edit This Component</button>
+            <button id="typeMenu_Rename" class="btn btn-primary btn-sm btn-block">Rename This Type</button>
+            <button id="typeMenu_Add" class="btn btn-primary btn-sm btn-block">Add Type Under Here</button>
+            <hr />
+            <button id="typeMenu_Remove" class="btn btn-primary btn-sm btn-block">Remove This Type</button>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/FlowScript/Menu.js"></script>
+<script src="~/Scripts/FlowScript/ListEditor.js"></script>
+<script src="~/Scripts/FlowScript/TreeView.js"></script>
+<script src="~/Scripts/FlowScript/TypeTreeView.js"></script>
+<script src="~/Scripts/FlowScript/TextEditor.js"></script>
+<script src="~/Scripts/FlowScript/TextEditor.ACE.js"></script>
+<script src="~/Scripts/ace/mode/typescript/typescriptServices.js"></script>
+<script src="~/Scripts/FlowScript/ScriptEditor.js"></script>

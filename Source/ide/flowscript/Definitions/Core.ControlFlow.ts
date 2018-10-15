@@ -1,0 +1,138 @@
+﻿// ############################################################################################################################
+
+module FlowScript.Core.ControlFlow {
+    // ========================================================================================================================
+    // Core Control Flow Components
+    // ========================================================================================================================
+
+    /** Defines the Math namespace type. */
+    export class ControlFlow extends Type { // (a type that is inferred by the given arguments)
+
+        If = new If(this);
+        IfElse = new IfElse(this);
+        While = new While(this);
+        DoWhile = new DoWhile(this);
+        /** Iterates over a block of code, similar to a "for" loop. */
+        Loop = new Loop(this);
+
+        constructor(parent: Type) {
+            super(parent, "ControlFlow");
+        }
+
+        init() {
+            super.init();
+        }
+    }
+
+    // ========================================================================================================================
+
+    /** Represents the "if" logical statement.
+      */
+    export class If extends Component {
+        constructor(parent: Type) {
+            super(parent, ComponentTypes.ControlFlow, "If", "if $condition then $block");
+        }
+
+        init() {
+            // Setup the expected parameters:
+
+            var sys = this.script.System;
+
+            this.defineParameter("condition", [sys.Boolean]);
+            this.defineParameter("block", [sys.CodeBlock]);
+
+            super.init();
+        }
+    }
+
+    // ========================================================================================================================
+
+    /** Represents the "if..else" logical statement.
+      */
+    export class IfElse extends Component {
+        constructor(parent: Type) {
+            super(parent, ComponentTypes.ControlFlow, "IfElse", "if $condition then $block1 else $block2");
+        }
+
+        init() {
+            // Setup the expected parameters:
+
+            var sys = this.script.System;
+
+            this.defineParameter("condition", [sys.Boolean]);
+            this.defineParameter("block1", [sys.CodeBlock]);
+            this.defineParameter("block2", [sys.CodeBlock]);
+
+            super.init();
+        }
+    }
+
+    // ========================================================================================================================
+
+    /** Represents the "while..do" loop.
+      */
+    export class While extends Component {
+        constructor(parent: Type) {
+            super(parent, ComponentTypes.ControlFlow, "While", "while $condition do $block");
+        }
+
+        init() {
+            // Setup the expected parameters:
+
+            var sys = this.script.System;
+
+            this.defineParameter("condition", [sys.Boolean]);
+            this.defineParameter("block", [sys.CodeBlock]);
+
+            super.init();
+        }
+    }
+
+    // ========================================================================================================================
+
+    /** Represents the "do..while" loop.
+      */
+    export class DoWhile extends Component { // TODO: Consider a do...while that also can execute update code before the body, and embeds the body in an "if" statement, and fixes to "while(true) until breakout".
+        constructor(parent: Type) {
+            super(parent, ComponentTypes.ControlFlow, "DoWhile", "do $block while $condition");
+        }
+
+        init() {
+            // Setup the expected parameters:
+
+            var sys = this.script.System;
+
+            this.defineParameter("block", [sys.CodeBlock]);
+            this.defineParameter("condition", [sys.Boolean]);
+
+            super.init();
+        }
+    }
+
+    // ========================================================================================================================
+
+    /** Iterates over a block of code, similar to a "for" loop.
+      */
+    export class Loop extends Component {
+        constructor(parent: Type) {
+            super(parent, ComponentTypes.ControlFlow, "Loop", "for ($init; $condition; $update) $block");
+        }
+
+        init() {
+            // Setup the expected parameters:
+
+            var sys = this.script.System;
+
+            this.defineParameter("init", [sys.CodeBlock]);
+            this.defineParameter("condition", [sys.Boolean]);
+            this.defineParameter("block", [sys.CodeBlock]);
+            this.defineParameter("update", [sys.CodeBlock]);
+
+            super.init();
+        }
+    }
+
+    // ========================================================================================================================
+}
+
+// ############################################################################################################################

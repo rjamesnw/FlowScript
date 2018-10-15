@@ -1,0 +1,44 @@
+// FlowScript IDE
+{
+    "extends": "../tsconfig.common.json",
+    "compilerOptions": {
+        "declaration": false,
+        "module": "AMD",
+        "lib": [
+            "es5", "dom"
+        ],
+        "typeRoots": [
+            "./typings"
+        ]
+    },
+    "include": [
+        "../flowscript/flowscript.d.ts",
+        "ace/mode/typescript/typescript_create_worker.ts",
+        "ace/mode/typescript/DocumentPositionUtil.ts",
+        "ace/mode/typescript/languageServiceHost.ts",
+        "ace/mode/typescript/typescript_worker.ts",
+        "ace/mode/typescript/tsProject.ts",
+        "app_forum.ts",
+        "FlowScript/ace/AutoComplete.ts",
+        "FlowScript/ace/AutoCompleteView.ts",
+        "FlowScript/ace/CompletionService.ts",
+        "FlowScript/ace/EditorPosition.ts",
+        // "FlowScript/ace/environments/empty.ts",
+        // "FlowScript/ace/environments/serverlib.d.ts",
+        "FlowScript/ace/globals.d.ts",
+        "FlowScript/TextEditor.ACE.ts",
+        "FlowScript/TextEditor.ts",
+        "FlowScript/TypeTreeView.ts",
+        "FlowScript/TreeView.ts",
+        "FlowScript/ProjectUI.ts",
+        "FlowScript/Menu.ts",
+        "FlowScript/ListEditor.ts",
+        "FlowScript/ace/ace_ts_editor_main.ts",
+        "FlowScript/ScriptEditor.ts",
+        "tests.ts",
+        "app.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

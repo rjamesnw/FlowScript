@@ -1,0 +1,34 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.git": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true,
+			"**/*.js": { "when": "$(basename).ts" },
+			"**/*.js.map": { "when": "$(basename)" }
+		},
+		"cSpell.words": [
+			"bootup",
+			"controlflow",
+			"flowscriptmain",
+			"flowscriptrt",
+			"httprequest",
+			"onloaded",
+			"projectui",
+			"visualtree"
+		],
+		"html.format.wrapLineLength": 128,
+		"html.format.wrapAttributes": "auto",
+		"html.format.extraLiners": "head, body, /html",
+		"html.format.contentUnformatted": "pre,code,textarea",
+		"editor.formatOnSave": false,
+		"debug.node.autoAttach": "on"
+	}
+}
