@@ -1,10 +1,9 @@
 # FlowScript #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+FlowScript is a visual programming language used for build client and server applications using a browser.
 
-### What is this repository for? ###
+### Version ###
 
-* FlowScript is a visual programming language used for build client and server applications using a browser.
 * Version: Alpha
 * [FlowScript Site](https://flowscript.org)
 
