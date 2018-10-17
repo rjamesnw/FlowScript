@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "description": "Web VPL",
   "main": "index.js",
+  "repository": {
+    "type": "FlowScript",
+    "url": "https://bitbucket.org/catmedis/flowscript.git"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -24,6 +28,7 @@
     "koa": "^2.5.3",
     "koa-body": "^4.0.4",
     "koa-router": "^7.4.0",
-    "koa-static": "^5.0.0"
+    "koa-static": "^5.0.0",
+    "nodemon": "^1.18.4"
   }
 }

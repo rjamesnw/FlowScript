@@ -9,9 +9,10 @@ FlowScript is a visual programming language used for build client and server app
 
 ### How do I get set up? ###
 
-* Visual Studio Code is used for development.
+* Visual Studio Code is used as the IDE, and TypeScript as the "language" platform.
 * To setup a new VS Code environment you can run `install_extensions.cmd`.
-* Dependencies: NodeJS
+* Dependencies for development: NodeJS, NPM, nodemon (`install -g install nodemon`)
+* Don't forget to run `npm install` from the command line within the workspace path to restore the required node modules.
 * Database configuration: MySQL
 * How to run tests: TBD
 * Deployment instructions: TBD

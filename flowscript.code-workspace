@@ -17,11 +17,14 @@
 		"cSpell.words": [
 			"bootup",
 			"controlflow",
+			"flow",
+			"flowscript",
 			"flowscriptmain",
 			"flowscriptrt",
 			"httprequest",
 			"onloaded",
 			"projectui",
+			"script",
 			"visualtree"
 		],
 		"html.format.wrapLineLength": 128,
