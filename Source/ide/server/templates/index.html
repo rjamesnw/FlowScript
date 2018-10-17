@@ -22,89 +22,13 @@
             }
         };
     </script>
-    <link rel="stylesheet" type="text/css" href="Content/bootstrap.css">
-    <link rel="stylesheet" type="text/css" href="Content/site.css">
-    <script src="~/Scripts/modernizr-{version}.js"></script> 
-    <script src="~/Scripts/jquery-{version}.js"></script>
-    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
-    <script src="~/Scripts/require.js"></script>
-    <script src="~/Scripts/dust-core-{version}.js"></script> 
-    <script src="~/Scripts/bootstrap.js"></script>
-    <script src="~/FlowScript/flowscript.js"></script>
+    <script src="FlowScript/flowscript.js"></script>
 </head>
 
-<body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                @Html.ActionLink("FlowScript", "Index", "Home", new { area = "" }, new { @class = "navbar-brand", onclick =
-                "return false;" })
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">System<span
-                                class="caret"></span></a>
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a onclick="newProject()">New Project</a></li>
-                            <li class="divider"></li>
-                            <li><a onclick="openProject()">Open Project</a></li>
-                            <li><a onclick="saveProject()">Save Project</a></li>
-                        </ul>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Project<span
-                                class="caret"></span></a>
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a onclick="newComponent()">New Component</a></li>
-                            <li class="divider"></li>
-                            <li><a onclick="saveComponent()">Save Component</a></li>
-                            <li><a onclick="saveComponentAs()">Save Component As...</a></li>
-                            <li><a onclick="saveAll()">Save All</a></li>
-                            <li class="divider"></li>
-                            <li><a onclick="addResource()">Add Resource</a></li>
-                        </ul>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Graphs<span
-                                class="caret"></span></a>
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a onclick="addGraph()">Add Graph</a></li>
-                            <li class="divider">Graphs:</li>
-                        </ul>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Help<span
-                                class="caret"></span></a>
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a onclick="loadForum()">Open Community Forum</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <br />
-
-    <div class="body-content">
-        <div id="renderBody" data-view-container>
-            @RenderBody()
-        </div>
-    </div>
-
-    <hr />
-
-    <footer>
-        <p>FlowScript © 2016</p>
-    </footer>
-
+<body id="app" data-view-container="index.main.html">
+   
 </body>
+
 <script src="~/Scripts/FlowScript/projectui.js"></script>
 <script src="~/Scripts/app.js"></script>
 <script src="~/Scripts/app_forum.js"></script>
