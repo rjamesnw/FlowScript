@@ -40,7 +40,7 @@ interface Array<T> {
 }
 declare var FlowScript_debugging: boolean;
 /** The base namespace for all FlowScript types. */
-declare module FlowScript {
+declare namespace FlowScript {
     var undefined: any;
     module NativeTypes {
         interface IFunction extends Function {
@@ -233,6 +233,7 @@ declare module FlowScript {
     function log(msg: any, msgType?: LogMessageTypes, throwOnError?: boolean): any;
     interface ICallerArguments {
         [index: number]: any;
+        [name: string]: any;
     }
     interface IContextArguments {
         [index: number]: string;
@@ -548,7 +549,7 @@ declare module FlowScript {
     */
     function extend<DerivedType extends Function, BaseType extends Function>(derivedType: DerivedType, baseType: BaseType, copyBaseProperties?: boolean): DerivedType;
 }
-declare module FlowScript {
+declare namespace FlowScript {
     interface ISavedTrackableObject {
         id: string;
         type: string;
@@ -764,7 +765,7 @@ declare module FlowScript {
         }
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     /** The base namespace for all user apps (i.e. "FlowScript.Apps.MyCompanyOrWebsite.MyApp").
       * Make sure to create a unique sub module to prevent conflicts.
       */
@@ -902,7 +903,7 @@ declare module FlowScript {
     }): {};
     function isObjectEmpty(obj: {}): boolean;
 }
-declare module FlowScript {
+declare namespace FlowScript {
     /** A map that stores the argument name under a fixed index, and the expression object under the name. */
     interface IArgumentMap {
         [index: number]: string | any;
@@ -947,13 +948,13 @@ declare module FlowScript {
         save(target?: ISavedExpressionArgs): ISavedExpressionArgs;
         /** Sets an expression's argument to a given expression and returns any previous value. */
         private _setArg;
-        /** Sets an expression's argument to a given operational expression and returns any previous value. */
-        setArg(argIndex: number, operation: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): Expression;
-        /** Sets an expression's argument to a given operational expression and returns any previous value. */
-        setArg(argName: string, operation: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): Expression;
-        /** Sets an expression's argument to a given expression and returns any previous value. */
-        setArg(argIndex: number, expression: Expression): Expression;
-        /** Sets an expression's argument to a given expression and returns any previous value. */
+        /** Sets an expression's argument to a given operational expression and returns the added expression. */
+        setArg(argIndex: number, operation: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): ComponentReference;
+        /** Sets an expression's argument to a given operational expression and returns the added expression. */
+        setArg(argName: string, operation: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): ComponentReference;
+        /** Sets an expression's argument to a given expression and returns the added expression. */
+        setArg<T extends Expression>(argIndex: number, expression: T): T;
+        /** Sets an expression's argument to a given expression and returns the added expression. */
         setArg(argName: string, expression: Expression): Expression;
         /** Returns the name of an argument given its argument index. */
         getArgName(argIndex: number, required?: boolean): string;
@@ -1120,7 +1121,7 @@ declare module FlowScript {
         save(target?: ISavedConstant): ISavedConstant;
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     /** Controls access to object instance properties.
       * Property access security only applies to instance properties of object-based components (components that encapsulate object creation).
       */
@@ -1171,9 +1172,9 @@ declare module FlowScript {
         locked: boolean;
     }
     /** Properties are used with processes and components to store values.
- * In FlowScript, a component's parameters, static properties, and local variables are all in the same local scope.
- * Component properties define the context property names that will be used for that component during runtime.
- */
+     * In FlowScript, a component's parameters, static properties, and local variables are all in the same local scope.
+     * Component properties define the context property names that will be used for that component during runtime.
+     */
     class Property extends TrackableObject implements IReferencedObject {
         static DEFAULT_NAME: string;
         readonly script: IFlowScript;
@@ -1297,7 +1298,7 @@ declare module FlowScript {
         toString(): string;
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     interface IComponentFunction {
         (ctx: RuntimeContext): any;
     }
@@ -1508,8 +1509,11 @@ declare module FlowScript {
         /** Configures a new runtime context with the supplied arguments. */
         configureRuntimeContext(ctx: RuntimeContext, args?: ICallerArguments): RuntimeContext;
         /** Sets an argument on any target object to a given value based on the expected parameters of this component. */
-        setArgument(argIndex: number, value: any, target: IContextArguments): any;
-        setArgument(argIndex: string, value: any, target: IContextArguments): any;
+        setArgument<T>(argIndex: number, value: T, target: IContextArguments): T;
+        setArgument<T>(argIndex: string, value: T, target: IContextArguments): T;
+        /** Gets an argument value from any target object based on the expected parameters of this component. */
+        getArgument<T = any>(argIndex: number, target: IContextArguments): T;
+        getArgument<T = any>(argIndex: string, target: IContextArguments): T;
         /** Creates a visual tree snapshot for this component and the first block. */
         createVisualTree<T extends VisualNode>(parent?: VisualNode, visualNodeType?: IVisualNodeType<T>): T;
     }
@@ -1618,7 +1622,7 @@ declare module FlowScript {
         remove(): Expression;
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     interface ISavedBlock extends ISavedTrackableObject {
         lines: ISavedLine[];
     }
@@ -1687,7 +1691,7 @@ declare module FlowScript {
         toString(): string;
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     interface ISavedLine extends ISavedTrackableObject {
         statements: ISavedExpression[];
     }
@@ -1748,7 +1752,7 @@ declare module FlowScript {
         toString(): string;
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     /** Represents an enumeration of names and related constant values.
       * Enums can be associated with properties so the developer has to pick from a predefined list of values.
       */
@@ -1769,7 +1773,7 @@ declare module FlowScript {
         }): Enum<T>;
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     interface ISavedEvent extends ISavedComponent {
     }
     /** Represents a single component event.
@@ -1781,7 +1785,7 @@ declare module FlowScript {
         save(target?: ISavedEvent): ISavedEvent;
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     /** A text message, which can later have translations applied.
       * Messages can have token place holders, such as '$0 $1 $2 ...' (where '$0' is the first argument given - see 'getMessage()').
       * When ready to translate an application's messages, you use the IDE to export a comma separated list of messages and their
@@ -1815,7 +1819,7 @@ declare module FlowScript {
         valueOf(): string;
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     enum ColumnAccessLevels {
         /** The column can be read from, and written to. */
         ReadWrite = 0,
@@ -1848,7 +1852,7 @@ declare module FlowScript {
         constructor(parent: Type, tableName: string);
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     /** A thread wraps a single script block.
       * One script can have many threads.
       */
@@ -2346,7 +2350,7 @@ declare module FlowScript.Core.HTML {
         init(): void;
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     /** Manages the margins used for rendering FlowScript to code.
       */
     class Margin {
@@ -2579,7 +2583,7 @@ declare module FlowScript {
         _renderCode(renderer: TypeRenderer, codeExpr: Expression): string;
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     /** Adds special properties to the runtime context for simulation purposes. */
     interface ISimulationContext extends RuntimeContext {
         /** Used to execute a single line of code within the context of the currently executing component. */
@@ -2671,7 +2675,7 @@ declare module FlowScript {
         run(): ISimulationContext;
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     /** The type of node determines how it should be rendered in the UI. */
     enum VisualNodeTypes {
         Undefined = 0,
@@ -2902,7 +2906,7 @@ declare module FlowScript {
         _HideSelectedStyle(): void;
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     interface IHTTPViewRequestListener {
         (view: View, request: Net.CachedRequest, ev?: Event): void;
     }
@@ -3116,7 +3120,7 @@ declare module FlowScript {
         static buildViews(documentRoot?: Document): Views;
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     class Project {
         /** The title of the project. */ title: string;
         /** The project's description. */ description?: string;
@@ -3163,7 +3167,7 @@ declare module FlowScript {
         }): T;
     }
 }
-declare module FlowScript {
+declare namespace FlowScript {
     /** Contains the default core system types expected by the compiler. Since these core types must always exist, a default
       * type graph is created here for convenience.
       */

@@ -44,10 +44,7 @@ var FlowScript;
     * If running in a browser, adding "debug=true" to the page's query string will also cause this value to become true.
     */
     FlowScript.debugging = (function () {
-        if (!FlowScript.debugging && (FlowScript_debugging || typeof location == "object" && location.search && /[?&]debug=true/gi.test("" + location.search)))
-            return true;
-        else
-            return FlowScript.debugging;
+        return FlowScript.debugging || typeof location == "object" && location.search && /[?&]debug=true/gi.test("" + location.search);
     })();
     // ========================================================================================================================
     var Polyfills;
@@ -1110,7 +1107,7 @@ var FlowScript;
                 JSON.parse = parse;
                 function stringify(data) {
                     if (nativeJSON == void 0)
-                        throw "Sorry, JSON is not supported in this environment. You could try to pollyfill it (see modernizr.com) and try again.";
+                        throw "Sorry, JSON is not supported in this environment. You could try to polyfill it (see modernizr.com) and try again.";
                     return nativeJSON.stringify(data);
                 }
                 JSON.stringify = stringify;
@@ -1926,7 +1923,14 @@ var FlowScript;
             this.path = path;
         }
         NamedReference.prototype.toString = function () { return "" + this.valueOf(); };
-        NamedReference.prototype.valueOf = function () { return this.root && (this.path ? eval("this.root." + this.path) : this.root) || void 0; };
+        NamedReference.prototype.valueOf = function () {
+            try {
+                return this.root && (this.path ? eval("this.root." + this.path) : this.root) || void 0;
+            }
+            catch (ex) {
+                throw "Failed to resolve path '" + this.path + "' from the `this.root` object '" + this.root + "'.";
+            }
+        };
         Object.defineProperty(NamedReference.prototype, "isNull", {
             /** Returns true if this reference represents a null/empty reference. */
             get: function () { return !this.root; },
@@ -3062,9 +3066,9 @@ var FlowScript;
     })(PropertyAccessSecurity = FlowScript.PropertyAccessSecurity || (FlowScript.PropertyAccessSecurity = {}));
     // ========================================================================================================================
     /** Properties are used with processes and components to store values.
- * In FlowScript, a component's parameters, static properties, and local variables are all in the same local scope.
- * Component properties define the context property names that will be used for that component during runtime.
- */
+     * In FlowScript, a component's parameters, static properties, and local variables are all in the same local scope.
+     * Component properties define the context property names that will be used for that component during runtime.
+     */
     var Property = /** @class */ (function (_super) {
         __extends(Property, _super);
         // --------------------------------------------------------------------------------------------------------------------
@@ -4131,21 +4135,21 @@ var FlowScript;
             return ctx;
         };
         Component.prototype.setArgument = function (argIndex, value, target) {
-            var exptectedParameters = this._parameters;
+            var expectedParameters = this._parameters;
             // ... both the parameter name AND index must bet set; pull the parameter name if an index is given, or the parameter index if a name is given ...
             if (FlowScript.isValidNumericIndex(argIndex)) {
-                var i = +argIndex, name = i >= 0 && i < exptectedParameters.length ? exptectedParameters.getProperty(i).name : '@' + i; // (an index outside the number of parameters sets the "optional" arguments)
+                var i = +argIndex, name = i >= 0 && i < expectedParameters.length ? expectedParameters.getProperty(i).name : '@' + i; // (an index outside the number of parameters sets the "optional" arguments)
                 if (i < 0)
                     throw "Cannot set argument at '" + i + "' to '" + value + "': Argument index must be >= 0";
             }
             else {
                 name = argIndex;
-                i = exptectedParameters.indexOf(name); // (check first if there's a matching parameter by the same name, and if so, set the target property name)
+                i = expectedParameters.indexOf(name); // (check first if there's a matching parameter by the same name, and if so, set the target property name)
                 if (i < 0)
                     throw "Cannot set argument '" + name + "' to '" + value + "': There is no parameter '" + name + "' defined on component '" + this + "'.";
             }
-            var existingValue = target[name];
-            if (value === void 0) { // (setting an argument to 'undefined' removes and returns the parameter value)
+            // var existingValue = target[name];
+            if (value === void 0) { // (setting an argument to 'undefined' removes the parameter value)
                 delete target[i]; // (delete index that stores the parameter name)
                 delete target[name]; // (delete the value stored in the property of the target identified by the parameter name)
             }
@@ -4157,7 +4161,23 @@ var FlowScript;
                 //    throw "An argument was already supplied for parameter '" + name + "' of component '" + this + "'.";
                 target[target[i] = name] = value;
             }
-            return existingValue;
+            return value;
+        };
+        Component.prototype.getArgument = function (argIndex, target) {
+            var expectedParameters = this._parameters;
+            // ... both the parameter name AND index must bet set; pull the parameter name if an index is given, or the parameter index if a name is given ...
+            if (FlowScript.isValidNumericIndex(argIndex)) {
+                var i = +argIndex, name = i >= 0 && i < expectedParameters.length ? expectedParameters.getProperty(i).name : '@' + i; // (an index outside the number of parameters sets the "optional" arguments)
+                if (i < 0)
+                    throw "Argument index must be >= 0";
+            }
+            else {
+                name = argIndex;
+                i = expectedParameters.indexOf(name); // (check first if there's a matching parameter by the same name, and if so, set the target property name)
+                if (i < 0)
+                    throw "There is no parameter '" + name + "' defined on component '" + this + "'.";
+            }
+            return target[name];
         };
         // --------------------------------------------------------------------------------------------------------------------
         /** Creates a visual tree snapshot for this component and the first block. */

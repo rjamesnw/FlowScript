@@ -1,6 +1,6 @@
 ﻿// ############################################################################################################################
 
-module FlowScript {
+namespace FlowScript {
     // ========================================================================================================================
     /** Controls access to object instance properties. 
       * Property access security only applies to instance properties of object-based components (components that encapsulate object creation).
@@ -61,9 +61,9 @@ module FlowScript {
     // ========================================================================================================================
 
     /** Properties are used with processes and components to store values.
- * In FlowScript, a component's parameters, static properties, and local variables are all in the same local scope.
- * Component properties define the context property names that will be used for that component during runtime.
- */
+     * In FlowScript, a component's parameters, static properties, and local variables are all in the same local scope.
+     * Component properties define the context property names that will be used for that component during runtime.
+     */
     export class Property extends TrackableObject implements IReferencedObject {
 
         static DEFAULT_NAME = '@';

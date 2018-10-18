@@ -1,5 +1,5 @@
 ﻿
-module FlowScript {
+namespace FlowScript {
 
     export interface IHTTPViewRequestListener { (view: View, request: Net.CachedRequest, ev?: Event): void }
 

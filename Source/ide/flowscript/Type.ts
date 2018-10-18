@@ -1,6 +1,6 @@
 ﻿// ############################################################################################################################
 
-module FlowScript {
+namespace FlowScript {
     // ========================================================================================================================
 
     export interface ISavedTrackableObject { id: string; type: string; }
@@ -310,7 +310,7 @@ module FlowScript {
           * For example, if the current type is 'A.B' within the 'A.B.C.D' namespace, then you could pass in 'C.D'.
           * @param {function} requiredType A required type reference that the returned type must be an instance of.
           */
-        resolve<T extends { new (...args: any[]): any }>(typePath: string, requiredType?: T): Type {
+        resolve<T extends { new(...args: any[]): any }>(typePath: string, requiredType?: T): Type {
             var parts = (typeof typePath !== 'string' ? '' + typePath : typePath).split('.'), t: Type = this;
             for (var i = (parts[0] ? 0 : 1), n = parts.length; i < n; ++i) { // ('parts[0]' is testing if the first entry is empty, which then starts at the next one [to support '.X.Y'])
                 var type = t._nestedTypesIndex[parts[i]];
@@ -448,7 +448,14 @@ module FlowScript {
         }
 
         toString() { return "" + this.valueOf(); }
-        valueOf(): T { return this.root && (this.path ? eval("this.root." + this.path) : this.root) || void 0; }
+        valueOf(): T {
+            try {
+                return this.root && (this.path ? eval("this.root." + this.path) : this.root) || void 0;
+            }
+            catch (ex) {
+                throw "Failed to resolve path '" + this.path + "' from the `this.root` object '" + this.root + "'.";
+            }
+        }
 
         /** Returns true if this reference represents a null/empty reference. */
         get isNull(): boolean { return !this.root; }

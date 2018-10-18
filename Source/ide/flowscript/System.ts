@@ -1,4 +1,4 @@
-﻿module FlowScript {
+﻿namespace FlowScript {
 
     interface IComponent {
         title?: string;

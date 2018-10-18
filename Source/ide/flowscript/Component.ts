@@ -1,6 +1,6 @@
 ﻿// ############################################################################################################################
 
-module FlowScript {
+namespace FlowScript {
     // ========================================================================================================================
 
     export interface IComponentFunction { (ctx: RuntimeContext): any };
@@ -729,29 +729,29 @@ module FlowScript {
         }
 
         /** Sets an argument on any target object to a given value based on the expected parameters of this component. */
-        setArgument(argIndex: number, value: any, target: IContextArguments): any;
-        setArgument(argIndex: string, value: any, target: IContextArguments): any;
-        setArgument(argIndex: any, value: any, target: IContextArguments): any {
-            var exptectedParameters = this._parameters;
+        setArgument<T>(argIndex: number, value: T, target: IContextArguments): T;
+        setArgument<T>(argIndex: string, value: T, target: IContextArguments): T;
+        setArgument<T>(argIndex: any, value: T, target: IContextArguments): T {
+            var expectedParameters = this._parameters;
 
             // ... both the parameter name AND index must bet set; pull the parameter name if an index is given, or the parameter index if a name is given ...
 
             if (isValidNumericIndex(argIndex)) {
                 var i: number = +argIndex,
-                    name: string = i >= 0 && i < exptectedParameters.length ? exptectedParameters.getProperty(i).name : '@' + i; // (an index outside the number of parameters sets the "optional" arguments)
+                    name: string = i >= 0 && i < expectedParameters.length ? expectedParameters.getProperty(i).name : '@' + i; // (an index outside the number of parameters sets the "optional" arguments)
                 if (i < 0)
                     throw "Cannot set argument at '" + i + "' to '" + value + "': Argument index must be >= 0";
             }
             else {
                 name = argIndex;
-                i = exptectedParameters.indexOf(name); // (check first if there's a matching parameter by the same name, and if so, set the target property name)
+                i = expectedParameters.indexOf(name); // (check first if there's a matching parameter by the same name, and if so, set the target property name)
                 if (i < 0)
                     throw "Cannot set argument '" + name + "' to '" + value + "': There is no parameter '" + name + "' defined on component '" + this + "'.";
             }
 
-            var existingValue = target[name];
+            // var existingValue = target[name];
 
-            if (value === void 0) { // (setting an argument to 'undefined' removes and returns the parameter value)
+            if (value === void 0) { // (setting an argument to 'undefined' removes the parameter value)
                 delete target[i]; // (delete index that stores the parameter name)
                 delete target[name]; // (delete the value stored in the property of the target identified by the parameter name)
             }
@@ -765,7 +765,31 @@ module FlowScript {
                 target[target[i] = name] = value;
             }
 
-            return existingValue;
+            return value;
+        }
+
+        /** Gets an argument value from any target object based on the expected parameters of this component. */
+        getArgument<T = any>(argIndex: number, target: IContextArguments): T;
+        getArgument<T= any>(argIndex: string, target: IContextArguments): T;
+        getArgument<T= any>(argIndex: any, target: IContextArguments): T {
+            var expectedParameters = this._parameters;
+
+            // ... both the parameter name AND index must bet set; pull the parameter name if an index is given, or the parameter index if a name is given ...
+
+            if (isValidNumericIndex(argIndex)) {
+                var i: number = +argIndex,
+                    name: string = i >= 0 && i < expectedParameters.length ? expectedParameters.getProperty(i).name : '@' + i; // (an index outside the number of parameters sets the "optional" arguments)
+                if (i < 0)
+                    throw "Argument index must be >= 0";
+            }
+            else {
+                name = argIndex;
+                i = expectedParameters.indexOf(name); // (check first if there's a matching parameter by the same name, and if so, set the target property name)
+                if (i < 0)
+                    throw "There is no parameter '" + name + "' defined on component '" + this + "'.";
+            }
+
+            return target[name];
         }
 
         // --------------------------------------------------------------------------------------------------------------------

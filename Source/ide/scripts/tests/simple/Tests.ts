@@ -17,7 +17,9 @@
 
     // ... first create a custom component with the required behavior, then register the type in the correct namespace ...
 
-    export class Dist2DTest extends Component {
+    export class Dist2DTest extends Component { 
+        // 1. The derived component class name is only the initial reference, and is not the type that gets loaded from a save.
+        // 2. Any variables placed on the class will never get saved and restored. This class exists only for definition construction.
         constructor(parent?: Type) {
             super(parent, ComponentTypes.Functional, "DeltaDistance2D", "distance $dx, $dy"); // Note: ID balloons to be shown in the IDE until the params are entered (to prevent the need for labels taking up space).
 
@@ -109,7 +111,7 @@
     line.addStatement(fs.System.Assign, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(0) });
     line = fs.Main.block.newLine();
     statement = line.addStatement(fs.System.ControlFlow.While, {
-        0: new Expression(fs.System.Comparison.LessThan, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(10) }),
+        0: new ComponentReference(fs.System.Comparison.LessThan, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(10) }),
         1: new Block(fs.Main).newLine().addStatement(fs.System.PreIncrement, { 0: fs.Main.getProperty("x").createExpression() }).block.createExpression(),
     });
 
@@ -128,7 +130,7 @@
     line = fs.Main.block.newLine();
     statement = line.addStatement(fs.System.ControlFlow.DoWhile, {
         0: new Block(fs.Main).newLine().addStatement(fs.System.PreIncrement, { 0: fs.Main.getProperty("x").createExpression() }).block.createExpression(),
-        1: new Expression(fs.System.Comparison.LessThan, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(10) }),
+        1: new ComponentReference(fs.System.Comparison.LessThan, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(10) }),
     });
 
     compiler = fs.getCompiler();
@@ -146,7 +148,7 @@
     statement = line.addStatement(fs.System.ControlFlow.Loop, {
         0: new Block(fs.Main).newLine().addStatement(fs.System.Assign, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(0) })
             .block.newLine().addStatement(fs.System.Assign, { 0: fs.Main.getProperty("y").createExpression(), 1: new Constant(0) }).block.createExpression(),
-        1: new Expression(fs.System.Comparison.LessThan, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(10) }),
+        1: new ComponentReference(fs.System.Comparison.LessThan, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(10) }),
         2: new Block(fs.Main).newLine().addStatement(fs.System.PostDecrement, { 0: fs.Main.getProperty("y").createExpression() }).block.createExpression(),
         3: new Block(fs.Main).newLine().addStatement(fs.System.PreIncrement, { 0: fs.Main.getProperty("x").createExpression() }).block.createExpression(),
     });

@@ -1,6 +1,6 @@
 ﻿// ############################################################################################################################
 
-module FlowScript {
+namespace FlowScript {
     // ========================================================================================================================
 
     /** A map that stores the argument name under a fixed index, and the expression object under the name. */
@@ -124,9 +124,9 @@ module FlowScript {
         // --------------------------------------------------------------------------------------------------------------------
 
         /** Sets an expression's argument to a given expression and returns any previous value. */
-        private _setArg(argIndex: number, expr: Expression): Expression;
-        private _setArg(argIndex: string, expr: Expression): Expression;
-        private _setArg(arg: any, expr: Expression): Expression {
+        private _setArg<T extends Expression>(argIndex: number, expr: T): T;
+        private _setArg<T extends Expression>(argIndex: string, expr: T): T;
+        private _setArg<T extends Expression>(arg: any, expr: T): T {
             if (expr.parent)
                 if (expr.parent != this._owner)
                     expr.remove();
@@ -150,13 +150,13 @@ module FlowScript {
             return this.source.setArgument(arg, expr, this._args);
         }
 
-        /** Sets an expression's argument to a given operational expression and returns any previous value. */
-        setArg(argIndex: number, operation: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): Expression;
-        /** Sets an expression's argument to a given operational expression and returns any previous value. */
-        setArg(argName: string, operation: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): Expression;
-        /** Sets an expression's argument to a given expression and returns any previous value. */
-        setArg(argIndex: number, expression: Expression): Expression;
-        /** Sets an expression's argument to a given expression and returns any previous value. */
+        /** Sets an expression's argument to a given operational expression and returns the added expression. */
+        setArg(argIndex: number, operation: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): ComponentReference;
+        /** Sets an expression's argument to a given operational expression and returns the added expression. */
+        setArg(argName: string, operation: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): ComponentReference;
+        /** Sets an expression's argument to a given expression and returns the added expression. */
+        setArg<T extends Expression>(argIndex: number, expression: T): T;
+        /** Sets an expression's argument to a given expression and returns the added expression. */
         setArg(argName: string, expression: Expression): Expression;
         setArg(arg: any, argObj: Component | Expression, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): Expression {
             if (!this.source.hasParameter(arg))

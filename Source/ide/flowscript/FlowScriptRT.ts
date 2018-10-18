@@ -64,7 +64,7 @@ declare var FlowScript_debugging: boolean;
 // ############################################################################################################################
 
 /** The base namespace for all FlowScript types. */
-module FlowScript {
+namespace FlowScript {
     // ========================================================================================================================
 
     export var undefined: any = void 0;
@@ -156,10 +156,7 @@ module FlowScript {
     * If running in a browser, adding "debug=true" to the page's query string will also cause this value to become true.
     */
     export var debugging: boolean = (() => {
-        if (!FlowScript.debugging && (FlowScript_debugging || typeof location == "object" && location.search && /[?&]debug=true/gi.test("" + location.search)))
-            return true;
-        else
-            return FlowScript.debugging;
+        return FlowScript.debugging || typeof location == "object" && location.search && /[?&]debug=true/gi.test("" + location.search);
     })();
 
     // ========================================================================================================================
@@ -769,6 +766,7 @@ module FlowScript {
 
     export interface ICallerArguments {
         [index: number]: any;
+        [name: string]: any;
     }
 
     export interface IContextArguments {
@@ -1349,7 +1347,7 @@ module FlowScript {
 
                 export function stringify(data: any): string {
                     if (nativeJSON == void 0)
-                        throw "Sorry, JSON is not supported in this environment. You could try to pollyfill it (see modernizr.com) and try again.";
+                        throw "Sorry, JSON is not supported in this environment. You could try to polyfill it (see modernizr.com) and try again.";
                     return nativeJSON.stringify(data);
                 }
             }
