@@ -123,7 +123,7 @@ module FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        /** Sets an expression's argument to a given expression. */
+        /** Sets an expression's argument to a given expression and returns any previous value. */
         private _setArg(argIndex: number, expr: Expression): Expression;
         private _setArg(argIndex: string, expr: Expression): Expression;
         private _setArg(arg: any, expr: Expression): Expression {
@@ -150,9 +150,13 @@ module FlowScript {
             return this.source.setArgument(arg, expr, this._args);
         }
 
+        /** Sets an expression's argument to a given operational expression and returns any previous value. */
         setArg(argIndex: number, operation: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): Expression;
+        /** Sets an expression's argument to a given operational expression and returns any previous value. */
         setArg(argName: string, operation: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): Expression;
+        /** Sets an expression's argument to a given expression and returns any previous value. */
         setArg(argIndex: number, expression: Expression): Expression;
+        /** Sets an expression's argument to a given expression and returns any previous value. */
         setArg(argName: string, expression: Expression): Expression;
         setArg(arg: any, argObj: Component | Expression, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): Expression {
             if (!this.source.hasParameter(arg))

@@ -945,11 +945,15 @@ declare module FlowScript {
          */
         getArgNames(sorted?: boolean): string[];
         save(target?: ISavedExpressionArgs): ISavedExpressionArgs;
-        /** Sets an expression's argument to a given expression. */
+        /** Sets an expression's argument to a given expression and returns any previous value. */
         private _setArg;
+        /** Sets an expression's argument to a given operational expression and returns any previous value. */
         setArg(argIndex: number, operation: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): Expression;
+        /** Sets an expression's argument to a given operational expression and returns any previous value. */
         setArg(argName: string, operation: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): Expression;
+        /** Sets an expression's argument to a given expression and returns any previous value. */
         setArg(argIndex: number, expression: Expression): Expression;
+        /** Sets an expression's argument to a given expression and returns any previous value. */
         setArg(argName: string, expression: Expression): Expression;
         /** Returns the name of an argument given its argument index. */
         getArgName(argIndex: number, required?: boolean): string;

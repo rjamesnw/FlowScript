@@ -10,6 +10,7 @@
         ]
     },
     "include": [
-        "**/*.ts"
+        // "../flowscript/flowscriptrt.ts",
+        "*.ts"
     ]
 }

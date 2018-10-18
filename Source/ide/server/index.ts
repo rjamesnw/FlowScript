@@ -18,7 +18,7 @@ app.use(async (ctx, next) => {
     await next();
 });
 
-app.use(staticServer("templates", { defer: false }));
+app.use(staticServer("../", { defer: false }));
 
 // app.use(koaBody());
 

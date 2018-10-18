@@ -12,7 +12,7 @@
         ]
     },
     "include": [
-        "../flowscript/flowscript.d.ts",
+        "../flowscript/_references.ts",
         "ace/mode/typescript/typescript_create_worker.ts",
         "ace/mode/typescript/DocumentPositionUtil.ts",
         "ace/mode/typescript/languageServiceHost.ts",
@@ -35,6 +35,7 @@
         "FlowScript/ListEditor.ts",
         "FlowScript/ace/ace_ts_editor_main.ts",
         "FlowScript/ScriptEditor.ts",
+        "tests/**/*.ts",
         "tests.ts",
         "app.ts"
     ],

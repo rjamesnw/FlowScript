@@ -6,10 +6,14 @@
 *.user
 *.userosscache
 *.sln.docstates
-**/wwwroot/js/**/*.js
-**/wwwroot/js/**/*.map
-**/Scripts/**/*.js
-**/Scripts/**/*.map
+**/flowscript/**/*.js
+**/flowscript/**/*.map
+**/scripts/**/*.js
+**/scripts/**/*.map
+**/server/**/*.js
+**/server/**/*.map
+!Source/ide/scripts/*.js
+!Source/ide/scripts/ace/**/*.js
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

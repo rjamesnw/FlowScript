@@ -1,4 +1,4 @@
-﻿module FlowScript.Tests {
+﻿namespace FlowScript.Tests {
     export function populateProject(project: FlowScript.UI.ProjectUI) {
         var fs = project.script;
         var appNS = fs.System.add("Tests");
