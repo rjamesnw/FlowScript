@@ -36,7 +36,7 @@
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome",
-            "url": "http://localhost:8080",
+            "url": "http://localhost:8080/scripts/tests/simple",
             "webRoot": "${workspaceFolder}/Source/ide/"
         },
         {
