@@ -2,7 +2,6 @@
 
 var rootBodyViewContainer = rootViewContainer.getViewContainer("renderBody");
 
-var projects = new FlowScript.Projects();
 
 function setInput(id: string, newValue = "") {
     if (id) {

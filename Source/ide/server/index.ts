@@ -19,6 +19,7 @@ app.use(async (ctx, next) => {
 });
 
 app.use(staticServer("../", { defer: false }));
+app.use(staticServer("../../../node_modules/", { defer: false }));
 
 // app.use(koaBody());
 

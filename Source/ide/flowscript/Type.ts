@@ -402,6 +402,13 @@ namespace FlowScript {
             return t;
         }
 
+        /** Remove this type from the parent. */
+        detach(): this {
+            if (this._parent)
+                this._parent.remove(this);
+            return this;
+        }
+
         /** Sets a type for template types using the given name, default type, and any expected based type (as a constraint).
           * This only works for types that represent templates.
           */

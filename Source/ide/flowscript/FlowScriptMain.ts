@@ -200,9 +200,13 @@ namespace FlowScript {
         private _main: Component;
         get main(): Component { return this._main; }
         set main(value: Component) {
-            if (typeof value !== 'object' || !(value instanceof Component))
-                throw "The given main component reference is not valid.";
-            this._main = value;
+            if (value != this._main) {
+                if (typeof value !== 'object' || !(value instanceof Component))
+                    throw "The given main component reference is not valid.";
+                if (this._main)
+                    this._main.detach();
+                this._main = value;
+            }
         }
 
         // --------------------------------------------------------------------------------------------------------------------
