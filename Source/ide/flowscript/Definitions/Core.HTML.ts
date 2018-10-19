@@ -30,8 +30,8 @@ module FlowScript.Core.HTML {
             super(parent, "HTML");
         }
 
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
     }
 
@@ -46,12 +46,12 @@ module FlowScript.Core.HTML {
             super(parent, ComponentTypes.Text, "On", "on $eventName do $block");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return types:
 
             var sys = this.script.System;
 
-            super.init();
+            super.onInit();
         }
 
         // --------------------------------------------------------------------------------------------------------------------
@@ -65,11 +65,11 @@ module FlowScript.Core.HTML {
             super(parent, ComponentTypes.Text, "Node_removeChild", "remove child node $oldChild");
         }
 
-        init() {
+        onInit() {
             var sys = this.script.System;
             this.defineParameter("oldChild", [sys.HTML.Node]);
             this.defineDefaultReturnVar(sys.HTML.Node);
-            super.init();
+            super.onInit();
         }
     }
 
@@ -78,11 +78,11 @@ module FlowScript.Core.HTML {
             super(parent, ComponentTypes.Text, "Node_appendChild", "append child node $newChild");
         }
 
-        init() {
+        onInit() {
             var sys = this.script.System;
             this.defineParameter("newChild", [sys.HTML.Node]);
             this.defineDefaultReturnVar(sys.HTML.Node);
-            super.init();
+            super.onInit();
         }
     }
 
@@ -95,8 +95,8 @@ module FlowScript.Core.HTML {
             super(parent, null, "NodeList");
         }
 
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
 
         // --------------------------------------------------------------------------------------------------------------------
@@ -111,8 +111,8 @@ module FlowScript.Core.HTML {
             super(parent, null, "NamedNodeMap");
         }
 
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
 
         // --------------------------------------------------------------------------------------------------------------------
@@ -181,7 +181,7 @@ module FlowScript.Core.HTML {
             super(parent, null, "Node");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return types:
 
             var sys = this.script.System;
@@ -301,7 +301,7 @@ module FlowScript.Core.HTML {
 
             this.defineDefaultReturnVar(sys.String);
 
-            super.init();
+            super.onInit();
         }
 
         // --------------------------------------------------------------------------------------------------------------------
@@ -316,7 +316,7 @@ module FlowScript.Core.HTML {
             super(parent, parent.script.System.HTML.Node, "Element");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return types:
 
             var sys = this.script.System;
@@ -326,7 +326,7 @@ module FlowScript.Core.HTML {
 
             this.defineDefaultReturnVar(sys.String);
 
-            super.init();
+            super.onInit();
         }
 
         // --------------------------------------------------------------------------------------------------------------------
@@ -341,14 +341,14 @@ module FlowScript.Core.HTML {
             super(parent, parent.script.System.HTML.Element, "HTMLElement");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return types:
 
             var sys = this.script.System;
 
             this.defineDefaultReturnVar(sys.String);
 
-            super.init();
+            super.onInit();
         }
 
         // --------------------------------------------------------------------------------------------------------------------
@@ -363,14 +363,14 @@ module FlowScript.Core.HTML {
             super(parent, parent.script.System.HTML.Element, "Document");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return types:
 
             var sys = this.script.System;
 
             this.defineDefaultReturnVar(sys.String);
 
-            super.init();
+            super.onInit();
         }
 
         // --------------------------------------------------------------------------------------------------------------------

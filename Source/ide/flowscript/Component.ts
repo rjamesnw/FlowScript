@@ -303,17 +303,6 @@ namespace FlowScript {
             return this.parent && this.parent instanceof Component && (<Component>this.parent)._componentType == ComponentTypes.Object;
         }
 
-        /** An instance reference string that represents this block in the system. */
-        get referenceStr(): string {
-            return this.fullTypeName;
-        }
-        getReference(): NamedReference<Component> {
-            if (this.script)
-                return new NamedReference<Component>(this.script, this.referenceStr);
-            else
-                return new NamedReference<Component>(this, null);
-        }
-
         // --------------------------------------------------------------------------------------------------------------------
 
         constructor(parent: Type, componentType: ComponentTypes, typeName: string, signatureTitle: string, script?: IFlowScript) {
@@ -899,7 +888,7 @@ namespace FlowScript {
 
         get script(): IFlowScript { return this.component ? this.component.script : null; }
 
-        /** The component that this referenced points to. */
+        /** The component that this reference points to. */
         get component(): Component { return this._componentRef.valueOf(); }
         protected _componentRef: NamedReference<Component>; // (the component that is the source for this expression)
 
@@ -909,7 +898,7 @@ namespace FlowScript {
           * Use 'setArgument()' to set values for this object.
           */
         get arguments(): ExpressionArgs { return this._arguments; }
-        protected _arguments: ExpressionArgs = new ExpressionArgs(this); // (the arguments are taken from 1. the calling component's declared local variables [including parameters], or 2. other components)
+        protected _arguments = new ExpressionArgs(this); // (the arguments are taken from 1. the calling component's declared local variables [including parameters], or 2. other components)
 
         /** Returns the count of indexed values in the object (i.e. the highest index + 1). */
         get argumentLength(): number {
@@ -924,7 +913,7 @@ namespace FlowScript {
         }
 
         get returnTargets(): ReturnTargetMaps { return this._returnTargets; }
-        protected _returnTargets: ReturnTargetMaps; // (these properties are also taken from the calling component's declared local variables [including parameters], which get updated upon return)
+        protected _returnTargets = new ReturnTargetMaps(this); // (these properties are also taken from the calling component's declared local variables [including parameters], which get updated upon return)
 
         _eventHandlers: BlockReference[]; // (blocks to use for the event handlers for this statement [always optional]; these blocks sit under the context of the underlying component)
         // TODO: Consider creating a custom collection so the type can be detected by the VisualNode

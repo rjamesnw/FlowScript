@@ -35,8 +35,8 @@ module FlowScript.Core.Comparison {
             super(parent, "Comparison");
         }
 
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
     }
 
@@ -49,7 +49,7 @@ module FlowScript.Core.Comparison {
             super(parent, "Equals", "$a == $b");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -59,7 +59,7 @@ module FlowScript.Core.Comparison {
 
             this.defineDefaultReturnVar(sys.Boolean);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -72,7 +72,7 @@ module FlowScript.Core.Comparison {
             super(parent, "StrictEquals", "$a === $b");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -82,7 +82,7 @@ module FlowScript.Core.Comparison {
 
             this.defineDefaultReturnVar(sys.Boolean);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -95,7 +95,7 @@ module FlowScript.Core.Comparison {
             super(parent, "NotEquals", "$a != $b");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -105,7 +105,7 @@ module FlowScript.Core.Comparison {
 
             this.defineDefaultReturnVar(sys.Boolean);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -118,7 +118,7 @@ module FlowScript.Core.Comparison {
             super(parent, "StrictNotEquals", "$a !== $b");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -128,7 +128,7 @@ module FlowScript.Core.Comparison {
 
             this.defineDefaultReturnVar(sys.Boolean);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -141,7 +141,7 @@ module FlowScript.Core.Comparison {
             super(parent, "LessThan", "$a < $b");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -151,7 +151,7 @@ module FlowScript.Core.Comparison {
 
             this.defineDefaultReturnVar(sys.Boolean);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -164,7 +164,7 @@ module FlowScript.Core.Comparison {
             super(parent, "GreaterThan", "$a > $b");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -174,7 +174,7 @@ module FlowScript.Core.Comparison {
 
             this.defineDefaultReturnVar(sys.Boolean);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -187,7 +187,7 @@ module FlowScript.Core.Comparison {
             super(parent, "LessThanOrEqual", "$a <= $b");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -197,7 +197,7 @@ module FlowScript.Core.Comparison {
 
             this.defineDefaultReturnVar(sys.Boolean);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -210,7 +210,7 @@ module FlowScript.Core.Comparison {
             super(parent, "GreaterThanOrEqual", "$a >= $b");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -220,7 +220,7 @@ module FlowScript.Core.Comparison {
 
             this.defineDefaultReturnVar(sys.Boolean);
 
-            super.init();
+            super.onInit();
         }
     }
 

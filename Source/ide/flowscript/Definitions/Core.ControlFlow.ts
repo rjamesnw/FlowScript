@@ -19,8 +19,8 @@ module FlowScript.Core.ControlFlow {
             super(parent, "ControlFlow");
         }
 
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
     }
 
@@ -33,7 +33,7 @@ module FlowScript.Core.ControlFlow {
             super(parent, ComponentTypes.ControlFlow, "If", "if $condition then $block");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters:
 
             var sys = this.script.System;
@@ -41,7 +41,7 @@ module FlowScript.Core.ControlFlow {
             this.defineParameter("condition", [sys.Boolean]);
             this.defineParameter("block", [sys.CodeBlock]);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -54,7 +54,7 @@ module FlowScript.Core.ControlFlow {
             super(parent, ComponentTypes.ControlFlow, "IfElse", "if $condition then $block1 else $block2");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters:
 
             var sys = this.script.System;
@@ -63,7 +63,7 @@ module FlowScript.Core.ControlFlow {
             this.defineParameter("block1", [sys.CodeBlock]);
             this.defineParameter("block2", [sys.CodeBlock]);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -76,7 +76,7 @@ module FlowScript.Core.ControlFlow {
             super(parent, ComponentTypes.ControlFlow, "While", "while $condition do $block");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters:
 
             var sys = this.script.System;
@@ -84,7 +84,7 @@ module FlowScript.Core.ControlFlow {
             this.defineParameter("condition", [sys.Boolean]);
             this.defineParameter("block", [sys.CodeBlock]);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -97,7 +97,7 @@ module FlowScript.Core.ControlFlow {
             super(parent, ComponentTypes.ControlFlow, "DoWhile", "do $block while $condition");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters:
 
             var sys = this.script.System;
@@ -105,7 +105,7 @@ module FlowScript.Core.ControlFlow {
             this.defineParameter("block", [sys.CodeBlock]);
             this.defineParameter("condition", [sys.Boolean]);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -118,7 +118,7 @@ module FlowScript.Core.ControlFlow {
             super(parent, ComponentTypes.ControlFlow, "Loop", "for ($init; $condition; $update) $block");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters:
 
             var sys = this.script.System;
@@ -128,7 +128,7 @@ module FlowScript.Core.ControlFlow {
             this.defineParameter("block", [sys.CodeBlock]);
             this.defineParameter("update", [sys.CodeBlock]);
 
-            super.init();
+            super.onInit();
         }
     }
 

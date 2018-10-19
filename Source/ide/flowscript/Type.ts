@@ -61,9 +61,9 @@ namespace FlowScript {
         // Some special internal types. 
 
         /** A wild-card that is used internally with type maps to match all defined type objects.  This is never used within scripts.
-          * This operates similar to "Any", but differs in how the internal type matching works.  Types ONLY match to themselves
-          * internally, so "Any" does NOT match "String" for example.  This is required for matching specific types; however, some
-          * internal matches literally need to specify "any of the defined types", and that is where 'All' comes in.
+          * This operates similar to `Core.Any` but differs in how the internal type matching works.  Types ONLY match to themselves
+          * internally, so "Any" does NOT match "String" for example.  This is required for matching specific types internally;
+          * however, some internal matches literally need to specify "any of the defined types", and that is where 'All' comes in.
           */
         static All: Core.All;
         /** Use internally with component return types to infer the resulting type based on given arguments. */
@@ -81,7 +81,7 @@ namespace FlowScript {
 
         /** Returns a reference to the parent type.  If there is no parent, or the parent is the script root namespace, then 'null' is returned.
           * Note: Every type has a reference to the underlying script, which is the root namespace for all types.
-          * Derived types take note: '_parent' is NOT null at the first type when traversing the type hierarchy.  The 'parent' getter property should be used.
+          * Derived types take note: The private field '_parent' is NOT null at the first type when traversing the type hierarchy.  The 'parent' getter property should be used.
           */
         get parent(): Type { return this._parent != this.script ? this._parent : null; }
         /** Sets a new parent type for this type.  The current type will be removed from its parent (if any), and added to the given parent. */
@@ -176,6 +176,8 @@ namespace FlowScript {
         /** The full "safe" namespace + type name (using characters that will support direct dot access - used with code output rendering). */
         get safeFullTypeName(): string { var ns = this.safeNamespace; if (ns) return ns + '.' + this.safeName; else return this.safeName; }
 
+        private _initialized: boolean; // (true when 'init()' gets called)
+
         /** Creates a new type object, which also acts as a namespace name in a type graph.
           * @param {Type} parent The parent type of this type, or 'null' if this is the root type.
           * @param {string} name The name for this type.
@@ -195,15 +197,28 @@ namespace FlowScript {
         }
 
         /**
-         * Initialize the sub-type derived from this base type, including all child types.
-         * This allows to first construct the type tree so references exist prior to configuring the types further.
-         * Note: You MUST call this base type from the derived type to continue to call 'init()' on all child types as well.
-         */
-        init(): void {
+        * Initializes this type, including all child types, where not already initialized.
+        * This allows to first construct the type hierarchy so references exist prior to configuring the types further.
+        * Note: This only initializes from this type downwards, so if adding types in multiple locations, called this
+        * function on the root script instance is better to make sure all new types added get initialized.
+        * @see onInit() Used to initialize custom derived types.
+        */
+        initialize() {
+            if (!this._initialized) {
+                this.onInit();
+                this._initialized = true;
+            }
+
             if (this._nestedTypes)
                 for (var types = this._nestedTypes, i = 0, n = types.length; i < n; ++i)
-                    types[i].init();
+                    types[i].initialize();
         }
+
+        /**
+        * Initialize the sub-type derived from this type, including all child types.
+        * This allows to first construct the type tree so references exist prior to configuring the types further.
+        */
+        protected onInit(): void { }
 
         // --------------------------------------------------------------------------------------------------------------------
 
@@ -280,7 +295,7 @@ namespace FlowScript {
         /** Returns true if the given type can be assigned to the current type.
           * If this type or the given type is of "Any" type, then true is always returned.
           * Note: Don't override this function.  If needed, override "assignableTo()" (see the type info for more details).
-          * See also: assignableTo()
+          * @see assignableTo()
           */
         assignableFrom(type: Type): boolean {
             return typeof type == 'object' && type.assignableTo && type.assignableTo(this);
@@ -312,7 +327,8 @@ namespace FlowScript {
           */
         resolve<T extends { new(...args: any[]): any }>(typePath: string, requiredType?: T): Type {
             var parts = (typeof typePath !== 'string' ? '' + typePath : typePath).split('.'), t: Type = this;
-            for (var i = (parts[0] ? 0 : 1), n = parts.length; i < n; ++i) { // ('parts[0]' is testing if the first entry is empty, which then starts at the next one [to support '.X.Y'])
+            for (var i = (parts[0] ? 0 : 1), n = parts.length; i < n; ++i) {
+                // (note: 'parts[0]?0:1' is testing if the first entry is empty, which then starts at the next one [to support '.X.Y'])
                 var type = t._nestedTypesIndex[parts[i]];
                 if (!type)
                     return null;
@@ -410,6 +426,28 @@ namespace FlowScript {
             var templateType = new Type(null, this.name, this.script);
             templateType._parent = this; // (one way back only, as this is a dynamic type that is never added to the meta type tree)
             return templateType;
+        }
+
+        // --------------------------------------------------------------------------------------------------------------------
+
+        /** An instance reference string that represents this type in the type hierarchy. 
+         * @see getReference()
+         */
+        get referenceStr(): string {
+            if (this.parent instanceof Component)
+                return (<Component>this.parent).referenceStr + "resolve('" + Utilities.replace(this.name, "'", "\'") + "')";
+            else
+                return "resolve('" + Utilities.replace(this.fullTypeName, "'", "\'") + "')";
+        }
+
+        /** Gets a @type {NamedReference} reference instance that represents this type in the type hierarchy. 
+         * @see referenceStr
+         */
+        getReference(): NamedReference<Component> {
+            if (this.script)
+                return new NamedReference<Component>(this.script, this.referenceStr);
+            else
+                return new NamedReference<Component>(this, null);
         }
 
         // --------------------------------------------------------------------------------------------------------------------

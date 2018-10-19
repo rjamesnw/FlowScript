@@ -103,7 +103,7 @@ namespace FlowScript {
         System: Core.System;
 
         /** The main entry component.  When the script starts, this is the first component run. */
-        Main: Component;
+        main: Component;
 
         /** Resolves a type path under this script.  Script instances are the root of all namespaces and types.
           * Examples: 'System', 'System.String', 'Main' (for the main entry component), 'Tests' (default namespace for test components), etc.
@@ -198,8 +198,8 @@ namespace FlowScript {
         System: Core.System;
 
         private _main: Component;
-        get Main(): Component { return this._main; }
-        set Main(value: Component) {
+        get main(): Component { return this._main; }
+        set main(value: Component) {
             if (typeof value !== 'object' || !(value instanceof Component))
                 throw "The given main component reference is not valid.";
             this._main = value;
@@ -220,7 +220,7 @@ namespace FlowScript {
             this.System = new Core.System(this);
             this._main = main || new Core.Main(this);
 
-            super.init(); // (initialize all currently set core types before returning)
+            this.initialize(); // (initialize all currently set core types before returning)
         }
 
         /** Adds a type as a root type for this script.
@@ -254,7 +254,7 @@ namespace FlowScript {
 
         /** Run the script with the supplied arguments. */
         run(args: ICallerArguments): RuntimeContext {
-            if (!this.Main)
+            if (!this.main)
                 throw "Error: The script environment does not have a 'main' entry point set.";
             return new Compiler(<IFlowScript>this).compileSimulation().start(args).run();
         }

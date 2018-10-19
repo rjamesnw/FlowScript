@@ -20,8 +20,8 @@ module FlowScript.Core.Math {
             super(parent, "Math");
         }
 
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
     }
 
@@ -34,7 +34,7 @@ module FlowScript.Core.Math {
             super(parent, "Add", "$a + $b"); // (#|$) + (#|$)
         }
 
-        init() {
+        onInit() {
             var sys = this.script.System;
 
             this.addTypeMap(sys.Integer, sys.Boolean, sys.Boolean);
@@ -78,7 +78,7 @@ module FlowScript.Core.Math {
 
             this.defineDefaultReturnVar(Type.Inferred); // ("inferred" means to invoke the type map to determine the resulting type base on supplied arguments)
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -91,7 +91,7 @@ module FlowScript.Core.Math {
             super(parent, "Multiply", "$a * $b"); // (#|$) * (#|$)
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -101,7 +101,7 @@ module FlowScript.Core.Math {
 
             this.defineDefaultReturnVar(Type.Inferred); // ("inferred" means to invoke the type map to determine the resulting type base on supplied arguments)
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -114,7 +114,7 @@ module FlowScript.Core.Math {
             super(parent, ComponentTypes.Unary, "SQRT", "√$a");
         }
 
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -123,7 +123,7 @@ module FlowScript.Core.Math {
 
             this.defineDefaultReturnVar(sys.Double);
 
-            super.init();
+            super.onInit();
         }
     }
 

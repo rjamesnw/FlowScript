@@ -1,6 +1,6 @@
 ﻿// ############################################################################################################################
 
-namespace FlowScript {
+module FlowScript {
     // ========================================================================================================================
     /** Controls access to object instance properties. 
       * Property access security only applies to instance properties of object-based components (components that encapsulate object creation).
@@ -98,7 +98,7 @@ namespace FlowScript {
                     collectionName = "returnVars";
             }
             if (comp && collectionName)
-                return comp.fullTypeName + "." + collectionName + ".getProperty('" + this.name + "')";
+                return comp.referenceStr + "." + collectionName + ".getProperty('" + this.name + "')";
             else
                 return this.name;
         }

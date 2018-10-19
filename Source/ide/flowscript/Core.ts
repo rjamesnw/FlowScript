@@ -13,8 +13,8 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, ComponentTypes.Unary, "Any", "$Any");
         }
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
         assignableTo(type: Component): boolean {
             return true;
@@ -25,9 +25,9 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, ComponentTypes.Unary, "Boolean", "Boolean($?value)");
         }
-        init() {
+        onInit() {
             this.defineDefaultReturnVar(this.script.System.String);
-            super.init();
+            super.onInit();
         }
         assignableTo(type: Component): boolean {
             if (typeof type !== 'object' || !(type instanceof Component)) return false;
@@ -48,9 +48,9 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, ComponentTypes.Unary, "String", "String($?value)");
         }
-        init() {
+        onInit() {
             this.defineDefaultReturnVar(this.script.System.String);
-            super.init();
+            super.onInit();
         }
         assignableTo(type: Component): boolean {
             if (typeof type !== 'object' || !(type instanceof Component)) return false;
@@ -72,9 +72,9 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, ComponentTypes.Unary, "Double", "Double($?value)");
         }
-        init() {
+        onInit() {
             this.defineDefaultReturnVar(this.script.System.Double);
-            super.init();
+            super.onInit();
         }
         assignableTo(type: Component): boolean {
             if (typeof type !== 'object' || !(type instanceof Component)) return false;
@@ -95,9 +95,9 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, ComponentTypes.Unary, "Currency", "Currency($?value)");
         }
-        init() {
+        onInit() {
             this.defineDefaultReturnVar(this.script.System.Currency);
-            super.init();
+            super.onInit();
         }
         assignableTo(type: Component): boolean {
             if (typeof type !== 'object' || !(type instanceof Component)) return false;
@@ -117,9 +117,9 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, ComponentTypes.Unary, "Integer", "Integer($?value)");
         }
-        init() {
+        onInit() {
             this.defineDefaultReturnVar(this.script.System.Integer);
-            super.init();
+            super.onInit();
         }
         assignableTo(type: Component): boolean {
             if (typeof type !== 'object' || !(type instanceof Component)) return false;
@@ -140,10 +140,10 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, ComponentTypes.Unary, "DateTime", "DateTime($?value)");
         }
-        init() {
+        onInit() {
             this.defineParameter("value", [this.script.System.Double, this.script.System.Integer, this.script.System.String, this.script.System.DateTime]);
             this.defineDefaultReturnVar(this.script.System.DateTime);
-            super.init();
+            super.onInit();
         }
         assignableTo(type: Component): boolean {
             if (typeof type !== 'object' || !(type instanceof Component)) return false;
@@ -168,9 +168,9 @@ module FlowScript.Core {
             if (superType)
                 this.superType = superType;
         }
-        init() {
+        onInit() {
             this.defineDefaultReturnVar(this.script.System.Object);
-            super.init();
+            super.onInit();
         }
         assignableTo(type: Component): boolean {
             if (typeof type !== 'object' || !(type instanceof Component)) return false;
@@ -191,10 +191,10 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, ComponentTypes.Unary, "Array", "Array($?Array)");
         }
-        init(defaultType?: Type, expectedBaseType?: Type) {
+        onInit(defaultType?: Type, expectedBaseType?: Type) {
             this.defineTemplateParameter("T", defaultType, expectedBaseType);
             this.defineDefaultReturnVar(this.script.System.Array);
-            super.init();
+            super.onInit();
         }
         assignableTo(type: Component): boolean {
             if (typeof type !== 'object' || !(type instanceof Component)) return false;
@@ -212,9 +212,9 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, ComponentTypes.Unary, "Regex", "Regex($?RegEx)");
         }
-        init() {
+        onInit() {
             this.defineDefaultReturnVar(this.script.System.RegEx);
-            super.init();
+            super.onInit();
         }
         assignableTo(type: Component): boolean {
             if (typeof type !== 'object' || !(type instanceof Component)) return false;
@@ -232,8 +232,8 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, "Property");
         }
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
         assignableTo(type: Component): boolean {
             if (typeof type !== 'object' || !(type instanceof Component)) return false;
@@ -249,8 +249,8 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, "CodeBlock");
         }
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
         assignableTo(type: Component): boolean {
             if (typeof type !== 'object' || !(type instanceof Component)) return false;
@@ -266,8 +266,8 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, "FunctionalComponent");
         }
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
         assignableTo(type: Component): boolean {
             if (typeof type !== 'object' || !(type instanceof Component)) return false;
@@ -283,8 +283,8 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, "ExpressionList");
         }
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
         assignableTo(type: Component): boolean {
             if (typeof type !== 'object' || !(type instanceof Component)) return false;
@@ -424,8 +424,8 @@ module FlowScript.Core {
             this.ExpressionList = new ExpressionList(this);
         }
 
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
     }
 
@@ -435,8 +435,8 @@ module FlowScript.Core {
         constructor(script: IFlowScript) {
             super(script, ComponentTypes.Functional, "Main", null);
         }
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
     }
 
@@ -449,8 +449,8 @@ module FlowScript.Core {
         constructor(parent: Type, typeName: string, title: string, isUnary: boolean = false) {
             super(parent, isUnary ? ComponentTypes.Unary : ComponentTypes.Operation, typeName, title);
         }
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
         addTypeMap(result: Type, ...ifTypes: Type[]) {
             this._typeMapping.push({ result: result, ifTypes: ifTypes });
@@ -474,11 +474,11 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, ComponentTypes.Comment, "Comment", "/** $comment */");
         }
-        init() {
+        onInit() {
             var script = this.script;
             // Setup the expected parameters and return types:
             this.defineParameter("comment", [script.System.String]);
-            super.init();
+            super.onInit();
         }
     }
 
@@ -489,7 +489,7 @@ module FlowScript.Core {
             super(parent, "Assign", "$a = $b");
             this._componentType = ComponentTypes.Assignment;
         }
-        init() {
+        onInit() {
             // Setup the expected parameters and return types:
 
             var sys = this.script.System;
@@ -499,7 +499,7 @@ module FlowScript.Core {
 
             this.defineDefaultReturnVar(sys.Boolean);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -509,7 +509,7 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, "Accessor", "$a.$b");
         }
-        init() {
+        onInit() {
             // Setup the expected parameters and return types:
 
             var sys = this.script.System;
@@ -519,7 +519,7 @@ module FlowScript.Core {
 
             this.defineDefaultReturnVar(Type.Inferred);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -529,7 +529,7 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, ComponentTypes.CodeBlock, "With", "with $a do $b"); // using the object referenced by '$a', execute expression '$b' (which may reference properties of '$a' as a shortcut)
         }
-        init() {
+        onInit() {
             // Setup the expected parameters and return types:
 
             var sys = this.script.System;
@@ -541,7 +541,7 @@ module FlowScript.Core {
 
             this.defineDefaultReturnVar(Type.Inferred);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -551,7 +551,7 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, "WithCall", "with $a call $b");
         }
-        init() {
+        onInit() {
             // Setup the expected parameters and return types:
 
             var sys = this.script.System;
@@ -561,7 +561,7 @@ module FlowScript.Core {
 
             this.defineDefaultReturnVar(Type.Inferred);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -571,7 +571,7 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, "PreIncrement", "++$n", true);
         }
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -580,7 +580,7 @@ module FlowScript.Core {
 
             this.defineDefaultReturnVar(Type.Inferred); // ("inferred" means to invoke the type map to determine the resulting type base on supplied arguments)
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -595,8 +595,8 @@ module FlowScript.Core {
 
             this.defineDefaultReturnVar(Type.Inferred); // ("inferred" means to invoke the type map to determine the resulting type base on supplied arguments)
         }
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
     }
 
@@ -604,7 +604,7 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, "PreDecrement", "--$n", true);
         }
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -613,7 +613,7 @@ module FlowScript.Core {
 
             this.defineDefaultReturnVar(Type.Inferred); // ("inferred" means to invoke the type map to determine the resulting type base on supplied arguments)
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -621,7 +621,7 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, "PostDecrement", "$n--", true);
         }
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -630,7 +630,7 @@ module FlowScript.Core {
 
             this.defineDefaultReturnVar(Type.Inferred); // ("inferred" means to invoke the type map to determine the resulting type base on supplied arguments)
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -742,10 +742,10 @@ module FlowScript.Core {
         constructor(parent: Type) {
             super(parent, ComponentTypes.Type, "Code", "Code($code)");
         }
-        init() {
+        onInit() {
             var sys = this.script.System;
             this.defineParameter("code", [sys.String]);
-            super.init();
+            super.onInit();
         }
     }
 

@@ -1591,7 +1591,7 @@ var FlowScript;
             // --------------------------------------------------------------------------------------------------------------------
             /** Returns a reference to the parent type.  If there is no parent, or the parent is the script root namespace, then 'null' is returned.
               * Note: Every type has a reference to the underlying script, which is the root namespace for all types.
-              * Derived types take note: '_parent' is NOT null at the first type when traversing the type hierarchy.  The 'parent' getter property should be used.
+              * Derived types take note: The private field '_parent' is NOT null at the first type when traversing the type hierarchy.  The 'parent' getter property should be used.
               */
             get: function () { return this._parent != this.script ? this._parent : null; },
             /** Sets a new parent type for this type.  The current type will be removed from its parent (if any), and added to the given parent. */
@@ -1725,15 +1725,26 @@ var FlowScript;
             configurable: true
         });
         /**
-         * Initialize the sub-type derived from this base type, including all child types.
-         * This allows to first construct the type tree so references exist prior to configuring the types further.
-         * Note: You MUST call this base type from the derived type to continue to call 'init()' on all child types as well.
-         */
-        Type.prototype.init = function () {
+        * Initializes this type, including all child types, where not already initialized.
+        * This allows to first construct the type hierarchy so references exist prior to configuring the types further.
+        * Note: This only initializes from this type downwards, so if adding types in multiple locations, called this
+        * function on the root script instance is better to make sure all new types added get initialized.
+        * @see onInit() Used to initialize custom derived types.
+        */
+        Type.prototype.initialize = function () {
+            if (!this._initialized) {
+                this.onInit();
+                this._initialized = true;
+            }
             if (this._nestedTypes)
                 for (var types = this._nestedTypes, i = 0, n = types.length; i < n; ++i)
-                    types[i].init();
+                    types[i].initialize();
         };
+        /**
+        * Initialize the sub-type derived from this type, including all child types.
+        * This allows to first construct the type tree so references exist prior to configuring the types further.
+        */
+        Type.prototype.onInit = function () { };
         // --------------------------------------------------------------------------------------------------------------------
         Type.prototype.save = function (target) {
             target = target || {};
@@ -1796,7 +1807,7 @@ var FlowScript;
         /** Returns true if the given type can be assigned to the current type.
           * If this type or the given type is of "Any" type, then true is always returned.
           * Note: Don't override this function.  If needed, override "assignableTo()" (see the type info for more details).
-          * See also: assignableTo()
+          * @see assignableTo()
           */
         Type.prototype.assignableFrom = function (type) {
             return typeof type == 'object' && type.assignableTo && type.assignableTo(this);
@@ -1818,7 +1829,8 @@ var FlowScript;
           */
         Type.prototype.resolve = function (typePath, requiredType) {
             var parts = (typeof typePath !== 'string' ? '' + typePath : typePath).split('.'), t = this;
-            for (var i = (parts[0] ? 0 : 1), n = parts.length; i < n; ++i) { // ('parts[0]' is testing if the first entry is empty, which then starts at the next one [to support '.X.Y'])
+            for (var i = (parts[0] ? 0 : 1), n = parts.length; i < n; ++i) {
+                // (note: 'parts[0]?0:1' is testing if the first entry is empty, which then starts at the next one [to support '.X.Y'])
                 var type = t._nestedTypesIndex[parts[i]];
                 if (!type)
                     return null;
@@ -1897,6 +1909,29 @@ var FlowScript;
             var templateType = new Type(null, this.name, this.script);
             templateType._parent = this; // (one way back only, as this is a dynamic type that is never added to the meta type tree)
             return templateType;
+        };
+        Object.defineProperty(Type.prototype, "referenceStr", {
+            // --------------------------------------------------------------------------------------------------------------------
+            /** An instance reference string that represents this type in the type hierarchy.
+             * @see getReference()
+             */
+            get: function () {
+                if (this.parent instanceof FlowScript.Component)
+                    return this.parent.referenceStr + "resolve('" + FlowScript.Utilities.replace(this.name, "'", "\'") + "')";
+                else
+                    return "resolve('" + FlowScript.Utilities.replace(this.fullTypeName, "'", "\'") + "')";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /** Gets a @type {NamedReference} reference instance that represents this type in the type hierarchy.
+         * @see referenceStr
+         */
+        Type.prototype.getReference = function () {
+            if (this.script)
+                return new NamedReference(this.script, this.referenceStr);
+            else
+                return new NamedReference(this, null);
         };
         // --------------------------------------------------------------------------------------------------------------------
         Type.prototype.toString = function () { return this.fullTypeName; };
@@ -2093,10 +2128,10 @@ var FlowScript;
                 throw "The custom 'Main' component does not reference this script instance.  When creating components, make sure to pass in the script instance they will be associated with.";
             _this_1.System = new FlowScript_1.Core.System(_this_1);
             _this_1._main = main || new FlowScript_1.Core.Main(_this_1);
-            _super.prototype.init.call(_this_1); // (initialize all currently set core types before returning)
+            _this_1.initialize(); // (initialize all currently set core types before returning)
             return _this_1;
         }
-        Object.defineProperty(FlowScript.prototype, "Main", {
+        Object.defineProperty(FlowScript.prototype, "main", {
             get: function () { return this._main; },
             set: function (value) {
                 if (typeof value !== 'object' || !(value instanceof FlowScript_1.Component))
@@ -2115,7 +2150,7 @@ var FlowScript;
         // --------------------------------------------------------------------------------------------------------------------
         /** Run the script with the supplied arguments. */
         FlowScript.prototype.run = function (args) {
-            if (!this.Main)
+            if (!this.main)
                 throw "Error: The script environment does not have a 'main' entry point set.";
             return new FlowScript_1.Compiler(this).compileSimulation().start(args).run();
         };
@@ -2441,7 +2476,7 @@ var FlowScript;
         ExpressionArgs.prototype.getArgIndexes = function (sorted) {
             if (sorted === void 0) { sorted = true; }
             var indexes = [];
-            for (var p in this) {
+            for (var p in this._args) {
                 var c = p.charCodeAt(0);
                 if (c >= 48 && c <= 57) // (optimization: http://jsperf.com/isnan-vs-check-first-char)
                     indexes.push(+p);
@@ -2671,7 +2706,7 @@ var FlowScript;
             configurable: true
         });
         Object.defineProperty(ReturnTargetMaps.prototype, "isEmpty", {
-            get: function () { return !!this._maps.length; },
+            get: function () { return !this._maps.length; },
             enumerable: true,
             configurable: true
         });
@@ -3133,7 +3168,7 @@ var FlowScript;
                         collectionName = "returnVars";
                 }
                 if (comp && collectionName)
-                    return comp.fullTypeName + "." + collectionName + ".getProperty('" + this.name + "')";
+                    return comp.referenceStr + "." + collectionName + ".getProperty('" + this.name + "')";
                 else
                     return this.name;
             },
@@ -3799,20 +3834,6 @@ var FlowScript;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Component.prototype, "referenceStr", {
-            /** An instance reference string that represents this block in the system. */
-            get: function () {
-                return this.fullTypeName;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Component.prototype.getReference = function () {
-            if (this.script)
-                return new FlowScript.NamedReference(this.script, this.referenceStr);
-            else
-                return new FlowScript.NamedReference(this, null);
-        };
         // --------------------------------------------------------------------------------------------------------------------
         Component.prototype.save = function (target) {
             target = target || {};
@@ -4274,6 +4295,7 @@ var FlowScript;
         function ComponentReference(source, args, returnTargets, eventHandlers, parent) {
             var _this = _super.call(this, parent) || this;
             _this._arguments = new FlowScript.ExpressionArgs(_this); // (the arguments are taken from 1. the calling component's declared local variables [including parameters], or 2. other components)
+            _this._returnTargets = new FlowScript.ReturnTargetMaps(_this); // (these properties are also taken from the calling component's declared local variables [including parameters], which get updated upon return)
             if (!source || typeof source != 'object' || !(source instanceof Component))
                 throw "A valid component object is required.";
             _this._componentRef = source.getReference();
@@ -4287,7 +4309,7 @@ var FlowScript;
             configurable: true
         });
         Object.defineProperty(ComponentReference.prototype, "component", {
-            /** The component that this referenced points to. */
+            /** The component that this reference points to. */
             get: function () { return this._componentRef.valueOf(); },
             enumerable: true,
             configurable: true
@@ -5259,8 +5281,8 @@ var FlowScript;
             function Any(parent) {
                 return _super.call(this, parent, FlowScript.ComponentTypes.Unary, "Any", "$Any") || this;
             }
-            Any.prototype.init = function () {
-                _super.prototype.init.call(this);
+            Any.prototype.onInit = function () {
+                _super.prototype.onInit.call(this);
             };
             Any.prototype.assignableTo = function (type) {
                 return true;
@@ -5273,9 +5295,9 @@ var FlowScript;
             function Boolean(parent) {
                 return _super.call(this, parent, FlowScript.ComponentTypes.Unary, "Boolean", "Boolean($?value)") || this;
             }
-            Boolean.prototype.init = function () {
+            Boolean.prototype.onInit = function () {
                 this.defineDefaultReturnVar(this.script.System.String);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             Boolean.prototype.assignableTo = function (type) {
                 if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
@@ -5299,9 +5321,9 @@ var FlowScript;
             function String(parent) {
                 return _super.call(this, parent, FlowScript.ComponentTypes.Unary, "String", "String($?value)") || this;
             }
-            String.prototype.init = function () {
+            String.prototype.onInit = function () {
                 this.defineDefaultReturnVar(this.script.System.String);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             String.prototype.assignableTo = function (type) {
                 if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
@@ -5326,9 +5348,9 @@ var FlowScript;
             function Double(parent) {
                 return _super.call(this, parent, FlowScript.ComponentTypes.Unary, "Double", "Double($?value)") || this;
             }
-            Double.prototype.init = function () {
+            Double.prototype.onInit = function () {
                 this.defineDefaultReturnVar(this.script.System.Double);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             Double.prototype.assignableTo = function (type) {
                 if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
@@ -5352,9 +5374,9 @@ var FlowScript;
             function Currency(parent) {
                 return _super.call(this, parent, FlowScript.ComponentTypes.Unary, "Currency", "Currency($?value)") || this;
             }
-            Currency.prototype.init = function () {
+            Currency.prototype.onInit = function () {
                 this.defineDefaultReturnVar(this.script.System.Currency);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             Currency.prototype.assignableTo = function (type) {
                 if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
@@ -5377,9 +5399,9 @@ var FlowScript;
             function Integer(parent) {
                 return _super.call(this, parent, FlowScript.ComponentTypes.Unary, "Integer", "Integer($?value)") || this;
             }
-            Integer.prototype.init = function () {
+            Integer.prototype.onInit = function () {
                 this.defineDefaultReturnVar(this.script.System.Integer);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             Integer.prototype.assignableTo = function (type) {
                 if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
@@ -5403,10 +5425,10 @@ var FlowScript;
             function DateTime(parent) {
                 return _super.call(this, parent, FlowScript.ComponentTypes.Unary, "DateTime", "DateTime($?value)") || this;
             }
-            DateTime.prototype.init = function () {
+            DateTime.prototype.onInit = function () {
                 this.defineParameter("value", [this.script.System.Double, this.script.System.Integer, this.script.System.String, this.script.System.DateTime]);
                 this.defineDefaultReturnVar(this.script.System.DateTime);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             DateTime.prototype.assignableTo = function (type) {
                 if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
@@ -5435,9 +5457,9 @@ var FlowScript;
                     _this.superType = superType;
                 return _this;
             }
-            FSObject.prototype.init = function () {
+            FSObject.prototype.onInit = function () {
                 this.defineDefaultReturnVar(this.script.System.Object);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             FSObject.prototype.assignableTo = function (type) {
                 if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
@@ -5461,10 +5483,10 @@ var FlowScript;
             function Array(parent) {
                 return _super.call(this, parent, FlowScript.ComponentTypes.Unary, "Array", "Array($?Array)") || this;
             }
-            Array.prototype.init = function (defaultType, expectedBaseType) {
+            Array.prototype.onInit = function (defaultType, expectedBaseType) {
                 this.defineTemplateParameter("T", defaultType, expectedBaseType);
                 this.defineDefaultReturnVar(this.script.System.Array);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             Array.prototype.assignableTo = function (type) {
                 if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
@@ -5485,9 +5507,9 @@ var FlowScript;
             function RegEx(parent) {
                 return _super.call(this, parent, FlowScript.ComponentTypes.Unary, "Regex", "Regex($?RegEx)") || this;
             }
-            RegEx.prototype.init = function () {
+            RegEx.prototype.onInit = function () {
                 this.defineDefaultReturnVar(this.script.System.RegEx);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             RegEx.prototype.assignableTo = function (type) {
                 if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
@@ -5508,8 +5530,8 @@ var FlowScript;
             function Property(parent) {
                 return _super.call(this, parent, "Property") || this;
             }
-            Property.prototype.init = function () {
-                _super.prototype.init.call(this);
+            Property.prototype.onInit = function () {
+                _super.prototype.onInit.call(this);
             };
             Property.prototype.assignableTo = function (type) {
                 if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
@@ -5528,8 +5550,8 @@ var FlowScript;
             function CodeBlock(parent) {
                 return _super.call(this, parent, "CodeBlock") || this;
             }
-            CodeBlock.prototype.init = function () {
-                _super.prototype.init.call(this);
+            CodeBlock.prototype.onInit = function () {
+                _super.prototype.onInit.call(this);
             };
             CodeBlock.prototype.assignableTo = function (type) {
                 if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
@@ -5548,8 +5570,8 @@ var FlowScript;
             function FunctionalComponent(parent) {
                 return _super.call(this, parent, "FunctionalComponent") || this;
             }
-            FunctionalComponent.prototype.init = function () {
-                _super.prototype.init.call(this);
+            FunctionalComponent.prototype.onInit = function () {
+                _super.prototype.onInit.call(this);
             };
             FunctionalComponent.prototype.assignableTo = function (type) {
                 if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
@@ -5568,8 +5590,8 @@ var FlowScript;
             function ExpressionList(parent) {
                 return _super.call(this, parent, "ExpressionList") || this;
             }
-            ExpressionList.prototype.init = function () {
-                _super.prototype.init.call(this);
+            ExpressionList.prototype.onInit = function () {
+                _super.prototype.onInit.call(this);
             };
             ExpressionList.prototype.assignableTo = function (type) {
                 if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
@@ -5618,8 +5640,8 @@ var FlowScript;
                 _this.ExpressionList = new ExpressionList(_this);
                 return _this;
             }
-            System.prototype.init = function () {
-                _super.prototype.init.call(this);
+            System.prototype.onInit = function () {
+                _super.prototype.onInit.call(this);
             };
             return System;
         }(FlowScript.Type));
@@ -5630,8 +5652,8 @@ var FlowScript;
             function Main(script) {
                 return _super.call(this, script, FlowScript.ComponentTypes.Functional, "Main", null) || this;
             }
-            Main.prototype.init = function () {
-                _super.prototype.init.call(this);
+            Main.prototype.onInit = function () {
+                _super.prototype.onInit.call(this);
             };
             return Main;
         }(FlowScript.Component));
@@ -5647,8 +5669,8 @@ var FlowScript;
                 _this._typeMapping = [];
                 return _this;
             }
-            Operator.prototype.init = function () {
-                _super.prototype.init.call(this);
+            Operator.prototype.onInit = function () {
+                _super.prototype.onInit.call(this);
             };
             Operator.prototype.addTypeMap = function (result) {
                 var ifTypes = [];
@@ -5678,11 +5700,11 @@ var FlowScript;
             function Comment(parent) {
                 return _super.call(this, parent, FlowScript.ComponentTypes.Comment, "Comment", "/** $comment */") || this;
             }
-            Comment.prototype.init = function () {
+            Comment.prototype.onInit = function () {
                 var script = this.script;
                 // Setup the expected parameters and return types:
                 this.defineParameter("comment", [script.System.String]);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             return Comment;
         }(FlowScript.Component));
@@ -5695,13 +5717,13 @@ var FlowScript;
                 _this._componentType = FlowScript.ComponentTypes.Assignment;
                 return _this;
             }
-            Assign.prototype.init = function () {
+            Assign.prototype.onInit = function () {
                 // Setup the expected parameters and return types:
                 var sys = this.script.System;
                 this.defineParameter("a", [sys.Property], FlowScript.undefined, FlowScript.undefined, FlowScript.undefined, FlowScript.undefined, true);
                 this.defineParameter("b", [sys.Any]); // (this is "any", but the type must be assignable to 'a' at compile time)
                 this.defineDefaultReturnVar(sys.Boolean);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             return Assign;
         }(Operator));
@@ -5712,13 +5734,13 @@ var FlowScript;
             function Accessor(parent) {
                 return _super.call(this, parent, "Accessor", "$a.$b") || this;
             }
-            Accessor.prototype.init = function () {
+            Accessor.prototype.onInit = function () {
                 // Setup the expected parameters and return types:
                 var sys = this.script.System;
                 this.defineParameter("a", [sys.Object], FlowScript.undefined, FlowScript.undefined, FlowScript.undefined, FlowScript.undefined, true);
                 this.defineParameter("b", [sys.String]);
                 this.defineDefaultReturnVar(FlowScript.Type.Inferred);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             return Accessor;
         }(Operator));
@@ -5729,14 +5751,14 @@ var FlowScript;
             function With(parent) {
                 return _super.call(this, parent, FlowScript.ComponentTypes.CodeBlock, "With", "with $a do $b") || this;
             }
-            With.prototype.init = function () {
+            With.prototype.onInit = function () {
                 // Setup the expected parameters and return types:
                 var sys = this.script.System;
                 this.defineParameter("a", [sys.Object], FlowScript.undefined, FlowScript.undefined, FlowScript.undefined, FlowScript.undefined, true);
                 this.defineParameter("b", [sys.CodeBlock]);
                 this.instanceType = sys.Object;
                 this.defineDefaultReturnVar(FlowScript.Type.Inferred);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             return With;
         }(FlowScript.Component));
@@ -5747,13 +5769,13 @@ var FlowScript;
             function WithCall(parent) {
                 return _super.call(this, parent, "WithCall", "with $a call $b") || this;
             }
-            WithCall.prototype.init = function () {
+            WithCall.prototype.onInit = function () {
                 // Setup the expected parameters and return types:
                 var sys = this.script.System;
                 this.defineParameter("a", [sys.Object], FlowScript.undefined, FlowScript.undefined, FlowScript.undefined, FlowScript.undefined, true);
                 this.defineParameter("b", [sys.FunctionalComponent]);
                 this.defineDefaultReturnVar(FlowScript.Type.Inferred);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             return WithCall;
         }(Operator));
@@ -5764,12 +5786,12 @@ var FlowScript;
             function PreIncrement(parent) {
                 return _super.call(this, parent, "PreIncrement", "++$n", true) || this;
             }
-            PreIncrement.prototype.init = function () {
+            PreIncrement.prototype.onInit = function () {
                 // Setup the expected parameters and return type:
                 var sys = this.script.System;
                 this.defineParameter("n", [sys.Double, sys.Integer], FlowScript.undefined, FlowScript.undefined, FlowScript.undefined, FlowScript.undefined, true);
                 this.defineDefaultReturnVar(FlowScript.Type.Inferred); // ("inferred" means to invoke the type map to determine the resulting type base on supplied arguments)
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             return PreIncrement;
         }(Operator));
@@ -5784,8 +5806,8 @@ var FlowScript;
                 _this.defineDefaultReturnVar(FlowScript.Type.Inferred); // ("inferred" means to invoke the type map to determine the resulting type base on supplied arguments)
                 return _this;
             }
-            PostIncrement.prototype.init = function () {
-                _super.prototype.init.call(this);
+            PostIncrement.prototype.onInit = function () {
+                _super.prototype.onInit.call(this);
             };
             return PostIncrement;
         }(Operator));
@@ -5795,12 +5817,12 @@ var FlowScript;
             function PreDecrement(parent) {
                 return _super.call(this, parent, "PreDecrement", "--$n", true) || this;
             }
-            PreDecrement.prototype.init = function () {
+            PreDecrement.prototype.onInit = function () {
                 // Setup the expected parameters and return type:
                 var sys = this.script.System;
                 this.defineParameter("n", [sys.Double, sys.Integer], FlowScript.undefined, FlowScript.undefined, FlowScript.undefined, FlowScript.undefined, true);
                 this.defineDefaultReturnVar(FlowScript.Type.Inferred); // ("inferred" means to invoke the type map to determine the resulting type base on supplied arguments)
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             return PreDecrement;
         }(Operator));
@@ -5810,12 +5832,12 @@ var FlowScript;
             function PostDecrement(parent) {
                 return _super.call(this, parent, "PostDecrement", "$n--", true) || this;
             }
-            PostDecrement.prototype.init = function () {
+            PostDecrement.prototype.onInit = function () {
                 // Setup the expected parameters and return type:
                 var sys = this.script.System;
                 this.defineParameter("n", [sys.Double, sys.Integer], FlowScript.undefined, FlowScript.undefined, FlowScript.undefined, FlowScript.undefined, true);
                 this.defineDefaultReturnVar(FlowScript.Type.Inferred); // ("inferred" means to invoke the type map to determine the resulting type base on supplied arguments)
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             return PostDecrement;
         }(Operator));
@@ -5830,10 +5852,10 @@ var FlowScript;
                 _this.CodeLanguages = new FlowScript.Enum(_this, "CodeLanguages", { JavaScript: "JavaScript", CSharp: "CSharp", VB: "VB" });
                 return _this;
             }
-            Code.prototype.init = function () {
+            Code.prototype.onInit = function () {
                 var sys = this.script.System;
                 this.defineParameter("code", [sys.String]);
-                _super.prototype.init.call(this);
+                _super.prototype.onInit.call(this);
             };
             Code.FUNCTION_CONTENTS_REGEX = /^function .*{([^\0]*?)}$/;
             Code.PROPERTY_TOKEN_REGEX = /\$\$|\$[a-zA-Z_][a-zA-Z0-9_]*/gi; // (no optional '?' flag allowed in this one)
@@ -5864,7 +5886,7 @@ var FlowScript;
                     function HTTPRequest(parent) {
                         return _super.call(this, parent, FlowScript.ComponentTypes.Functional, "LoadFromURL", "Load from url: $url, using method: $method") || this;
                     }
-                    HTTPRequest.prototype.init = function () {
+                    HTTPRequest.prototype.onInit = function () {
                         var script = this.script;
                         // Register some global types:
                         var HTTPRequestMethods = new FlowScript.Enum(script.System, "HTTPRequestMethods").setValue("GET", "GET").setValue("POST", "POST");
@@ -5880,7 +5902,7 @@ var FlowScript;
                         // Set the component's script:
                         //?this.addStatement(new CustomJS(this, "Get XHR Object", function HTTPRequest(ctx: RuntimeContext): any {
                         //?}));
-                        _super.prototype.init.call(this);
+                        _super.prototype.onInit.call(this);
                     };
                     return HTTPRequest;
                 }(FlowScript.Component));
@@ -5914,8 +5936,8 @@ var FlowScript;
                     _this.Loop = new Loop(_this);
                     return _this;
                 }
-                ControlFlow.prototype.init = function () {
-                    _super.prototype.init.call(this);
+                ControlFlow.prototype.onInit = function () {
+                    _super.prototype.onInit.call(this);
                 };
                 return ControlFlow;
             }(FlowScript.Type));
@@ -5928,12 +5950,12 @@ var FlowScript;
                 function If(parent) {
                     return _super.call(this, parent, FlowScript.ComponentTypes.ControlFlow, "If", "if $condition then $block") || this;
                 }
-                If.prototype.init = function () {
+                If.prototype.onInit = function () {
                     // Setup the expected parameters:
                     var sys = this.script.System;
                     this.defineParameter("condition", [sys.Boolean]);
                     this.defineParameter("block", [sys.CodeBlock]);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return If;
             }(FlowScript.Component));
@@ -5946,13 +5968,13 @@ var FlowScript;
                 function IfElse(parent) {
                     return _super.call(this, parent, FlowScript.ComponentTypes.ControlFlow, "IfElse", "if $condition then $block1 else $block2") || this;
                 }
-                IfElse.prototype.init = function () {
+                IfElse.prototype.onInit = function () {
                     // Setup the expected parameters:
                     var sys = this.script.System;
                     this.defineParameter("condition", [sys.Boolean]);
                     this.defineParameter("block1", [sys.CodeBlock]);
                     this.defineParameter("block2", [sys.CodeBlock]);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return IfElse;
             }(FlowScript.Component));
@@ -5965,12 +5987,12 @@ var FlowScript;
                 function While(parent) {
                     return _super.call(this, parent, FlowScript.ComponentTypes.ControlFlow, "While", "while $condition do $block") || this;
                 }
-                While.prototype.init = function () {
+                While.prototype.onInit = function () {
                     // Setup the expected parameters:
                     var sys = this.script.System;
                     this.defineParameter("condition", [sys.Boolean]);
                     this.defineParameter("block", [sys.CodeBlock]);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return While;
             }(FlowScript.Component));
@@ -5983,12 +6005,12 @@ var FlowScript;
                 function DoWhile(parent) {
                     return _super.call(this, parent, FlowScript.ComponentTypes.ControlFlow, "DoWhile", "do $block while $condition") || this;
                 }
-                DoWhile.prototype.init = function () {
+                DoWhile.prototype.onInit = function () {
                     // Setup the expected parameters:
                     var sys = this.script.System;
                     this.defineParameter("block", [sys.CodeBlock]);
                     this.defineParameter("condition", [sys.Boolean]);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return DoWhile;
             }(FlowScript.Component));
@@ -6001,14 +6023,14 @@ var FlowScript;
                 function Loop(parent) {
                     return _super.call(this, parent, FlowScript.ComponentTypes.ControlFlow, "Loop", "for ($init; $condition; $update) $block") || this;
                 }
-                Loop.prototype.init = function () {
+                Loop.prototype.onInit = function () {
                     // Setup the expected parameters:
                     var sys = this.script.System;
                     this.defineParameter("init", [sys.CodeBlock]);
                     this.defineParameter("condition", [sys.Boolean]);
                     this.defineParameter("block", [sys.CodeBlock]);
                     this.defineParameter("update", [sys.CodeBlock]);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return Loop;
             }(FlowScript.Component));
@@ -6040,8 +6062,8 @@ var FlowScript;
                     _this.SQRT = new SQRT(_this);
                     return _this;
                 }
-                Math.prototype.init = function () {
-                    _super.prototype.init.call(this);
+                Math.prototype.onInit = function () {
+                    _super.prototype.onInit.call(this);
                 };
                 return Math;
             }(FlowScript.Type));
@@ -6054,7 +6076,7 @@ var FlowScript;
                 function Add(parent) {
                     return _super.call(this, parent, "Add", "$a + $b") || this;
                 }
-                Add.prototype.init = function () {
+                Add.prototype.onInit = function () {
                     var sys = this.script.System;
                     this.addTypeMap(sys.Integer, sys.Boolean, sys.Boolean);
                     this.addTypeMap(sys.Currency, sys.Boolean, sys.Currency);
@@ -6087,7 +6109,7 @@ var FlowScript;
                     this.defineParameter("a", [sys.Any]);
                     this.defineParameter("b", [sys.Any]);
                     this.defineDefaultReturnVar(FlowScript.Type.Inferred); // ("inferred" means to invoke the type map to determine the resulting type base on supplied arguments)
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return Add;
             }(Core.Operator));
@@ -6100,13 +6122,13 @@ var FlowScript;
                 function Multiply(parent) {
                     return _super.call(this, parent, "Multiply", "$a * $b") || this;
                 }
-                Multiply.prototype.init = function () {
+                Multiply.prototype.onInit = function () {
                     // Setup the expected parameters and return type:
                     var sys = this.script.System;
                     this.defineParameter("a", [sys.Double, sys.Integer]);
                     this.defineParameter("b", [sys.Double, sys.Integer]);
                     this.defineDefaultReturnVar(FlowScript.Type.Inferred); // ("inferred" means to invoke the type map to determine the resulting type base on supplied arguments)
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return Multiply;
             }(Core.Operator));
@@ -6119,12 +6141,12 @@ var FlowScript;
                 function SQRT(parent) {
                     return _super.call(this, parent, FlowScript.ComponentTypes.Unary, "SQRT", "√$a") || this;
                 }
-                SQRT.prototype.init = function () {
+                SQRT.prototype.onInit = function () {
                     // Setup the expected parameters and return type:
                     var sys = this.script.System;
                     this.defineParameter("a", [sys.Double, sys.Integer]);
                     this.defineDefaultReturnVar(sys.Double);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return SQRT;
             }(FlowScript.Component));
@@ -6159,8 +6181,8 @@ var FlowScript;
                     _this.ShiftRight = new ShiftRight(_this);
                     return _this;
                 }
-                Binary.prototype.init = function () {
-                    _super.prototype.init.call(this);
+                Binary.prototype.onInit = function () {
+                    _super.prototype.onInit.call(this);
                 };
                 return Binary;
             }(FlowScript.Type));
@@ -6173,12 +6195,12 @@ var FlowScript;
                 function Not(parent) {
                     return _super.call(this, parent, "Not", "not $a", true) || this;
                 }
-                Not.prototype.init = function () {
+                Not.prototype.onInit = function () {
                     // Setup the expected parameters and return type:
                     var sys = this.script.System;
                     this.defineParameter("a", [sys.Boolean]);
                     this.defineDefaultReturnVar(sys.Boolean);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return Not;
             }(Core.Operator));
@@ -6191,12 +6213,12 @@ var FlowScript;
                 function XOR(parent) {
                     return _super.call(this, parent, "XOR", "xor $a", true) || this;
                 }
-                XOR.prototype.init = function () {
+                XOR.prototype.onInit = function () {
                     // Setup the expected parameters and return type:
                     var sys = this.script.System;
                     this.defineParameter("a", [sys.Integer]);
                     this.defineDefaultReturnVar(sys.Integer);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return XOR;
             }(Core.Operator));
@@ -6209,13 +6231,13 @@ var FlowScript;
                 function ShiftLeft(parent) {
                     return _super.call(this, parent, "ShiftLeft", "$value << $count") || this;
                 }
-                ShiftLeft.prototype.init = function () {
+                ShiftLeft.prototype.onInit = function () {
                     // Setup the expected parameters and return type:
                     var sys = this.script.System;
                     this.defineParameter("value", [sys.Integer]);
                     this.defineParameter("count", [sys.Integer]);
                     this.defineDefaultReturnVar(sys.Integer);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return ShiftLeft;
             }(Core.Operator));
@@ -6228,13 +6250,13 @@ var FlowScript;
                 function ShiftRight(parent) {
                     return _super.call(this, parent, "ShiftRight", "$value >> $count") || this;
                 }
-                ShiftRight.prototype.init = function () {
+                ShiftRight.prototype.onInit = function () {
                     // Setup the expected parameters and return type:
                     var sys = this.script.System;
                     this.defineParameter("value", [sys.Integer]);
                     this.defineParameter("count", [sys.Integer]);
                     this.defineDefaultReturnVar(sys.Integer);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return ShiftRight;
             }(Core.Operator));
@@ -6276,8 +6298,8 @@ var FlowScript;
                     _this.GreaterThanOrEqual = new GreaterThanOrEqual(_this);
                     return _this;
                 }
-                Comparison.prototype.init = function () {
-                    _super.prototype.init.call(this);
+                Comparison.prototype.onInit = function () {
+                    _super.prototype.onInit.call(this);
                 };
                 return Comparison;
             }(FlowScript.Type));
@@ -6290,13 +6312,13 @@ var FlowScript;
                 function Equals(parent) {
                     return _super.call(this, parent, "Equals", "$a == $b") || this;
                 }
-                Equals.prototype.init = function () {
+                Equals.prototype.onInit = function () {
                     // Setup the expected parameters and return type:
                     var sys = this.script.System;
                     this.defineParameter("a", [FlowScript.Type.All]);
                     this.defineParameter("b", [FlowScript.Type.All]);
                     this.defineDefaultReturnVar(sys.Boolean);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return Equals;
             }(Core.Operator));
@@ -6309,13 +6331,13 @@ var FlowScript;
                 function StrictEquals(parent) {
                     return _super.call(this, parent, "StrictEquals", "$a === $b") || this;
                 }
-                StrictEquals.prototype.init = function () {
+                StrictEquals.prototype.onInit = function () {
                     // Setup the expected parameters and return type:
                     var sys = this.script.System;
                     this.defineParameter("a", [FlowScript.Type.All]);
                     this.defineParameter("b", [FlowScript.Type.All]);
                     this.defineDefaultReturnVar(sys.Boolean);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return StrictEquals;
             }(Core.Operator));
@@ -6328,13 +6350,13 @@ var FlowScript;
                 function NotEquals(parent) {
                     return _super.call(this, parent, "NotEquals", "$a != $b") || this;
                 }
-                NotEquals.prototype.init = function () {
+                NotEquals.prototype.onInit = function () {
                     // Setup the expected parameters and return type:
                     var sys = this.script.System;
                     this.defineParameter("a", [FlowScript.Type.All]);
                     this.defineParameter("b", [FlowScript.Type.All]);
                     this.defineDefaultReturnVar(sys.Boolean);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return NotEquals;
             }(Core.Operator));
@@ -6347,13 +6369,13 @@ var FlowScript;
                 function StrictNotEquals(parent) {
                     return _super.call(this, parent, "StrictNotEquals", "$a !== $b") || this;
                 }
-                StrictNotEquals.prototype.init = function () {
+                StrictNotEquals.prototype.onInit = function () {
                     // Setup the expected parameters and return type:
                     var sys = this.script.System;
                     this.defineParameter("a", [FlowScript.Type.All]);
                     this.defineParameter("b", [FlowScript.Type.All]);
                     this.defineDefaultReturnVar(sys.Boolean);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return StrictNotEquals;
             }(Core.Operator));
@@ -6366,13 +6388,13 @@ var FlowScript;
                 function LessThan(parent) {
                     return _super.call(this, parent, "LessThan", "$a < $b") || this;
                 }
-                LessThan.prototype.init = function () {
+                LessThan.prototype.onInit = function () {
                     // Setup the expected parameters and return type:
                     var sys = this.script.System;
                     this.defineParameter("a", [FlowScript.Type.All]);
                     this.defineParameter("b", [FlowScript.Type.All]);
                     this.defineDefaultReturnVar(sys.Boolean);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return LessThan;
             }(Core.Operator));
@@ -6385,13 +6407,13 @@ var FlowScript;
                 function GreaterThan(parent) {
                     return _super.call(this, parent, "GreaterThan", "$a > $b") || this;
                 }
-                GreaterThan.prototype.init = function () {
+                GreaterThan.prototype.onInit = function () {
                     // Setup the expected parameters and return type:
                     var sys = this.script.System;
                     this.defineParameter("a", [FlowScript.Type.All]);
                     this.defineParameter("b", [FlowScript.Type.All]);
                     this.defineDefaultReturnVar(sys.Boolean);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return GreaterThan;
             }(Core.Operator));
@@ -6404,13 +6426,13 @@ var FlowScript;
                 function LessThanOrEqual(parent) {
                     return _super.call(this, parent, "LessThanOrEqual", "$a <= $b") || this;
                 }
-                LessThanOrEqual.prototype.init = function () {
+                LessThanOrEqual.prototype.onInit = function () {
                     // Setup the expected parameters and return type:
                     var sys = this.script.System;
                     this.defineParameter("a", [FlowScript.Type.All]);
                     this.defineParameter("b", [FlowScript.Type.All]);
                     this.defineDefaultReturnVar(sys.Boolean);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return LessThanOrEqual;
             }(Core.Operator));
@@ -6423,13 +6445,13 @@ var FlowScript;
                 function GreaterThanOrEqual(parent) {
                     return _super.call(this, parent, "GreaterThanOrEqual", "$a >= $b") || this;
                 }
-                GreaterThanOrEqual.prototype.init = function () {
+                GreaterThanOrEqual.prototype.onInit = function () {
                     // Setup the expected parameters and return type:
                     var sys = this.script.System;
                     this.defineParameter("a", [FlowScript.Type.All]);
                     this.defineParameter("b", [FlowScript.Type.All]);
                     this.defineDefaultReturnVar(sys.Boolean);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return GreaterThanOrEqual;
             }(Core.Operator));
@@ -6473,8 +6495,8 @@ var FlowScript;
                     _this.DocumentPositions = new NodeTypes(_this);
                     return _this;
                 }
-                HTML.prototype.init = function () {
-                    _super.prototype.init.call(this);
+                HTML.prototype.onInit = function () {
+                    _super.prototype.onInit.call(this);
                 };
                 return HTML;
             }(FlowScript.Type));
@@ -6488,10 +6510,10 @@ var FlowScript;
                 function On(parent) {
                     return _super.call(this, parent, FlowScript.ComponentTypes.Text, "On", "on $eventName do $block") || this;
                 }
-                On.prototype.init = function () {
+                On.prototype.onInit = function () {
                     // Setup the expected parameters and return types:
                     var sys = this.script.System;
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return On;
             }(FlowScript.Component));
@@ -6503,11 +6525,11 @@ var FlowScript;
                 function Node_removeChild(parent) {
                     return _super.call(this, parent, FlowScript.ComponentTypes.Text, "Node_removeChild", "remove child node $oldChild") || this;
                 }
-                Node_removeChild.prototype.init = function () {
+                Node_removeChild.prototype.onInit = function () {
                     var sys = this.script.System;
                     this.defineParameter("oldChild", [sys.HTML.Node]);
                     this.defineDefaultReturnVar(sys.HTML.Node);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return Node_removeChild;
             }(FlowScript.Component));
@@ -6517,11 +6539,11 @@ var FlowScript;
                 function Node_appendChild(parent) {
                     return _super.call(this, parent, FlowScript.ComponentTypes.Text, "Node_appendChild", "append child node $newChild") || this;
                 }
-                Node_appendChild.prototype.init = function () {
+                Node_appendChild.prototype.onInit = function () {
                     var sys = this.script.System;
                     this.defineParameter("newChild", [sys.HTML.Node]);
                     this.defineDefaultReturnVar(sys.HTML.Node);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return Node_appendChild;
             }(FlowScript.Component));
@@ -6533,8 +6555,8 @@ var FlowScript;
                 function NodeList(parent) {
                     return _super.call(this, parent, null, "NodeList") || this;
                 }
-                NodeList.prototype.init = function () {
-                    _super.prototype.init.call(this);
+                NodeList.prototype.onInit = function () {
+                    _super.prototype.onInit.call(this);
                 };
                 return NodeList;
             }(Core.FSObject));
@@ -6546,8 +6568,8 @@ var FlowScript;
                 function NamedNodeMap(parent) {
                     return _super.call(this, parent, null, "NamedNodeMap") || this;
                 }
-                NamedNodeMap.prototype.init = function () {
-                    _super.prototype.init.call(this);
+                NamedNodeMap.prototype.onInit = function () {
+                    _super.prototype.onInit.call(this);
                 };
                 return NamedNodeMap;
             }(Core.FSObject));
@@ -6598,7 +6620,7 @@ var FlowScript;
                     _this.CloneTypes = new FlowScript.Enum(_this, "CloneTypes", { Shallow: false, Deep: true });
                     return _this;
                 }
-                Node.prototype.init = function () {
+                Node.prototype.onInit = function () {
                     // Setup the expected parameters and return types:
                     var sys = this.script.System;
                     this.defineInstanceProperty("nodeType", [sys.Double]);
@@ -6696,7 +6718,7 @@ var FlowScript;
                     this.defineInstanceProperty("DOCUMENT_POSITION_CONTAINED_BY", [sys.Integer], 16);
                     this.defineInstanceProperty("DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC", [sys.Integer], 32);
                     this.defineDefaultReturnVar(sys.String);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return Node;
             }(Core.FSObject));
@@ -6708,13 +6730,13 @@ var FlowScript;
                 function Element(parent) {
                     return _super.call(this, parent, parent.script.System.HTML.Node, "Element") || this;
                 }
-                Element.prototype.init = function () {
+                Element.prototype.onInit = function () {
                     // Setup the expected parameters and return types:
                     var sys = this.script.System;
                     this.defineInstanceProperty("name", [sys.String]);
                     this.defineInstanceProperty("id", [sys.String]);
                     this.defineDefaultReturnVar(sys.String);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return Element;
             }(Core.FSObject));
@@ -6726,11 +6748,11 @@ var FlowScript;
                 function HTMLElement(parent) {
                     return _super.call(this, parent, parent.script.System.HTML.Element, "HTMLElement") || this;
                 }
-                HTMLElement.prototype.init = function () {
+                HTMLElement.prototype.onInit = function () {
                     // Setup the expected parameters and return types:
                     var sys = this.script.System;
                     this.defineDefaultReturnVar(sys.String);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return HTMLElement;
             }(Core.FSObject));
@@ -6742,11 +6764,11 @@ var FlowScript;
                 function Document(parent) {
                     return _super.call(this, parent, parent.script.System.HTML.Element, "Document") || this;
                 }
-                Document.prototype.init = function () {
+                Document.prototype.onInit = function () {
                     // Setup the expected parameters and return types:
                     var sys = this.script.System;
                     this.defineDefaultReturnVar(sys.String);
-                    _super.prototype.init.call(this);
+                    _super.prototype.onInit.call(this);
                 };
                 return Document;
             }(Core.FSObject));
@@ -6899,7 +6921,10 @@ var FlowScript;
                 throw "Only basic types and functional component types can be registered.";
         };
         // --------------------------------------------------------------------------------------------------------------------
-        /** Adds a new rendered line for the underlying component, along with the current margin level, and returns the line index. */
+        /** Adds a new rendered line for the underlying component, along with the current margin level, and returns the line index.
+         * If a line is given with no opcode then `OpCodes.Exec` is assumed (evaluates the line using `eval()`). If an opcode is given then
+         * simulation is mode assumed (opcodes are not used for final rendering).
+         */
         TypeRenderer.prototype.addLine = function (source, line, opcode) {
             var args = [];
             for (var _i = 3; _i < arguments.length; _i++) {
@@ -7100,7 +7125,7 @@ var FlowScript;
         /** Adds a line to evaluate a unary operation on the current running value by adding the required operation semantics.
           * Returns the index of the added line.
           *
-          * @param {string} varName A variable to set, which overrides the default behaviour of using the running value.
+          * @param {string} varName A variable to set, which overrides the default behavior of using the running value.
           */
         TypeRenderer.prototype.evalUnary = function (source, operationType, varName) {
             return this.eval(source, this.compiler._renderUnary(varName || this._internalRunningValVarName, operationType));
@@ -7109,10 +7134,11 @@ var FlowScript;
           * Returns the index of the added line.
           */
         TypeRenderer.prototype.pushOpArg = function () {
-            this.addLine(null, Compiler.CONTEXT_VAR_NAME + ".$__args.push(" + this._internalRunningValVarName + ");", FlowScript.OpCodes.Exec);
+            return this.addLine(null, Compiler.CONTEXT_VAR_NAME + ".$__args.push(" + this._internalRunningValVarName + ");", FlowScript.OpCodes.Exec);
         };
         /** Adds a line to call another functional component.
           * Returns the index of the added line.
+          * @param {number} ctxId The context ID is used to identify nested contexts in cases where blocks may be used as parameters.
           */
         TypeRenderer.prototype.call = function (source, compType, ctxID) {
             var callIndex = this.addLine(source, null, FlowScript.OpCodes.Call, compType, ctxID);
@@ -7120,6 +7146,12 @@ var FlowScript;
             var localCtxName = Compiler.LOCAL_CONTEXT_VAR_NAME + (ctxID || "");
             this.eval(null, this._compiler._renderAssignment(Compiler.RUNNING_VAL_VAR_NAME, localCtxName + ".$__lineExec.eval('" + Compiler.RUNNING_VAL_VAR_NAME + "')") + ";");
             return callIndex;
+        };
+        /** Returns from the current functional component.
+          * Returns the index of the added line.
+          */
+        TypeRenderer.prototype.return = function (source) {
+            return this.addLine(source, null, FlowScript.OpCodes.Return);
         };
         /** Adds a line to jump to another line.
           * Returns the index of the added line.
@@ -7179,7 +7211,7 @@ var FlowScript;
         });
         // --------------------------------------------------------------------------------------------------------------------
         Compiler.prototype._checkMain = function () {
-            if (!this.script.Main || this.script.Main.componentType != FlowScript.ComponentTypes.Functional)
+            if (!this.script.main || this.script.main.componentType != FlowScript.ComponentTypes.Functional)
                 throw "Error: Cannot add script to compiler without a proper main component.  A proper function-based component is required.";
         };
         /** Compiles the underlying script into code.
@@ -7190,7 +7222,7 @@ var FlowScript;
             // ... create a default root level renderer ...
             var rootRenderer = TypeRenderer.createRootTypeRenderer(this);
             // ... render the main functional component ...
-            this._renderFunctionalComponent(rootRenderer, this.script.Main);
+            this._renderFunctionalComponent(rootRenderer, this.script.main);
             return rootRenderer.toString(targetVar);
         };
         // --------------------------------------------------------------------------------------------------------------------
@@ -7200,7 +7232,7 @@ var FlowScript;
             // ... create a default root level renderer ...
             var rootRenderer = TypeRenderer.createRootTypeRenderer(this, true);
             // ... render the main functional component ...
-            var mainRenderer = this._renderFunctionalComponent(rootRenderer, this.script.Main, true);
+            var mainRenderer = this._renderFunctionalComponent(rootRenderer, this.script.main);
             return new FlowScript.Simulator(this, mainRenderer);
         };
         // --------------------------------------------------------------------------------------------------------------------
@@ -7243,8 +7275,7 @@ var FlowScript;
         //}
         // --------------------------------------------------------------------------------------------------------------------
         /** Takes a functional component and renders */
-        Compiler.prototype._renderFunctionalComponent = function (renderer, comp, isSimulation) {
-            if (isSimulation === void 0) { isSimulation = false; }
+        Compiler.prototype._renderFunctionalComponent = function (renderer, comp) {
             try {
                 if (comp.componentType != FlowScript.ComponentTypes.Functional)
                     throw "The component given is not a \"functional\" component.";
@@ -7285,7 +7316,10 @@ var FlowScript;
             renderer.insertDeclarations(comp);
             // ... always return the running value (which may simply be the 'undefined' value) ...
             if (renderer.component.defaultReturn)
-                renderer.addLine(null, "return " + Compiler.RUNNING_VAL_VAR_NAME + ";");
+                if (renderer.isSimulation)
+                    renderer.return(comp);
+                else
+                    renderer.addLine(comp, "return " + Compiler.RUNNING_VAL_VAR_NAME + ";");
             // ... add final brace ...
             renderer.previousMargin();
             if (!renderer.isSimulation)
@@ -7635,6 +7669,7 @@ var FlowScript;
                 // ... before this call can be made, the component being called must also be rendered.
                 this._renderFunctionalComponent(renderer, compRef.component);
                 // ... setup a context for the call ...
+                // (note: make sure to set a variable to store each nested context in case blocks are used as parameters)
                 var currentCtxID = renderer.callStack.push(compRef) - 1, currentCtxIDStr = currentCtxID || ""; //?, extraArgNames: string[] = [];
                 var compLocalName = renderer.addLocalVar(Compiler.COMPONENT_REF_VAR_NAME + currentCtxIDStr);
                 var localCtxName = renderer.addLocalVar(Compiler.LOCAL_CONTEXT_VAR_NAME + currentCtxIDStr);
@@ -7910,6 +7945,8 @@ var FlowScript;
         OpCodes[OpCodes["Jump"] = 3] = "Jump";
         /** Calls another component. */
         OpCodes[OpCodes["Call"] = 4] = "Call";
+        /** Exits the current component. */
+        OpCodes[OpCodes["Return"] = 5] = "Return";
     })(OpCodes = FlowScript.OpCodes || (FlowScript.OpCodes = {}));
     // ========================================================================================================================
     /** Represents a component during runtime simulations. */
@@ -8003,6 +8040,18 @@ var FlowScript;
             this.callStack.push(this.currentContext);
             this.currentContext = ctx;
         };
+        /** Exits the current functional component context by popping the previous context from the stack.
+          */
+        Simulator.prototype._exit = function (ctx) {
+            if (this.callStack.length) {
+                this.currentContext = this.callStack.pop();
+                if (this.currentContext)
+                    this.currentContext.$__ = ctx.$__;
+                return !!this.currentContext;
+            }
+            this.currentContext = null;
+            return false;
+        };
         // --------------------------------------------------------------------------------------------------------------------
         /** Executes/evaluates the operation/action at the current line.
           * Returns true if there is another statement pending, and false otherwise.
@@ -8034,14 +8083,17 @@ var FlowScript;
                         if (!renderer)
                             throw "Call Error: Component '" + line.args[0] + "' doesn't exist, or was not included in the rendering process.";
                         var ctxID = +line.args[1] == 0 ? "" : line.args[1]; // (0 is "" - only add numbers from 1 onwards)
+                        // (the context ID is used to identify nested contexts in cases where blocks may be used as parameters)
                         var callCtx = ctx.$__lineExec.eval(FlowScript.Compiler.LOCAL_CONTEXT_VAR_NAME + ctxID); // (get the context that is now setup for the call)
                         callCtx.$__compRenderer = renderer;
                         this._enter(callCtx);
                         return true;
+                    case OpCodes.Return: // (return from the current component; if an arguments exists, assume it's a var name)
+                        return this._exit(ctx);
                 }
-                if (ctx.$__lineIndex >= ctx.$__compRenderer._lines.length && this.callStack.length)
-                    this.currentContext = this.callStack.pop();
-                return !!this.currentContext;
+                if (ctx.$__lineIndex >= ctx.$__compRenderer._lines.length)
+                    return this._exit(ctx);
+                return true;
             }
             return false;
         };
@@ -8063,7 +8115,7 @@ var FlowScript;
             this.rootContext = new FlowScript.RuntimeContext(null);
             this.rootContext.$__compRenderer = this._mainRenderer;
             this.callStack = [];
-            this._enter(this.compiler.script.Main.configureRuntimeContext(this.rootContext, args));
+            this._enter(this.compiler.script.main.configureRuntimeContext(this.rootContext, args));
             return this;
         };
         // --------------------------------------------------------------------------------------------------------------------

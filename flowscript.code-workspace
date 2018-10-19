@@ -19,9 +19,11 @@
 			"Clauss",
 			"Crockford",
 			"Fixedto",
+			"Fullname",
 			"IHTTP",
 			"IXML",
 			"Konqueror",
+			"LOADFAILED",
 			"Mediaworks",
 			"Omni",
 			"bfnrtu",
@@ -47,6 +49,7 @@
 			"rchar",
 			"rlen",
 			"rpad",
+			"rtscript",
 			"script",
 			"startdi",
 			"sysprefix",
@@ -60,6 +63,7 @@
 		"html.format.extraLiners": "head, body, /html",
 		"html.format.contentUnformatted": "pre,code,textarea",
 		"editor.formatOnSave": false,
-		"debug.node.autoAttach": "on"
+		"debug.node.autoAttach": "on",
+		"cSpell.language": "en"
 	}
 }

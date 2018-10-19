@@ -15,7 +15,7 @@ module FlowScript.Core.Net.HTTPRequest {
             super(parent, ComponentTypes.Functional, "LoadFromURL", "Load from url: $url, using method: $method"); // Note: '$method' will be preset to the value '(default)' to the developer.
         }
 
-        init() {
+        onInit() {
             var script = this.script;
 
             // Register some global types:
@@ -39,7 +39,7 @@ module FlowScript.Core.Net.HTTPRequest {
             //?this.addStatement(new CustomJS(this, "Get XHR Object", function HTTPRequest(ctx: RuntimeContext): any {
             //?}));
 
-            super.init();
+            super.onInit();
         }
     }
 

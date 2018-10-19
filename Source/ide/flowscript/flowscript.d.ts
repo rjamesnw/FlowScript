@@ -599,9 +599,9 @@ declare namespace FlowScript {
       */
     class Type extends TrackableObject {
         /** A wild-card that is used internally with type maps to match all defined type objects.  This is never used within scripts.
-          * This operates similar to "Any", but differs in how the internal type matching works.  Types ONLY match to themselves
-          * internally, so "Any" does NOT match "String" for example.  This is required for matching specific types; however, some
-          * internal matches literally need to specify "any of the defined types", and that is where 'All' comes in.
+          * This operates similar to `Core.Any` but differs in how the internal type matching works.  Types ONLY match to themselves
+          * internally, so "Any" does NOT match "String" for example.  This is required for matching specific types internally;
+          * however, some internal matches literally need to specify "any of the defined types", and that is where 'All' comes in.
           */
         static All: Core.All;
         /** Use internally with component return types to infer the resulting type based on given arguments. */
@@ -612,7 +612,7 @@ declare namespace FlowScript {
         tag: any;
         /** Returns a reference to the parent type.  If there is no parent, or the parent is the script root namespace, then 'null' is returned.
           * Note: Every type has a reference to the underlying script, which is the root namespace for all types.
-          * Derived types take note: '_parent' is NOT null at the first type when traversing the type hierarchy.  The 'parent' getter property should be used.
+          * Derived types take note: The private field '_parent' is NOT null at the first type when traversing the type hierarchy.  The 'parent' getter property should be used.
           */
         /** Sets a new parent type for this type.  The current type will be removed from its parent (if any), and added to the given parent. */
         parent: Type;
@@ -653,6 +653,7 @@ declare namespace FlowScript {
         readonly fullTypeName: string;
         /** The full "safe" namespace + type name (using characters that will support direct dot access - used with code output rendering). */
         readonly safeFullTypeName: string;
+        private _initialized;
         /** Creates a new type object, which also acts as a namespace name in a type graph.
           * @param {Type} parent The parent type of this type, or 'null' if this is the root type.
           * @param {string} name The name for this type.
@@ -660,11 +661,18 @@ declare namespace FlowScript {
           */
         constructor(parent: Type, name: string, script?: IFlowScript);
         /**
-         * Initialize the sub-type derived from this base type, including all child types.
-         * This allows to first construct the type tree so references exist prior to configuring the types further.
-         * Note: You MUST call this base type from the derived type to continue to call 'init()' on all child types as well.
-         */
-        init(): void;
+        * Initializes this type, including all child types, where not already initialized.
+        * This allows to first construct the type hierarchy so references exist prior to configuring the types further.
+        * Note: This only initializes from this type downwards, so if adding types in multiple locations, called this
+        * function on the root script instance is better to make sure all new types added get initialized.
+        * @see onInit() Used to initialize custom derived types.
+        */
+        initialize(): void;
+        /**
+        * Initialize the sub-type derived from this type, including all child types.
+        * This allows to first construct the type tree so references exist prior to configuring the types further.
+        */
+        protected onInit(): void;
         save(target?: ISavedType): ISavedType;
         /** Returns a string that identifies the signature of the given types combined. This is used internally for mapping purposes. */
         static getCompositeTypeKey(...compositeTypes: Type[]): string;
@@ -684,7 +692,7 @@ declare namespace FlowScript {
         /** Returns true if the given type can be assigned to the current type.
           * If this type or the given type is of "Any" type, then true is always returned.
           * Note: Don't override this function.  If needed, override "assignableTo()" (see the type info for more details).
-          * See also: assignableTo()
+          * @see assignableTo()
           */
         assignableFrom(type: Type): boolean;
         /** Checks if a type exists.  You can also provide a nested type path.
@@ -719,6 +727,14 @@ declare namespace FlowScript {
         defineTemplateParameter(name: string, defaultType?: Type, expectedBaseType?: Type): Type;
         /** Creates a type from this template type using the supplied types.  This only works for types that represent templates. */
         createTemplateType(templateTypes: Type[]): Type;
+        /** An instance reference string that represents this type in the type hierarchy.
+         * @see getReference()
+         */
+        readonly referenceStr: string;
+        /** Gets a @type {NamedReference} reference instance that represents this type in the type hierarchy.
+         * @see referenceStr
+         */
+        getReference(): NamedReference<Component>;
         toString(): string;
         valueOf(): string;
     }
@@ -814,7 +830,7 @@ declare namespace FlowScript {
         /** The root type for all other types. */
         System: Core.System;
         /** The main entry component.  When the script starts, this is the first component run. */
-        Main: Component;
+        main: Component;
         /** Resolves a type path under this script.  Script instances are the root of all namespaces and types.
           * Examples: 'System', 'System.String', 'Main' (for the main entry component), 'Tests' (default namespace for test components), etc.
           * @param {function} requiredType A required type reference that the returned type must be an instance of.
@@ -1121,7 +1137,7 @@ declare namespace FlowScript {
         save(target?: ISavedConstant): ISavedConstant;
     }
 }
-declare namespace FlowScript {
+declare module FlowScript {
     /** Controls access to object instance properties.
       * Property access security only applies to instance properties of object-based components (components that encapsulate object creation).
       */
@@ -1426,9 +1442,6 @@ declare namespace FlowScript {
         readonly isObject: boolean;
         /** Returns true if the parent is an object type for holding data properties. */
         readonly hasDataObjectTypeParent: boolean;
-        /** An instance reference string that represents this block in the system. */
-        readonly referenceStr: string;
-        getReference(): NamedReference<Component>;
         constructor(parent: Type, componentType: ComponentTypes, typeName: string, signatureTitle: string, script?: IFlowScript);
         save(target?: ISavedComponent): ISavedComponent;
         addBlock(block?: Block): Block;
@@ -1557,7 +1570,7 @@ declare namespace FlowScript {
     /** References a block for use in expressions. */
     class ComponentReference extends Expression {
         readonly script: IFlowScript;
-        /** The component that this referenced points to. */
+        /** The component that this reference points to. */
         readonly component: Component;
         protected _componentRef: NamedReference<Component>;
         /** The arguments set for this expression, if any.
@@ -1869,42 +1882,42 @@ declare module FlowScript.Core {
     /** A script based type that matches all other types. */
     class Any extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
         assignableTo(type: Component): boolean;
     }
     class Boolean extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
         assignableTo(type: Component): boolean;
     }
     class String extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
         assignableTo(type: Component): boolean;
     }
     class Double extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
         assignableTo(type: Component): boolean;
     }
     class Currency extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
         assignableTo(type: Component): boolean;
     }
     class Integer extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
         assignableTo(type: Component): boolean;
     }
     class DateTime extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
         assignableTo(type: Component): boolean;
     }
     class FSObject extends Component {
         constructor(parent: Type, superType?: FSObject, title?: string);
-        init(): void;
+        onInit(): void;
         assignableTo(type: Component): boolean;
     }
     /** Represents an array of items.
@@ -1913,32 +1926,32 @@ declare module FlowScript.Core {
       */
     class Array extends Component {
         constructor(parent: Type);
-        init(defaultType?: Type, expectedBaseType?: Type): void;
+        onInit(defaultType?: Type, expectedBaseType?: Type): void;
         assignableTo(type: Component): boolean;
     }
     class RegEx extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
         assignableTo(type: Component): boolean;
     }
     class Property extends Type {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
         assignableTo(type: Component): boolean;
     }
     class CodeBlock extends Type {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
         assignableTo(type: Component): boolean;
     }
     class FunctionalComponent extends Type {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
         assignableTo(type: Component): boolean;
     }
     class ExpressionList extends Type {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
         assignableTo(type: Component): boolean;
     }
     class System extends Type {
@@ -2004,55 +2017,55 @@ declare module FlowScript.Core {
         /** Represents a list of expressions (eg. '(x=1, y=x, z=y)). */
         ExpressionList: ExpressionList;
         constructor(script: IFlowScript);
-        init(): void;
+        onInit(): void;
     }
     class Main extends Component {
         constructor(script: IFlowScript);
-        init(): void;
+        onInit(): void;
     }
     class Operator extends Component {
         private _typeMapping;
         constructor(parent: Type, typeName: string, title: string, isUnary?: boolean);
-        init(): void;
+        onInit(): void;
         addTypeMap(result: Type, ...ifTypes: Type[]): void;
         /** Returns the resulting type when given the specified arguments. */
         getResultTypeWhen(args: Type[]): Type;
     }
     class Comment extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class Assign extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class Accessor extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class With extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class WithCall extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class PreIncrement extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class PostIncrement extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class PreDecrement extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class PostDecrement extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     interface ICodeLanguages {
         [name: string]: string;
@@ -2069,7 +2082,7 @@ declare module FlowScript.Core {
         CodeLanguages: Enum<ICodeLanguages>;
         Code: string;
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
 }
 declare module FlowScript.Core.Net.HTTPRequest {
@@ -2078,7 +2091,7 @@ declare module FlowScript.Core.Net.HTTPRequest {
       */
     class HTTPRequest extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
 }
 declare module FlowScript.Core.ControlFlow {
@@ -2091,37 +2104,37 @@ declare module FlowScript.Core.ControlFlow {
         /** Iterates over a block of code, similar to a "for" loop. */
         Loop: Loop;
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Represents the "if" logical statement.
       */
     class If extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Represents the "if..else" logical statement.
       */
     class IfElse extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Represents the "while..do" loop.
       */
     class While extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Represents the "do..while" loop.
       */
     class DoWhile extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Iterates over a block of code, similar to a "for" loop.
       */
     class Loop extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
 }
 declare module FlowScript.Core.Math {
@@ -2133,25 +2146,25 @@ declare module FlowScript.Core.Math {
         Multiply: Multiply;
         SQRT: SQRT;
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Adds two values.
       */
     class Add extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Multiply two values.
       */
     class Multiply extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** get the square root of a value.
       */
     class SQRT extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
 }
 declare module FlowScript.Core.Binary {
@@ -2166,31 +2179,31 @@ declare module FlowScript.Core.Binary {
         /** Shifts all bits of an integer value to the right a number of times. */
         ShiftRight: ShiftRight;
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Returns the inverse of the given boolean value.
       */
     class Not extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Returns the eXclusive OR of a given value.
       */
     class XOR extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Shifts all bits of an integer value to the left a number of times.
       */
     class ShiftLeft extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Shifts all bits of an integer value to the right a number of times.
       */
     class ShiftRight extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
 }
 /** Contains components used for comparisons.
@@ -2215,55 +2228,55 @@ declare module FlowScript.Core.Comparison {
         /** Tests if one value is greater than or equal to another. */
         GreaterThanOrEqual: GreaterThanOrEqual;
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Tests if one value equals another.
       */
     class Equals extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Tests if one value AND its type equals another.
       */
     class StrictEquals extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Tests if one value does NOT equal another.
       */
     class NotEquals extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Tests if one value AND its type do NOT equal another.
       */
     class StrictNotEquals extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Tests if one value is less than another.
       */
     class LessThan extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Tests if one value is greater than another.
       */
     class GreaterThan extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Tests if one value is less than or equal to another.
       */
     class LessThanOrEqual extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Tests if one value is greater than or equal to another.
       */
     class GreaterThanOrEqual extends Operator {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
 }
 /** The namespace for HTML related components. */
@@ -2287,29 +2300,29 @@ declare module FlowScript.Core.HTML {
         /** Enumeration of document positions. */
         DocumentPositions: NodeTypes;
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     /** Attaches an event listener to an element that supports DOM related events.
       */
     class On extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class Node_removeChild extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class Node_appendChild extends Component {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class NodeList extends FSObject {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class NamedNodeMap extends FSObject {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class NodeTypes extends Enum<Number> {
         constructor(parent: Type);
@@ -2335,19 +2348,19 @@ declare module FlowScript.Core.HTML {
         insertBefore: Component;
         CloneTypes: Enum<boolean>;
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class Element extends FSObject {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class HTMLElement extends FSObject {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
     class Document extends FSObject {
         constructor(parent: Type);
-        init(): void;
+        onInit(): void;
     }
 }
 declare namespace FlowScript {
@@ -2425,7 +2438,10 @@ declare namespace FlowScript {
         /** Creates a root level type renderer that will wrap the 'main' script in 'compiler.script'. */
         static createRootTypeRenderer(compiler: Compiler, isSimulation?: boolean): TypeRenderer;
         private _checkType;
-        /** Adds a new rendered line for the underlying component, along with the current margin level, and returns the line index. */
+        /** Adds a new rendered line for the underlying component, along with the current margin level, and returns the line index.
+         * If a line is given with no opcode then `OpCodes.Exec` is assumed (evaluates the line using `eval()`). If an opcode is given then
+         * simulation is mode assumed (opcodes are not used for final rendering).
+         */
         addLine(source: {}, line: string, opcode?: OpCodes, ...args: any[]): number;
         /** Inserts a new rendered line at a specific line number for the underlying component, prefixed with the current margin level.
           * Note: The first line starts at index 0.
@@ -2480,17 +2496,22 @@ declare namespace FlowScript {
         /** Adds a line to evaluate a unary operation on the current running value by adding the required operation semantics.
           * Returns the index of the added line.
           *
-          * @param {string} varName A variable to set, which overrides the default behaviour of using the running value.
+          * @param {string} varName A variable to set, which overrides the default behavior of using the running value.
           */
         evalUnary(source: Expression, operationType: Component, varName?: string): number;
         /** Adds the current value to the operation argument stack.
           * Returns the index of the added line.
           */
-        pushOpArg(): void;
+        pushOpArg(): number;
         /** Adds a line to call another functional component.
           * Returns the index of the added line.
+          * @param {number} ctxId The context ID is used to identify nested contexts in cases where blocks may be used as parameters.
           */
         call(source: Expression, compType: string, ctxID: number): number;
+        /** Returns from the current functional component.
+          * Returns the index of the added line.
+          */
+        return(source: Component): number;
         /** Adds a line to jump to another line.
           * Returns the index of the added line.
           */
@@ -2545,7 +2566,7 @@ declare namespace FlowScript {
         /** Initializes the simulation of the underlying script. */
         compileSimulation(): Simulator;
         /** Takes a functional component and renders */
-        _renderFunctionalComponent(renderer: TypeRenderer, comp: Component, isSimulation?: boolean): TypeRenderer;
+        _renderFunctionalComponent(renderer: TypeRenderer, comp: Component): TypeRenderer;
         _renderComponentFunctionEntry(renderer: TypeRenderer, comp: Component): void;
         _renderComponentFunctionExit(renderer: TypeRenderer, comp: Component): void;
         _verifyArgCount(compRef: ComponentReference, expectedCount: number): void;
@@ -2612,7 +2633,9 @@ declare namespace FlowScript {
         /** Branches to an offset. */
         Jump = 3,
         /** Calls another component. */
-        Call = 4
+        Call = 4,
+        /** Exits the current component. */
+        Return = 5
     }
     /** Represents a component during runtime simulations. */
     class VirtualRuntimeComponent {
@@ -2659,6 +2682,9 @@ declare namespace FlowScript {
           * Note: The current context is push onto the stack before being assigned this new entered context.
           */
         _enter(ctx: ISimulationContext): void;
+        /** Exits the current functional component context by popping the previous context from the stack.
+          */
+        _exit(ctx: ISimulationContext): boolean;
         /** Executes/evaluates the operation/action at the current line.
           * Returns true if there is another statement pending, and false otherwise.
           */

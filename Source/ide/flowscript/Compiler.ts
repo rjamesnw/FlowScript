@@ -138,7 +138,10 @@ namespace FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        /** Adds a new rendered line for the underlying component, along with the current margin level, and returns the line index. */
+        /** Adds a new rendered line for the underlying component, along with the current margin level, and returns the line index. 
+         * If a line is given with no opcode then `OpCodes.Exec` is assumed (evaluates the line using `eval()`). If an opcode is given then
+         * simulation is mode assumed (opcodes are not used for final rendering).
+         */
         addLine(source: {}, line: string, opcode?: OpCodes, ...args: any[]): number {
             if (opcode !== undefined)
                 this.root._isSimulation = true; // (make sure this flag is set)
@@ -368,7 +371,7 @@ namespace FlowScript {
         /** Adds a line to evaluate a unary operation on the current running value by adding the required operation semantics.
           * Returns the index of the added line.
           * 
-          * @param {string} varName A variable to set, which overrides the default behaviour of using the running value.
+          * @param {string} varName A variable to set, which overrides the default behavior of using the running value.
           */
         evalUnary(source: Expression, operationType: Component, varName?: string): number {
             return this.eval(source, this.compiler._renderUnary(varName || this._internalRunningValVarName, operationType));
@@ -377,12 +380,13 @@ namespace FlowScript {
         /** Adds the current value to the operation argument stack.
           * Returns the index of the added line.
           */
-        pushOpArg(): void {
-            this.addLine(null, Compiler.CONTEXT_VAR_NAME + ".$__args.push(" + this._internalRunningValVarName + ");", OpCodes.Exec);
+        pushOpArg(): number {
+            return this.addLine(null, Compiler.CONTEXT_VAR_NAME + ".$__args.push(" + this._internalRunningValVarName + ");", OpCodes.Exec);
         }
 
         /** Adds a line to call another functional component.
           * Returns the index of the added line.
+          * @param {number} ctxId The context ID is used to identify nested contexts in cases where blocks may be used as parameters.
           */
         call(source: Expression, compType: string, ctxID: number): number {
             var callIndex = this.addLine(source, null, OpCodes.Call, compType, ctxID);
@@ -390,6 +394,13 @@ namespace FlowScript {
             var localCtxName = Compiler.LOCAL_CONTEXT_VAR_NAME + (ctxID || "");
             this.eval(null, this._compiler._renderAssignment(Compiler.RUNNING_VAL_VAR_NAME, localCtxName + ".$__lineExec.eval('" + Compiler.RUNNING_VAL_VAR_NAME + "')") + ";");
             return callIndex;
+        }
+
+        /** Returns from the current functional component.
+          * Returns the index of the added line.
+          */
+        return(source: Component): number {
+            return this.addLine(source, null, OpCodes.Return);
         }
 
         /** Adds a line to jump to another line.
@@ -474,7 +485,7 @@ namespace FlowScript {
         // --------------------------------------------------------------------------------------------------------------------
 
         _checkMain() {
-            if (!this.script.Main || this.script.Main.componentType != ComponentTypes.Functional)
+            if (!this.script.main || this.script.main.componentType != ComponentTypes.Functional)
                 throw "Error: Cannot add script to compiler without a proper main component.  A proper function-based component is required.";
         }
 
@@ -486,7 +497,7 @@ namespace FlowScript {
             // ... create a default root level renderer ...
             var rootRenderer = TypeRenderer.createRootTypeRenderer(this);
             // ... render the main functional component ...
-            this._renderFunctionalComponent(rootRenderer, this.script.Main);
+            this._renderFunctionalComponent(rootRenderer, this.script.main);
             return rootRenderer.toString(targetVar);
         }
 
@@ -498,7 +509,7 @@ namespace FlowScript {
             // ... create a default root level renderer ...
             var rootRenderer = TypeRenderer.createRootTypeRenderer(this, true);
             // ... render the main functional component ...
-            var mainRenderer = this._renderFunctionalComponent(rootRenderer, this.script.Main, true);
+            var mainRenderer = this._renderFunctionalComponent(rootRenderer, this.script.main);
             return new Simulator(this, mainRenderer);
         }
 
@@ -545,7 +556,7 @@ namespace FlowScript {
         // --------------------------------------------------------------------------------------------------------------------
 
         /** Takes a functional component and renders */
-        _renderFunctionalComponent(renderer: TypeRenderer, comp: Component, isSimulation = false): TypeRenderer {
+        _renderFunctionalComponent(renderer: TypeRenderer, comp: Component): TypeRenderer {
             try {
                 if (comp.componentType != ComponentTypes.Functional)
                     throw "The component given is not a \"functional\" component.";
@@ -601,7 +612,10 @@ namespace FlowScript {
             // ... always return the running value (which may simply be the 'undefined' value) ...
 
             if (renderer.component.defaultReturn)
-                renderer.addLine(null, "return " + Compiler.RUNNING_VAL_VAR_NAME + ";");
+                if (renderer.isSimulation)
+                    renderer.return(comp);
+                else
+                    renderer.addLine(comp, "return " + Compiler.RUNNING_VAL_VAR_NAME + ";");
 
             // ... add final brace ...
 
@@ -1008,6 +1022,7 @@ namespace FlowScript {
                 this._renderFunctionalComponent(renderer, compRef.component);
 
                 // ... setup a context for the call ...
+                // (note: make sure to set a variable to store each nested context in case blocks are used as parameters)
 
                 var currentCtxID: number = renderer.callStack.push(compRef) - 1, currentCtxIDStr = currentCtxID || ""; //?, extraArgNames: string[] = [];
                 var compLocalName = renderer.addLocalVar(Compiler.COMPONENT_REF_VAR_NAME + currentCtxIDStr);

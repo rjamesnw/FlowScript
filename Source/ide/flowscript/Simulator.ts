@@ -32,7 +32,9 @@ namespace FlowScript {
         /** Branches to an offset. */
         Jump,
         /** Calls another component. */
-        Call
+        Call,
+        /** Exits the current component. */
+        Return
     }
 
 
@@ -155,6 +157,19 @@ namespace FlowScript {
             this.currentContext = ctx;
         }
 
+        /** Exits the current functional component context by popping the previous context from the stack.
+          */
+        _exit(ctx: ISimulationContext): boolean {
+            if (this.callStack.length) {
+                this.currentContext = this.callStack.pop();
+                if (this.currentContext)
+                    this.currentContext.$__ = ctx.$__;
+                return !!this.currentContext;
+            }
+            this.currentContext = null;
+            return false;
+        }
+
         // --------------------------------------------------------------------------------------------------------------------
 
         /** Executes/evaluates the operation/action at the current line.
@@ -190,15 +205,19 @@ namespace FlowScript {
                         if (!renderer)
                             throw "Call Error: Component '" + line.args[0] + "' doesn't exist, or was not included in the rendering process.";
                         var ctxID = +line.args[1] == 0 ? "" : line.args[1]; // (0 is "" - only add numbers from 1 onwards)
+                        // (the context ID is used to identify nested contexts in cases where blocks may be used as parameters)
                         var callCtx = ctx.$__lineExec.eval(Compiler.LOCAL_CONTEXT_VAR_NAME + ctxID); // (get the context that is now setup for the call)
                         callCtx.$__compRenderer = renderer;
                         this._enter(callCtx);
                         return true;
+                    case OpCodes.Return: // (return from the current component; if an arguments exists, assume it's a var name)
+                        return this._exit(ctx);
                 }
 
-                if (ctx.$__lineIndex >= ctx.$__compRenderer._lines.length && this.callStack.length)
-                    this.currentContext = this.callStack.pop();
-                return !!this.currentContext;
+                if (ctx.$__lineIndex >= ctx.$__compRenderer._lines.length)
+                    return this._exit(ctx);
+
+                return true;
             }
             return false;
         }
@@ -222,7 +241,7 @@ namespace FlowScript {
             this.rootContext = new RuntimeContext(null);
             this.rootContext.$__compRenderer = this._mainRenderer;
             this.callStack = [];
-            this._enter(this.compiler.script.Main.configureRuntimeContext(this.rootContext, args));
+            this._enter(this.compiler.script.main.configureRuntimeContext(this.rootContext, args));
             return this;
         }
 

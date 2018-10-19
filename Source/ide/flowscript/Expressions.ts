@@ -73,7 +73,7 @@ namespace FlowScript {
       */
         getArgIndexes(sorted = true): number[] {
             var indexes: number[] = [];
-            for (var p in this) {
+            for (var p in this._args) {
                 var c = (<string>p).charCodeAt(0);
                 if (c >= 48 && c <= 57) // (optimization: http://jsperf.com/isnan-vs-check-first-char)
                     indexes.push(+p);
@@ -377,7 +377,7 @@ namespace FlowScript {
         get maps() { return this._maps; }
         protected _maps: IReturnTargetMap[] = [];
 
-        get isEmpty(): boolean { return !!this._maps.length; }
+        get isEmpty(): boolean { return !this._maps.length; }
 
         // --------------------------------------------------------------------------------------------------------------------
 

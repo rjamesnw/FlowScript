@@ -23,8 +23,8 @@ module FlowScript.Core.Binary {
         constructor(parent: Type) {
             super(parent, "Binary");
         }
-        init() {
-            super.init();
+        onInit() {
+            super.onInit();
         }
     }
 
@@ -36,7 +36,7 @@ module FlowScript.Core.Binary {
         constructor(parent: Type) {
             super(parent, "Not", "not $a", true); // 
         }
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -45,7 +45,7 @@ module FlowScript.Core.Binary {
 
             this.defineDefaultReturnVar(sys.Boolean);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -57,7 +57,7 @@ module FlowScript.Core.Binary {
         constructor(parent: Type) {
             super(parent, "XOR", "xor $a", true); // 
         }
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -66,7 +66,7 @@ module FlowScript.Core.Binary {
 
             this.defineDefaultReturnVar(sys.Integer);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -78,7 +78,7 @@ module FlowScript.Core.Binary {
         constructor(parent: Type) {
             super(parent, "ShiftLeft", "$value << $count"); // 
         }
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -88,7 +88,7 @@ module FlowScript.Core.Binary {
 
             this.defineDefaultReturnVar(sys.Integer);
 
-            super.init();
+            super.onInit();
         }
     }
 
@@ -100,7 +100,7 @@ module FlowScript.Core.Binary {
         constructor(parent: Type) {
             super(parent, "ShiftRight", "$value >> $count"); // 
         }
-        init() {
+        onInit() {
             // Setup the expected parameters and return type:
 
             var sys = this.script.System;
@@ -110,7 +110,7 @@ module FlowScript.Core.Binary {
 
             this.defineDefaultReturnVar(sys.Integer);
 
-            super.init();
+            super.onInit();
         }
     }
 
