@@ -1,6 +1,6 @@
 ﻿// ############################################################################################################################
-///// <reference path="flowscriptrt.common.ts" />
-/// <reference path="flowscriptrt.ts" />
+/// <reference path="flowscriptrt.common.ts" />
+/// <reference path="flowscriptrt.server.ts" />
 /// <reference path="type.ts" />
 /// <reference path="flowscriptmain.ts" />
 /// <reference path="expressions.ts" />
@@ -19,7 +19,6 @@
 /// <reference path="components/core.math.ts" />
 /// <reference path="components/core.binary.ts" />
 /// <reference path="components/core.comparison.ts" />
-/// <reference path="components/core.HTML.ts" />
 /// <reference path="compiler.ts" />
 /// <reference path="simulator.ts" />
 /// <reference path="visualtree.ts" />

@@ -2,6 +2,7 @@ import Koa from 'koa';
 import Router from 'koa-router';
 import koaBody from 'koa-body';
 import staticServer from 'koa-static';
+import { XMLHttpRequest } from 'xmlhttprequest-ts';
 
 const port = 8080;
 const app = new Koa();

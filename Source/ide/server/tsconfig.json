@@ -10,7 +10,8 @@
         ]
     },
     "include": [
-        // "../flowscript/flowscriptrt.ts",
-        "*.ts"
+        "../flowscript/_references.server.ts",
+        "*.ts",
+        "typings/*.ts"
     ]
 }

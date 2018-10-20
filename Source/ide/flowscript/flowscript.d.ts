@@ -721,6 +721,8 @@ declare namespace FlowScript {
           * For example, if the current type is 'A.B' within the 'A.B.C.D' namespace, then you could pass in 'C.D'.
           */
         remove(name: string): Type;
+        /** Remove this type from the parent. */
+        detach(): this;
         /** Sets a type for template types using the given name, default type, and any expected based type (as a constraint).
           * This only works for types that represent templates.
           */

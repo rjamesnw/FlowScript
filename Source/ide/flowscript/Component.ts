@@ -505,7 +505,7 @@ namespace FlowScript {
             var p = this._parameters.getProperty(typeof prop == "string" ? prop : (<Property>prop).name);
             if (!p)
                 if (typeof prop == "string")
-                    throw "There is no parameter named '" + name + "' on component '" + this.fullTypeName + "'.";
+                    throw "There is no parameter named '" + prop + "' on component '" + this.fullTypeName + "'.";
                 else
                     throw "Invalid argument value for 'prop': A name or property object was expected.";
             newName = this._validateParameterName(newName, p);
@@ -556,7 +556,7 @@ namespace FlowScript {
             var p = this._localVars.getProperty(typeof prop == "string" ? prop : (<Property>prop).name);
             if (!p)
                 if (typeof prop == "string")
-                    throw "There is no local variable named '" + name + "' on component '" + this.fullTypeName + "'.";
+                    throw "There is no local variable named '" + prop + "' on component '" + this.fullTypeName + "'.";
                 else
                     throw "Invalid argument value for 'prop': A name or property object was expected.";
             newName = this._validateLocalVarName(newName, p);
@@ -613,7 +613,7 @@ namespace FlowScript {
             var p = this._returnVars.getProperty(typeof prop == "string" ? prop : (<Property>prop).name);
             if (!p)
                 if (typeof prop == "string")
-                    throw "There is no local variable named '" + name + "' on component '" + this.fullTypeName + "'.";
+                    throw "There is no local variable named '" + prop + "' on component '" + this.fullTypeName + "'.";
                 else
                     throw "Invalid argument value for 'prop': A name or property object was expected.";
             newName = this._validateReturnVarName(newName);
@@ -665,7 +665,7 @@ namespace FlowScript {
             var p = this.getInstanceProperty(typeof prop == "string" ? prop : (<Property>prop).name, ownProperty);
             if (!p)
                 if (typeof prop == "string")
-                    throw "There is no instance property named '" + name + "' on component '" + this.fullTypeName + "'.";
+                    throw "There is no instance property named '" + prop + "' on component '" + this.fullTypeName + "'.";
                 else
                     throw "Invalid argument value for 'prop': A name or property object was expected.";
             newName = this._validateInstancePropertyName(newName, p);

@@ -1887,6 +1887,12 @@ var FlowScript;
             }
             return t;
         };
+        /** Remove this type from the parent. */
+        Type.prototype.detach = function () {
+            if (this._parent)
+                this._parent.remove(this);
+            return this;
+        };
         /** Sets a type for template types using the given name, default type, and any expected based type (as a constraint).
           * This only works for types that represent templates.
           */
@@ -2029,8 +2035,6 @@ var FlowScript;
 })(FlowScript || (FlowScript = {}));
 // ############################################################################################################################
 // ############################################################################################################################
-/// <reference path="_references.ts" />
-// ############################################################################################################################
 var FlowScript;
 (function (FlowScript_1) {
     // ========================================================================================================================
@@ -2134,9 +2138,13 @@ var FlowScript;
         Object.defineProperty(FlowScript.prototype, "main", {
             get: function () { return this._main; },
             set: function (value) {
-                if (typeof value !== 'object' || !(value instanceof FlowScript_1.Component))
-                    throw "The given main component reference is not valid.";
-                this._main = value;
+                if (value != this._main) {
+                    if (typeof value !== 'object' || !(value instanceof FlowScript_1.Component))
+                        throw "The given main component reference is not valid.";
+                    if (this._main)
+                        this._main.detach();
+                    this._main = value;
+                }
             },
             enumerable: true,
             configurable: true
@@ -3984,7 +3992,7 @@ var FlowScript;
             var p = this._parameters.getProperty(typeof prop == "string" ? prop : prop.name);
             if (!p)
                 if (typeof prop == "string")
-                    throw "There is no parameter named '" + name + "' on component '" + this.fullTypeName + "'.";
+                    throw "There is no parameter named '" + prop + "' on component '" + this.fullTypeName + "'.";
                 else
                     throw "Invalid argument value for 'prop': A name or property object was expected.";
             newName = this._validateParameterName(newName, p);
@@ -4024,7 +4032,7 @@ var FlowScript;
             var p = this._localVars.getProperty(typeof prop == "string" ? prop : prop.name);
             if (!p)
                 if (typeof prop == "string")
-                    throw "There is no local variable named '" + name + "' on component '" + this.fullTypeName + "'.";
+                    throw "There is no local variable named '" + prop + "' on component '" + this.fullTypeName + "'.";
                 else
                     throw "Invalid argument value for 'prop': A name or property object was expected.";
             newName = this._validateLocalVarName(newName, p);
@@ -4074,7 +4082,7 @@ var FlowScript;
             var p = this._returnVars.getProperty(typeof prop == "string" ? prop : prop.name);
             if (!p)
                 if (typeof prop == "string")
-                    throw "There is no local variable named '" + name + "' on component '" + this.fullTypeName + "'.";
+                    throw "There is no local variable named '" + prop + "' on component '" + this.fullTypeName + "'.";
                 else
                     throw "Invalid argument value for 'prop': A name or property object was expected.";
             newName = this._validateReturnVarName(newName);
@@ -4114,7 +4122,7 @@ var FlowScript;
             var p = this.getInstanceProperty(typeof prop == "string" ? prop : prop.name, ownProperty);
             if (!p)
                 if (typeof prop == "string")
-                    throw "There is no instance property named '" + name + "' on component '" + this.fullTypeName + "'.";
+                    throw "There is no instance property named '" + prop + "' on component '" + this.fullTypeName + "'.";
                 else
                     throw "Invalid argument value for 'prop': A name or property object was expected.";
             newName = this._validateInstancePropertyName(newName, p);
@@ -9608,6 +9616,7 @@ var FlowScript;
     // ========================================================================================================================
 })(FlowScript || (FlowScript = {}));
 // ############################################################################################################################
+///// <reference path="flowscriptrt.common.ts" />
 /// <reference path="flowscriptrt.ts" />
 /// <reference path="type.ts" />
 /// <reference path="flowscriptmain.ts" />
@@ -9621,13 +9630,13 @@ var FlowScript;
 /// <reference path="message.ts" />
 /// <reference path="table.ts" />
 /// <reference path="thread.ts" />
-/// <reference path="core.ts" />
-/// <reference path="Definitions/core.httprequest.ts" />
-/// <reference path="Definitions/core.controlflow.ts" />
-/// <reference path="Definitions/core.math.ts" />
-/// <reference path="Definitions/core.binary.ts" />
-/// <reference path="Definitions/core.comparison.ts" />
-/// <reference path="Definitions/core.HTML.ts" />
+/// <reference path="components/core.ts" />
+/// <reference path="components/core.httprequest.ts" />
+/// <reference path="components/core.controlflow.ts" />
+/// <reference path="components/core.math.ts" />
+/// <reference path="components/core.binary.ts" />
+/// <reference path="components/core.comparison.ts" />
+/// <reference path="components/core.HTML.ts" />
 /// <reference path="compiler.ts" />
 /// <reference path="simulator.ts" />
 /// <reference path="visualtree.ts" />
