@@ -58,14 +58,14 @@
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        private _findChildNode(node: HTMLElement, fstype: Type): HTMLElement { //?
-            if (node) {
-                for (var i = 0, len = node.childNodes.length; i < len; ++i)
-                    if ((<any>node.childNodes[i])["$__fs_type"] == fstype)
-                        return <HTMLElement>node.childNodes[i];
-            }
-            else return null;
-        }
+        // private _findChildNode(node: HTMLElement, fstype: Type): HTMLElement { //?
+        //     if (node) {
+        //         for (var i = 0, len = node.childNodes.length; i < len; ++i)
+        //             if ((<any>node.childNodes[i])["$__fs_type"] == fstype)
+        //                 return <HTMLElement>node.childNodes[i];
+        //     }
+        //     else return null;
+        // }
 
         // --------------------------------------------------------------------------------------------------------------------
     }

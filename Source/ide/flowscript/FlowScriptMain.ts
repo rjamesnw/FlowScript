@@ -351,70 +351,70 @@ namespace FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        loadSystem() {
-            if (!this.System) {
-                var xmlhttp = new XMLHttpRequest();
-                xmlhttp.onerror = (ev) => {
-                    var msg = "Error opening System.xml.";
-                    if (document && document.writeln)
-                        document.writeln(msg);
-                    if (alert)
-                        alert(msg);
-                };
-                xmlhttp.onload = (ev) => {
-                    this.System = <Core.System>this._loadTypeXML(xmlhttp.responseXML, null);
-                    if (!this.System) {
-                        var msg = "Error: Failed to parse the loaded system XML, or the XML data was empty.";
-                        if (document && document.writeln)
-                            document.writeln(msg);
-                        if (alert)
-                            alert(msg);
-                    }
-                };
-                xmlhttp.open("GET", "System.xml", true);
-                xmlhttp.send();
-            }
-        }
+        // loadSystem() {
+        //     if (!this.System) {
+        //         var xmlhttp = new XMLHttpRequest();
+        //         xmlhttp.onerror = (ev) => {
+        //             var msg = "Error opening System.xml.";
+        //             if (document && document.writeln)
+        //                 document.writeln(msg);
+        //             if (alert)
+        //                 alert(msg);
+        //         };
+        //         xmlhttp.onload = (ev) => {
+        //             this.System = <Core.System>this._loadTypeXML(xmlhttp.responseXML, null);
+        //             if (!this.System) {
+        //                 var msg = "Error: Failed to parse the loaded system XML, or the XML data was empty.";
+        //                 if (document && document.writeln)
+        //                     document.writeln(msg);
+        //                 if (alert)
+        //                     alert(msg);
+        //             }
+        //         };
+        //         xmlhttp.open("GET", "System.xml", true);
+        //         xmlhttp.send();
+        //     }
+        // }
 
-        private _loadTypeXML(typeNode: Node, parentType: Type): Type {
-            if (typeNode && typeof typeNode == 'object' && typeNode instanceof Node) {
+        // private _loadTypeXML(typeNode: Node, parentType: Type): Type {
+        //     if (typeNode && typeof typeNode == 'object' && typeNode instanceof Node) {
 
-                var nodeName = typeNode.nodeName, type: Type;
+        //         var nodeName = typeNode.nodeName, type: Type;
 
-                if (typeNode instanceof Element)
-                    if (nodeName == "type") {
-                        // ... create a namespace type ...
-                        var name: string = typeNode.attributes.getNamedItem('name').value;
-                        var type = new Type(parentType, name, this);
-                    }
-                    else if (nodeName == "component") {
-                        // ... create a component type ...
-                        var nameAttr = typeNode.attributes.getNamedItem('name');
-                        var name: string = nameAttr ? nameAttr.value : null;
+        //         if (typeNode instanceof Element)
+        //             if (nodeName == "type") {
+        //                 // ... create a namespace type ...
+        //                 var name: string = typeNode.attributes.getNamedItem('name').value;
+        //                 var type = new Type(parentType, name, this);
+        //             }
+        //             else if (nodeName == "component") {
+        //                 // ... create a component type ...
+        //                 var nameAttr = typeNode.attributes.getNamedItem('name');
+        //                 var name: string = nameAttr ? nameAttr.value : null;
 
-                        var titleAttr = typeNode.attributes.getNamedItem('title');
-                        var title: string = titleAttr ? titleAttr.value : null;
+        //                 var titleAttr = typeNode.attributes.getNamedItem('title');
+        //                 var title: string = titleAttr ? titleAttr.value : null;
 
-                        var compTAttr = typeNode.attributes.getNamedItem('componentType');
-                        if (!compTAttr)
-                            throw "Component type is missing in System.xml for type '" + (parentType ? parentType + "." : "") + (name || title) + "'.";
-                        var compType: string = compTAttr ? compTAttr.value : null;
+        //                 var compTAttr = typeNode.attributes.getNamedItem('componentType');
+        //                 if (!compTAttr)
+        //                     throw "Component type is missing in System.xml for type '" + (parentType ? parentType + "." : "") + (name || title) + "'.";
+        //                 var compType: string = compTAttr ? compTAttr.value : null;
 
-                        try {
-                            var comp = type = new Component(parentType, (<any>ComponentTypes)[compType], name, title, this);
-                        }
-                        catch (e) {
-                            throw "Error loading System.xml: " + e;
-                        }
-                    }
-                    else throw "Unknown element name '" + nodeName + "' in System.xml.";
+        //                 try {
+        //                     var comp = type = new Component(parentType, (<any>ComponentTypes)[compType], name, title, this);
+        //                 }
+        //                 catch (e) {
+        //                     throw "Error loading System.xml: " + e;
+        //                 }
+        //             }
+        //             else throw "Unknown element name '" + nodeName + "' in System.xml.";
 
-                for (var i = 0, n = typeNode.childNodes.length; i < n; ++i)
-                    this._loadTypeXML(typeNode.childNodes[i], type);
+        //         for (var i = 0, n = typeNode.childNodes.length; i < n; ++i)
+        //             this._loadTypeXML(typeNode.childNodes[i], type);
 
-                return type;
-            }
-        }
+        //         return type;
+        //     }
+        // }
 
         // --------------------------------------------------------------------------------------------------------------------
     }

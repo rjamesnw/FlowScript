@@ -1,5 +1,4 @@
-﻿/// <reference path="projectui.ts" />
-// A wrapper for the ACE editor for use with editing code on the UI.
+﻿// A wrapper for the ACE editor for use with editing code on the UI.
 
 module FlowScript.UI {
     export class TextEditor {

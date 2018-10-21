@@ -71,8 +71,8 @@ namespace FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        /** A user defined visual element to associate with this component. This is not used internally. */
-        visualElement: HTMLElement;
+        // /** A user defined visual element to associate with this component. This is not used internally. */
+        // visualElement: HTMLElement;
 
         /** A user defined arbitrary value to associate with this component. This is not used internally. */
         tag: any;

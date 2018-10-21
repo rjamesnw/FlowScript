@@ -696,7 +696,7 @@ namespace FlowScript {
         // --------------------------------------------------------------------------------------------------------------------
 
         /** Register a callback event. */
-        registerEvent(name: string): Event { // in case of errors?  Need to look into trapping the events.
+        registerEvent(name: string): object { // in case of errors?  Need to look into trapping the events.
             //?var ev = new Event(this, name);
             //?this._events.push(ev);
             //?return ev;

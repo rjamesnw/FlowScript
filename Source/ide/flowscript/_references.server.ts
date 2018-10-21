@@ -1,4 +1,5 @@
 ﻿// ############################################################################################################################
+/// <reference path="globals.server.ts" />
 /// <reference path="flowscriptrt.common.ts" />
 /// <reference path="flowscriptrt.server.ts" />
 /// <reference path="type.ts" />
@@ -22,7 +23,7 @@
 /// <reference path="compiler.ts" />
 /// <reference path="simulator.ts" />
 /// <reference path="visualtree.ts" />
-/// <reference path="views.ts" />
+//// <reference path="views.ts" />
 /// <reference path="projects.ts" />
 /// <reference path="bootup.ts" />
 // ############################################################################################################################

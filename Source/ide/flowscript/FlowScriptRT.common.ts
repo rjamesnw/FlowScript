@@ -92,9 +92,6 @@ namespace FlowScript {
         export interface IDate extends Date { }
         export interface IIMath extends Math { }
         export interface IError extends Error { }
-        export interface IXMLHttpRequest extends XMLHttpRequest { }
-        export interface IHTMLElement extends HTMLElement { }
-        export interface IWindow extends Window { }
     }
 
     export declare module NativeStaticTypes {
@@ -108,9 +105,6 @@ namespace FlowScript {
         export var StaticDate: typeof Date;
         export var StaticMath: typeof Math;
         export var StaticError: typeof Error;
-        export var StaticXMLHttpRequest: typeof XMLHttpRequest;
-        export var StaticHTMLElement: typeof HTMLElement;
-        export var StaticWindow: typeof Window;
     }
 
     export interface IStaticGlobals extends Window {
@@ -125,9 +119,6 @@ namespace FlowScript {
         Date: typeof NativeStaticTypes.StaticDate;
         Math: typeof NativeStaticTypes.StaticMath;
         Error: typeof NativeStaticTypes.StaticError;
-        XMLHttpRequest: typeof NativeStaticTypes.StaticXMLHttpRequest;
-        HTMLElement: typeof NativeStaticTypes.StaticHTMLElement;
-        Window: typeof NativeStaticTypes.StaticWindow;
     }
 
     /** A reference to the host's global environment (convenient for nested TypeScript code, or when using strict mode [where this=undefined]).
@@ -158,266 +149,6 @@ namespace FlowScript {
     export var debugging: boolean = (() => {
         return FlowScript.debugging || typeof location == "object" && location.search && /[?&]debug=true/gi.test("" + location.search);
     })();
-
-    // ========================================================================================================================
-
-    namespace Polyfills {
-        // -------------------------------------------------------------------------------------------------------------------
-
-        interface _window extends NativeTypes.IWindow { [name: string]: any }
-        var window = <_window>global;
-        var String = global.String;
-        var Array = global.Array;
-        var RegExp = global.RegExp;
-
-        // -------------------------------------------------------------------------------------------------------------------
-        // ... add 'trim()' if missing, which only exists in more recent browser versions, such as IE 9+ ...
-        // (source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim?redirectlocale=en-US&redirectslug=JavaScript%2FReference%2FGlobal_Objects%2FString%2FTrim)
-
-        if (!String.prototype.trim) {
-            String.prototype.trim = function () {
-                if (!this)
-                    throw new TypeError("'trim()' requires an object instance.");
-                return this.replace(/^\s+|\s+$/g, '');
-            };
-        }
-
-        // -------------------------------------------------------------------------------------------------------------------
-        // ... fix head not accessible in IE7/8 ...
-
-        if (!document.head)
-            (<any>document).head = document.getElementsByTagName('head')[0] || <HTMLHeadElement><any>{ // (else, make a small 'shell' header for the server side...)
-                title: "", tagName: "HEAD", firstChild: null, lastChild: null, previousSibling: null, nextSibling: null, previousElementSibling: null, nextElementSibling: null, childNodes: [], children: []
-            };
-
-        // -------------------------------------------------------------------------------------------------------------------
-        // ... add 'now()' if missing (exists as a standard in newer browsers) ...
-        // (see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now)
-
-        if (!Date.now) { // (used internally for log item times)
-            Date.now = function now() {
-                return new Date().getTime();
-            };
-        }
-
-        // -------------------------------------------------------------------------------------------------------------------
-        // ... fix the non-standard {string}.split() in older IE browsers, which strips out the empty strings ...
-        // (this version accepts an optional third parameter, which is a list of already existing delimiters if available, which then ignores the 'separator' value [more efficient])
-
-        if (":".split(/:/g).length == 0) {
-            (<any>String.prototype)['$__FlowScript_oldsplit'] = String.prototype.split; // (this is only executed once because of the ext line)
-            String.prototype.split = function (separator: any, limit?: number, delimiterList?: string[]): string[] {
-                var delimiters: string[], nonDelimiters: string[];
-                if (!this)
-                    throw new TypeError("'split()' requires an object instance.");
-                if (delimiterList)
-                    delimiters = delimiterList;
-                else if (!(separator instanceof <Function><any>RegExp))
-                    return (<any>String.prototype)['$__FlowScript_oldsplit'](separator, limit); // (old function works find for non-RegExp splits)
-                else
-                    delimiters = this.match(separator);
-                nonDelimiters = [];
-                // ... since empty spaces get removed, this has to be done manually by scanning across the text and matching the found delimiters ...
-                var i: number, n: number, delimiter: string, startdi = 0, enddi = 0;
-                if (delimiters) {
-                    for (i = 0, n = delimiters.length; i < n; ++i) {
-                        delimiter = delimiters[i];
-                        enddi = this.indexOf(delimiter, startdi);
-                        if (enddi == startdi)
-                            nonDelimiters.push("");
-                        else
-                            nonDelimiters.push(this.substring(startdi, enddi));
-                        startdi = enddi + delimiter.length;
-                    }
-                    if (startdi < this.length)
-                        nonDelimiters.push(this.substring(startdi, this.length)); // (get any text past the last delimiter)
-                    else
-                        nonDelimiters.push(""); // (there must always by something after the last delimiter)
-                }
-                return nonDelimiters;
-            };
-        }
-
-        // -------------------------------------------------------------------------------------------------------------------
-        // ... add support for the new "{Array}.indexOf/.lastIndexOf" standard ...
-        // (base on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf)
-
-        if (!Array.prototype.indexOf)
-            Array.prototype['indexOf'] = function <T>(searchElement: T, fromIndex?: number): number {
-                if (!this)
-                    throw new TypeError("'indexOf()' requires an object instance.");
-
-                var i: number, length = this.length;
-
-                if (!length) return -1;
-                if (typeof fromIndex === 'undefined') fromIndex = 0; else {
-                    fromIndex = +fromIndex; // ('+' converts any boolean or string to a number)
-                    if (isNaN(fromIndex)) return -1;
-                    if (fromIndex >= length) fromIndex = length - 1;
-                }
-                if (fromIndex >= length) return -1;
-
-                if (fromIndex < 0) fromIndex += length;
-
-                for (i = fromIndex; i < length; ++i)
-                    if (this[i] === searchElement)
-                        return i;
-
-                return -1;
-            };
-
-        // -------------------------------------------------------------------------------------------------------------------
-
-        if (!Array.prototype.lastIndexOf)
-            Array.prototype['lastIndexOf'] = function <T>(searchElement: T, fromIndex?: number): number {
-                if (!this)
-                    throw new TypeError("'lastIndexOf()' requires an object instance.");
-
-                var i: number, length = this.length;
-
-                if (!length) return -1;
-                if (typeof fromIndex == 'undefined') fromIndex = length - 1; else {
-                    fromIndex = +fromIndex; // ('+' converts any boolean or string to a number)
-                    if (isNaN(fromIndex)) return -1;
-                    if (fromIndex >= length) fromIndex = length - 1;
-                }
-
-                if (fromIndex < 0) fromIndex += length;
-
-                for (i = fromIndex; i >= 0; --i)
-                    if (this[i] === searchElement)
-                        return i;
-
-                return -1;
-            };
-
-        // -------------------------------------------------------------------------------------------------------------------
-        // ... add any missing support for "window.location.origin" ...
-
-        if (typeof window.location !== 'undefined' && !window.location.origin)
-            (<any>window.location).origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
-
-        // -------------------------------------------------------------------------------------------------------------------
-        // ... add basic support for 'classList' on elements if missing ...
-
-        if (typeof Element !== 'undefined' && !("classList" in document.createElement("_"))) { //TODO: Needs testing.
-            (function (): void {
-                var names: string[] = null; // (if 'names' is null, it is updated, and if not, use existing values [more efficient])
-                (<any>Element.prototype)['classList'] = {
-                    contains(name: string): boolean {
-                        if (!names) {
-                            names = (<HTMLElement>this).className.split(' ');
-                            var namesUpdated = true;
-                        }
-                        var exists = names.indexOf(name) >= 0;
-                        if (namesUpdated) names = null;
-                        return exists;
-                    },
-
-                    add(name: string): void {
-                        if (!names) {
-                            names = (<HTMLElement>this).className.split(' ');
-                            var namesUpdated = true;
-                        }
-                        if (names.indexOf(name) < 0)
-                            (<HTMLElement>this).className += ' ' + name;
-                        if (namesUpdated) names = null;
-                    },
-
-                    remove(name: string): void {
-                        if (!names) {
-                            names = (<HTMLElement>this).className.split(' ');
-                            var namesUpdated = true;
-                        }
-                        var i = names.indexOf(name);
-                        if (i >= 0) {
-                            names.splice(i);
-                            (<HTMLElement>this).className = names.join(' ');
-                        }
-                        if (namesUpdated) names = null;
-                    },
-
-                    toggle(name: string, force: boolean): boolean {
-                        if (!names) {
-                            names = (<HTMLElement>this).className.split(' ');
-                            var namesUpdated = true;
-                        }
-                        var exists: boolean = this.contains(name);
-                        if (typeof force === 'undefined') force = !exists;
-                        if (exists) {
-                            // ... exists, so remove it ...
-                            if (!force) // If force is set to true, the class will be added but not removed.
-                                this.remove(name);
-                        } else {
-                            // ... missing, so add it ...
-                            if (force) // If it’s false, the opposite will happen — the class will be removed but not added.
-                                this.add(name);
-                        }
-                        if (namesUpdated) names = null;
-                        return !exists;
-                    },
-
-                    toString(): string {
-                        return (<HTMLElement>this).className;
-                    }
-                };
-            })();
-        };
-
-        // -------------------------------------------------------------------------------------------------------------------
-        // ... add support for "Object.create" if missing ...
-
-        if (typeof Object.create != 'function') {
-            (function () {
-                var _ = <any>function () { };
-                Object.create = function (proto: any, propertiesObject?: any) {
-                    if (propertiesObject !== void 0) { throw Error("'propertiesObject' parameter not supported."); }
-                    if (proto === null) { throw Error("'proto' [prototype] parameter cannot be null."); }
-                    if (typeof proto != 'object') { throw TypeError("'proto' [prototype] must be an object."); }
-                    _.prototype = proto;
-                    return new _();
-                };
-            })();
-        }
-
-        // -------------------------------------------------------------------------------------------------------------------
-
-        if (typeof Array.isArray != 'function') // Performance investigations: http://jsperf.com/array-isarray-vs-instanceof-array/5
-            Array.isArray = function (arg: any): arg is Array<any> { return typeof arg == 'object' && arg instanceof Array; };
-
-        // -------------------------------------------------------------------------------------------------------------------
-        // (Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind)
-
-        if (!Function.prototype.bind) {
-            Function.prototype.bind = function (oThis) {
-                if (typeof this !== 'function') {
-                    // closest thing possible to the ECMAScript 5
-                    // internal IsCallable function
-                    throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
-                }
-
-                var aArgs = Array.prototype.slice.call(arguments, 1),
-                    fToBind = this,
-                    fNOP = <{ new(): Object }><any>function () { },
-                    fBound = function () {
-                        return fToBind.apply(this instanceof fNOP
-                            ? this
-                            : oThis,
-                            aArgs.concat(Array.prototype.slice.call(arguments)));
-                    };
-
-                if (this.prototype) {
-                    // native functions don't have a prototype
-                    fNOP.prototype = this.prototype;
-                }
-                fBound.prototype = new fNOP();
-
-                return fBound;
-            };
-        }
-
-        // -------------------------------------------------------------------------------------------------------------------
-    }
 
     // =======================================================================================================================
 
@@ -466,7 +197,7 @@ namespace FlowScript {
       * Note: While it's always better to check objects for supported functions, sometimes an existing function may take different
       * parameters based on the browser (such as 'Worker.postMessage()' using transferable objects with IE vs All Others [as usual]).
       */
-    export module Browser {
+     export namespace Browser {
         // ------------------------------------------------------------------------------------------------------------------
 
         // (Browser detection is a highly modified version of "http://www.quirksmode.org/js/detect.html".)
@@ -879,7 +610,7 @@ namespace FlowScript {
 
     // ========================================================================================================================
 
-    export module Utilities {
+    export namespace Utilities {
         // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
         var _hostChecksum: number = (function () { // (used in 'createGUID()')
@@ -1078,7 +809,7 @@ namespace FlowScript {
 
         // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-        export module RegEx {
+        export namespace RegEx {
             //  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . 
 
             /** Escapes a RegEx string so it behaves like a normal string. This is useful for RexEx string based operations, such as 'replace()'. */
@@ -1091,7 +822,7 @@ namespace FlowScript {
 
         // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-        export module Encoding {
+        export namespace Encoding {
 
             export enum Base64Modes {
                 /** Use standard Base64 encoding characters. */
@@ -1267,7 +998,7 @@ namespace FlowScript {
 
         // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-        export module HTML {
+        export namespace HTML {
             //  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . 
 
             // Removes the '<!-- -->' comment sequence from the the ends of the specified HTML.
@@ -1304,22 +1035,15 @@ namespace FlowScript {
             }
 
             //  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . 
-
-            export function clearChildNodes(node: Node): Node {
-                if (node)
-                    while (node.firstChild)
-                        node.removeChild(node.firstChild);
-                return node;
-            }
         }
 
         // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
         var nativeJSON: typeof JSON = typeof window != 'undefined' ? (<any>window).JSON : void 0;
 
-        export module Data {
+        export namespace Data {
 
-            export module JSON {
+            export namespace JSON {
 
                 /** Converts a JSON string into an object, with nested objects as required.
                   * The JSON format is validated first before conversion.
@@ -1359,7 +1083,7 @@ namespace FlowScript {
     // ========================================================================================================================
 
     /** Network communication utilities. */
-    export module Net {
+    export namespace Net {
 
         export interface IHTTPRequestListener<T extends HTTPRequest> { (request: T, ev?: Event): void; }
 
@@ -1547,7 +1271,7 @@ namespace FlowScript {
     // ========================================================================================================================
 
     /** Web storage utilities. */
-    export module Storage {
+    export namespace Storage {
         // ------------------------------------------------------------------------------------------------------------------
         // Feature Detection 
 
@@ -1570,129 +1294,12 @@ namespace FlowScript {
         /** Set to true if session storage is available. */
         export var hasSessionStorage: boolean = _storageAvailable("sessionStorage");
 
-        // ------------------------------------------------------------------------------------------------------------------
-
         export enum StorageType {
             /** Use the local storage. This is a permanent store, until data is removed, or it gets cleared by the user. */
             Local,
             /** Use the session storage. This is a temporary store, and only lasts for as long as the current browser session is open. */
             Session
         }
-
-        export function getStorage(type: StorageType): Storage { // (known issues source: http://caniuse.com/#search=web%20storage)
-            switch (type) {
-                case StorageType.Local:
-                    if (!hasLocalStorage)
-                        throw "Local storage is either not supported, or disabled. Note that local storage is sometimes disabled in mobile browsers while in 'private' mode, or in IE when loading files directly from the file system.";
-                    return localStorage;
-                case StorageType.Session:
-                    if (!hasSessionStorage)
-                        throw "Session storage is either not supported, or disabled. Note that local storage is sometimes disabled in mobile browsers while in 'private' mode, or in IE when loading files directly from the file system.";
-                    return sessionStorage;
-            }
-            throw "Invalid web storage type value: '" + type + "'";
-
-        }
-
-        // ------------------------------------------------------------------------------------------------------------------
-
-        /** The delimiter used to separate key name parts and data values in storage. This should be a Unicode character that is usually never used in most cases. */
-        export var delimiter = "\uFFFC";
-
-        export var storagePrefix = "fs";
-
-        export function makeKeyName(appName: string, dataName: string) {
-            if (!dataName) throw "An data name is required.";
-            if (dataName == delimiter) dataName = ""; // (this is a work-around used to get the prefix part only [fs+delimiter or fs+delimiter+appName]])
-            return storagePrefix + delimiter + (appName || "") + (dataName ? delimiter + dataName : "");
-        }
-
-        /** Set a value for the target storage.  For any optional parameter, pass in 'void 0' (without the quotes) to skip/ignore it.
-        * If 'appVersion' and/or 'dataVersion' is given, the versions are stored with the data.  If the versions don't match
-        * when retrieving the data, then 'null' is returned.
-        * Warning: If the storage is full, then 'false' is returned.
-        * @param {StorageType} type The type of storage to use.
-        * @param {string} name The name of the item to store.
-        * @param {string} value The value of the item to store. If this is undefined (void 0) then any existing value is removed instead.
-        * @param {string} appName An optional application name to provision the data storage under.
-        * @param {string} appVersion An optional application version name to apply to the stored data.  If the given application
-        * version is different from the stored data, the data is reloaded.
-        * Note: This is NOT the data version, but the version of the application itself.
-        * @param {string} dataVersion An optional version for the stored data.  If the given version is different from that of
-        * the stored data, the data is reloaded.
-        */
-        export function set(type: StorageType, name: string, value: string, appName?: string, appVersion?: string, dataVersion?: string): boolean {
-            try {
-                var store = getStorage(type);
-                name = makeKeyName(appName, name);
-                if (value !== void 0)
-                    localStorage.setItem(name, ("" + (appVersion || "")) + "\uFFFC" + ("" + (dataVersion || "")) + "\uFFFC" + value);
-                else
-                    localStorage.removeItem(name);
-                // (note: IE8 has a bug that doesn't allow chars under 0x20 (space): http://caniuse.com/#search=web%20storage)
-                return true;
-            }
-            catch (ex) {
-                return false; // (storage is full, or not available for some reason)
-            }
-        }
-
-        /** Get a value from the target storage.  For any optional parameter, pass in 'void 0' (without the quotes) to skip/ignore it.
-          * If 'appVersion' and/or 'dataVersion' is given, the versions are checked against the data.  If the versions don't 
-          * match, then 'null' is returned.
-          * @param {StorageType} type The type of storage to use.
-          * @param {string} name The name of the item to store.
-          * @param {string} value The value of the item to store.
-          * @param {string} appName An optional application name to provision the data storage under.
-          * @param {string} appVersion An optional application version name to apply to the stored data.  If the given application
-          * version is different from the stored data, the data is reloaded.
-          * Note: This is NOT the data version, but the version of the application itself.
-          * @param {string} dataVersion An optional version for the stored data.  If the given version is different from that of
-          * the stored data, the data is reloaded.
-          */
-        export function get(type: StorageType, name: string, appName?: string, appVersion?: string, dataVersion?: string): string {
-            var store = getStorage(type);
-            var itemKey = makeKeyName(appName, name);
-            var value: string = localStorage.getItem(itemKey);
-            if (value === null) return null;
-            if (value === "") return value;
-
-            var i1 = value.indexOf("\uFFFC");
-            var i2 = value.indexOf("\uFFFC", i1 + 1);
-
-            if (i1 >= 0 && i2 >= 0) {
-                var _appVer = value.substring(0, i1);
-                var _datVer = value.substring(i1 + 1, i2);
-                value = value.substring(i2 + 1);
-                if ((appVersion === void 0 || appVersion === null || appVersion == _appVer) && (dataVersion === void 0 || dataVersion === null || dataVersion == _datVer))
-                    return value;
-                else
-                    return null; // (version mismatch)
-            }
-            else {
-                localStorage.removeItem(itemKey); // (remove the invalid entry)
-                return null; // (version read error [this should ALWAYS exist [even if empty], otherwise the data is not correctly stored])
-            }
-        }
-
-        // ------------------------------------------------------------------------------------------------------------------
-
-        /** Clear all FlowScript data from the specified storage (except save project data). */
-        export function clear(type: StorageType): void {
-            var store = getStorage(type);
-            var sysprefix = makeKeyName(null, delimiter); // (get just the system storage prefix part)
-            for (var i = store.length - 1; i >= 0; --i) {
-                var key = store.key(i);
-                if (key.substring(0, sysprefix.length) == sysprefix) // (note: saved project data starts with "fs-<project_name>:")
-                    store.removeItem(key);
-            }
-        }
-
-        // ------------------------------------------------------------------------------------------------------------------
-        // Cleanup web storage if debugging.
-
-        if (debugging && hasLocalStorage)
-            clear(StorageType.Local);
 
         // ------------------------------------------------------------------------------------------------------------------
     }

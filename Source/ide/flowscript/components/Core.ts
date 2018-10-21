@@ -370,8 +370,8 @@ module FlowScript.Core {
         /** Contains statements for comparing values. */
         Comparison: Comparison.Comparison;
 
-        /** Contains components for rendering HTML. */
-        HTML: HTML.HTML;
+        // /** Contains components for rendering HTML. */
+        // HTML: HTML.HTML;
 
         /** Represents a custom code block. */
         Code: Code;
