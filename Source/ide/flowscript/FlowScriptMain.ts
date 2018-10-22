@@ -125,13 +125,13 @@ namespace FlowScript {
         /** Saves the script to data objects (calls this.save()) and uses the JSON object to serialize them into a string. */
         serialize(): string;
 
-        /** Serializes and saves this script to local storage under a specified name. The storage key name is returned.
-          * @param {string} projectName The name of the project this script should be saved under. 
-          * @param {string} scriptName A script name, or null/undefined to use the default name "Script" (which assumes the
-          * working script for the project).
-          * @param {string} scriptVersion An optional version identifier. It allows multiple versions of scripts with the same name. 
-          */
-        saveToStorage(projectName: string, scriptName?: string, scriptVersion?: string | number): string;
+        // /** Serializes and saves this script to local storage under a specified name. The storage key name is returned.
+        //   * @param {string} projectName The name of the project this script should be saved under. 
+        //   * @param {string} scriptName A script name, or null/undefined to use the default name "Script" (which assumes the
+        //   * working script for the project).
+        //   * @param {string} scriptVersion An optional version identifier. It allows multiple versions of scripts with the same name. 
+        //   */
+        // saveToStorage(projectName: string, scriptName?: string, scriptVersion?: string | number): string;
 
         /** Run the script with the supplied arguments. */
         run(args: ICallerArguments): RuntimeContext;
@@ -321,11 +321,11 @@ namespace FlowScript {
             return json;
         }
 
-        /** Serializes and saves this script to local storage under a specified name. The storage key name is returned. */
-        saveToStorage(projectName: string, scriptName?: string, scriptVersion?: string | number): string {
-            var json = this.serialize();
-            return Storage.saveProjectData(projectName, scriptName || "Script", json, scriptVersion);
-        }
+        // /** Serializes and saves this script to local storage under a specified name. The storage key name is returned. */
+        // saveToStorage(projectName: string, scriptName?: string, scriptVersion?: string | number): string {
+        //     var json = this.serialize();
+        //     return Storage.saveProjectData(projectName, scriptName || "Script", json, scriptVersion);
+        // }
 
         // --------------------------------------------------------------------------------------------------------------------
 

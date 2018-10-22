@@ -1,4 +1,4 @@
-﻿interface Location { }
+﻿interface Location { search: any; }
 var location: Location;
 interface Navigator { }
 var navigator: Navigator;
