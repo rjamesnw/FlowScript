@@ -138,7 +138,7 @@
 
   <type name="Math" tip="Contains statements for comparing values.">
 
-    <component name="Add" title="$a + $b" componentType="Operation" returnType="*" tip="Tests if one value is greater than or equal to another.">
+    <component name="Add" title="$a + $b" componentType="Operation" returnType="*" tip="Adds one value to another.">
       <parameter name="a" types="All" />
       <parameter name="b" types="All" />
       <typeMap types="Boolean, Boolean" result="Integer" />
