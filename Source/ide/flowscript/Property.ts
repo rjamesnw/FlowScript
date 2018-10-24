@@ -244,7 +244,7 @@ module FlowScript {
 
     export interface IPropertyCollectionHandler { (collection: PropertyCollection, p: Property, data?: any, ev?: IEventDispatcher<PropertyCollection>): void; }
 
-    export interface ISavedPropeties { properties: ISavedProperty[]; }
+    export interface ISavedProperties { properties: ISavedProperty[]; }
 
     // ========================================================================================================================
 
@@ -441,8 +441,8 @@ module FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        save(target?: ISavedPropeties): ISavedPropeties {
-            target = target || <ISavedPropeties>{};
+        save(target?: ISavedProperties): ISavedProperties {
+            target = target || <ISavedProperties>{};
             target.properties = [];
             for (var i = 0, n = this._properties.length; i < n; ++i)
                 target.properties[i] = this._properties[i].save();

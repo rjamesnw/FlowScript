@@ -485,7 +485,7 @@ namespace FlowScript {
         // --------------------------------------------------------------------------------------------------------------------
 
         _checkMain() {
-            if (!this.script.main || this.script.main.componentType != ComponentTypes.Functional)
+            if (!this.script.Main || this.script.Main.componentType != ComponentTypes.Functional)
                 throw "Error: Cannot add script to compiler without a proper main component.  A proper function-based component is required.";
         }
 
@@ -497,7 +497,7 @@ namespace FlowScript {
             // ... create a default root level renderer ...
             var rootRenderer = TypeRenderer.createRootTypeRenderer(this);
             // ... render the main functional component ...
-            this._renderFunctionalComponent(rootRenderer, this.script.main);
+            this._renderFunctionalComponent(rootRenderer, this.script.Main);
             return rootRenderer.toString(targetVar);
         }
 
@@ -509,7 +509,7 @@ namespace FlowScript {
             // ... create a default root level renderer ...
             var rootRenderer = TypeRenderer.createRootTypeRenderer(this, true);
             // ... render the main functional component ...
-            var mainRenderer = this._renderFunctionalComponent(rootRenderer, this.script.main);
+            var mainRenderer = this._renderFunctionalComponent(rootRenderer, this.script.Main);
             return new Simulator(this, mainRenderer);
         }
 

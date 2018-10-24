@@ -776,9 +776,9 @@ namespace FlowScript {
             return target;
         }
 
-        load(target?: ISavedExpressionReference): ISavedExpressionReference {
+        load(target?: ISavedExpressionReference): this {
             target = target || <ISavedExpressionReference>{};
-            return target;
+            return this;
         }
 
         // --------------------------------------------------------------------------------------------------------------------

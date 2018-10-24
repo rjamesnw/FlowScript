@@ -241,7 +241,7 @@ namespace FlowScript {
             this.rootContext = new RuntimeContext(null);
             this.rootContext.$__compRenderer = this._mainRenderer;
             this.callStack = [];
-            this._enter(this.compiler.script.main.configureRuntimeContext(this.rootContext, args));
+            this._enter(this.compiler.script.Main.configureRuntimeContext(this.rootContext, args));
             return this;
         }
 

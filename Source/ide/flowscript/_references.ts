@@ -3,7 +3,6 @@
 /// <reference path="flowscriptrt.ts" />
 /// <reference path="type.ts" />
 /// <reference path="flowscriptmain.ts" />
-/// <reference path="flowscriptmain.client.ts" />
 /// <reference path="expressions.ts" />
 /// <reference path="property.ts" />
 /// <reference path="component.ts" />
@@ -26,5 +25,6 @@
 /// <reference path="visualtree.ts" />
 /// <reference path="views.ts" />
 /// <reference path="projects.ts" />
+/// <reference path="system.ts" />
 /// <reference path="bootup.ts" />
 // ############################################################################################################################

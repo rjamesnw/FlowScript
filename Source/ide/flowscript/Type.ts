@@ -38,6 +38,13 @@ namespace FlowScript {
             target.type = '' + this._type;
             return target;
         }
+        load(target?: ISavedTrackableObject): this {
+            if (target) {
+                this._id = target.id;
+                this._type = target.type;
+            }
+            return this;
+        }
         // --------------------------------------------------------------------------------------------------------------------
     }
 
@@ -49,7 +56,13 @@ namespace FlowScript {
         defaultType: Type;
     }
 
-    export interface ISavedType extends ISavedTrackableObject { name: string; comment: string; nestedTypes: ISavedType[] }
+    export interface ISavedType extends ISavedTrackableObject {
+        name: string;
+        /** Am optional help tip for this type. */
+        tip?: string;
+        comment: string;
+        nestedTypes: ISavedType[];
+    }
 
     // ========================================================================================================================
 
@@ -98,6 +111,9 @@ namespace FlowScript {
 
         /** A developer comment for this type. */
         comment: string;
+
+        /** An optional help tip for this type. */
+        tip: string;
 
         /** A reference to an inherited type, if any.  Some types (such as objects) inherit properties from their super types if specified. */
         get superType() { return this._superType; }
@@ -227,15 +243,50 @@ namespace FlowScript {
 
             target.name = this.name;
             target.comment = this.comment;
+            target.tip = this.tip;
+
+            super.save(target);
 
             target.nestedTypes = [];
             if (this.nestedTypes)
                 for (var i = 0, n = this.nestedTypes.length; i < n; ++i)
                     target.nestedTypes[i] = this._nestedTypes[i].save();
 
-            super.save(target);
-
             return target;
+        }
+
+        load(target?: ISavedType): this {
+            if (target) {
+                this.name = target.name;
+                this.comment = target.comment;
+                this.tip = target.tip;
+
+                super.load(target);
+
+                if (target.nestedTypes)
+                    for (var i = 0, n = target.nestedTypes.length; i < n; ++i)
+                        this.nestedTypes[i] = Type.load(this, <ISavedComponent>target.nestedTypes[i]);
+            }
+
+            return this;
+        }
+
+        static load(parent: Type, target?: ISavedType): Type {
+            if (target) {
+                var compInfo = <ISavedComponent>target;
+                var type: Type;
+                if (compInfo.componentType) {
+                    type = new Component(parent, compInfo.componentType, compInfo.name, compInfo.title).load(compInfo);
+                } else {
+                    type = new Type(parent, target.name).load(target);
+                }
+                type.load(target);
+            }
+
+            return null;
+        }
+
+        private static _loadType(parent: Type, target: ISavedComponent): Type {
         }
 
         // --------------------------------------------------------------------------------------------------------------------

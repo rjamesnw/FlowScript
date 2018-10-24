@@ -6,7 +6,7 @@
         "module": "commonjs",
         "esModuleInterop": true,
         "lib": [
-            "es2017", "es2015.promise"
+            "es2017", "es2015.promise", "dom"
         ]
     },
     "include": [

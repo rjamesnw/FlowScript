@@ -11,30 +11,30 @@
 
     // ========================================================================================================================
 
-    export class Main extends Component {
-        constructor() { super(null, ComponentTypes.Functional, "Main", "Main"); }
+    export class FlowScriptIDE_Main extends FlowScript.Core.Main {
+        constructor() { super(); }
 
         onInit() {
             var fs = this.script;
             var appNS = fs.System.add("Tests");
 
-            fs.main.defineDefaultReturnVar();
+            fs.Main.defineDefaultReturnVar();
 
-            fs.main.defineLocalVar("x", [fs.System.Double]),
-                fs.main.defineLocalVar("y", [fs.System.Double]);
+            fs.Main.defineLocalVar("x", [fs.System.Double]),
+                fs.Main.defineLocalVar("y", [fs.System.Double]);
 
-            var line = fs.main.block.newLine();
+            var line = fs.Main.block.newLine();
             var statement = line.addStatement(fs.System.ControlFlow.Loop, {
-                0: new Block(fs.main).newLine().addStatement(fs.System.Assign, { 0: fs.main.getProperty("x").createExpression(), 1: new Constant(0) })
-                    .block.newLine().addStatement(fs.System.Assign, { 0: fs.main.getProperty("y").createExpression(), 1: new Constant(0) }).block.createExpression(),
-                1: new ComponentReference(fs.System.Comparison.LessThan, { 0: fs.main.getProperty("x").createExpression(), 1: new Constant(10) }),
-                2: new Block(fs.main).newLine().addStatement(fs.System.PostDecrement, { 0: fs.main.getProperty("y").createExpression() }).block.createExpression(),
-                3: new Block(fs.main).newLine().addStatement(fs.System.PreIncrement, { 0: fs.main.getProperty("x").createExpression() }).block.createExpression(),
+                0: new Block(fs.Main).newLine().addStatement(fs.System.Assign, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(0) })
+                    .block.newLine().addStatement(fs.System.Assign, { 0: fs.Main.getProperty("y").createExpression(), 1: new Constant(0) }).block.createExpression(),
+                1: new ComponentReference(fs.System.Comparison.LessThan, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(10) }),
+                2: new Block(fs.Main).newLine().addStatement(fs.System.PostDecrement, { 0: fs.Main.getProperty("y").createExpression() }).block.createExpression(),
+                3: new Block(fs.Main).newLine().addStatement(fs.System.PreIncrement, { 0: fs.Main.getProperty("x").createExpression() }).block.createExpression(),
             });
         }
     }
 
-    flowScriptProject.script.main = new Main();
+    flowScriptProject.script.Main = new FlowScriptIDE_Main();
 
     // ========================================================================================================================
     
@@ -45,18 +45,18 @@
             var fs = this.script;
             var appNS = fs.System.add("Tests");
 
-            fs.main.defineDefaultReturnVar();
+            fs.Main.defineDefaultReturnVar();
 
-            fs.main.defineLocalVar("x", [fs.System.Double]),
-                fs.main.defineLocalVar("y", [fs.System.Double]);
+            fs.Main.defineLocalVar("x", [fs.System.Double]),
+                fs.Main.defineLocalVar("y", [fs.System.Double]);
 
-            var line = fs.main.block.newLine();
+            var line = fs.Main.block.newLine();
             var statement = line.addStatement(fs.System.ControlFlow.Loop, {
-                0: new Block(fs.main).newLine().addStatement(fs.System.Assign, { 0: fs.main.getProperty("x").createExpression(), 1: new Constant(0) })
-                    .block.newLine().addStatement(fs.System.Assign, { 0: fs.main.getProperty("y").createExpression(), 1: new Constant(0) }).block.createExpression(),
-                1: new ComponentReference(fs.System.Comparison.LessThan, { 0: fs.main.getProperty("x").createExpression(), 1: new Constant(10) }),
-                2: new Block(fs.main).newLine().addStatement(fs.System.PostDecrement, { 0: fs.main.getProperty("y").createExpression() }).block.createExpression(),
-                3: new Block(fs.main).newLine().addStatement(fs.System.PreIncrement, { 0: fs.main.getProperty("x").createExpression() }).block.createExpression(),
+                0: new Block(fs.Main).newLine().addStatement(fs.System.Assign, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(0) })
+                    .block.newLine().addStatement(fs.System.Assign, { 0: fs.Main.getProperty("y").createExpression(), 1: new Constant(0) }).block.createExpression(),
+                1: new ComponentReference(fs.System.Comparison.LessThan, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(10) }),
+                2: new Block(fs.Main).newLine().addStatement(fs.System.PostDecrement, { 0: fs.Main.getProperty("y").createExpression() }).block.createExpression(),
+                3: new Block(fs.Main).newLine().addStatement(fs.System.PreIncrement, { 0: fs.Main.getProperty("x").createExpression() }).block.createExpression(),
             });
         }
     }

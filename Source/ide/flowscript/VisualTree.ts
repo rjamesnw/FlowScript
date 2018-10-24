@@ -563,7 +563,7 @@ namespace FlowScript {
             if (!block) return this._createErrorElement("Error: This visual node does not reference a block instance.");
 
             var element = this.createVisualElement("div", parentElement);
-            element.className = blockRef ? "block_referernce" : "block";
+            element.className = blockRef ? "block_reference" : "block";
             element.onclick = (ev: Event) => { this._doSelect(ev, "Code Block"); ev.stopPropagation(); };
 
             if (!blockRef) {

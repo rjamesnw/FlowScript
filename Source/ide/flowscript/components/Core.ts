@@ -4,7 +4,7 @@
 /** The core namespace contains all the very basic low level components that can be used as building blocks.
   * You can think of them as the individual "Lego" pieces that would be use to create the larger parts of a more complex design.
   */
-module FlowScript.Core {
+namespace FlowScript.Core {
     // ========================================================================================================================
     // Core Value Types
 
@@ -296,7 +296,7 @@ module FlowScript.Core {
         }
     }
 
-   export class System extends Type { // (a type that is inferred by the given arguments)
+    export class System extends Type { // (a type that is inferred by the given arguments)
         // *** Contains all the basic/primitive system types ***
 
         /** Represents all types. */
@@ -370,8 +370,8 @@ module FlowScript.Core {
         /** Contains statements for comparing values. */
         Comparison: Comparison.Comparison;
 
-        // /** Contains components for rendering HTML. */
-        // HTML: HTML.HTML;
+        /** Contains components for rendering HTML. */
+        HTML: HTML.HTML;
 
         /** Represents a custom code block. */
         Code: Code;
@@ -432,8 +432,8 @@ module FlowScript.Core {
     // ========================================================================================================================
 
     export class Main extends Component {
-        constructor(script: IFlowScript) {
-            super(script, ComponentTypes.Functional, "Main", null);
+        constructor(typeName = "Main", signatureTitle: string = null, script?: IFlowScript) {
+            super(script, ComponentTypes.Functional, typeName, signatureTitle);
         }
         onInit() {
             super.onInit();
@@ -750,6 +750,46 @@ module FlowScript.Core {
     }
 
     // ========================================================================================================================
+}
+
+// ############################################################################################################################
+
+namespace FlowScript.Components {
+
+    export interface IType {
+        name: string;
+        types?: ITypes;
+        components?: IComponents;
+        tip?: string;
+    }
+
+    export interface ITypes {
+        [index: string]: IComponent | IType;
+    }
+
+    export interface IParameter {
+        name: string;
+        /** Comma separated list of valid types for this property. */
+        types: string;
+        /** True if this property is an alias for another property. */
+        isAlias: boolean;
+        tip?: string;
+    }
+
+    export interface IParameters {
+        [index: string]: IParameter;
+    }
+
+    export interface IComponent extends IType {
+        title?: string;
+        componentType?: ComponentTypes;
+        parameters?: IParameters;
+        returnType?: string;
+    }
+
+    export interface IComponents extends ITypes {
+        [index: string]: IComponent;
+    }
 }
 
 // ############################################################################################################################

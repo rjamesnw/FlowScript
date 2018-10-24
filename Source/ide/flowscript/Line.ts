@@ -95,6 +95,17 @@ namespace FlowScript {
             return target;
         }
 
+        load(target?: ISavedLine): this {
+            if (target) {
+                if(target.statements)
+                    for (var i = 0, n = target.statements.length; i < n; ++i)
+                        this._statements[i] = new Statement(this, null).load(target.statements[i]);
+
+                super.load(target);
+            }
+            return target;
+        }
+
         // --------------------------------------------------------------------------------------------------------------------
 
         addStatement(action: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[]): Statement {

@@ -141,7 +141,7 @@ declare namespace FlowScript {
       * Note: While it's always better to check objects for supported functions, sometimes an existing function may take different
       * parameters based on the browser (such as 'Worker.postMessage()' using transferable objects with IE vs All Others [as usual]).
       */
-    module Browser {
+    namespace Browser {
         /** A list of browsers that can be currently detected. */
         enum BrowserTypes {
             /** Browser is not yet detected, or detection failed. */
@@ -297,7 +297,7 @@ declare namespace FlowScript {
             [eventName: string]: ICallableComponent[];
         };
     }
-    module Utilities {
+    namespace Utilities {
         /** Creates and returns a new version-4 (randomized) GUID/UUID (globally unique identifier). The uniqueness of the
           * result is enforced by locking the first part down to the current local date/time (not UTC) in milliseconds, along
           * with a counter value in case of fast repetitive calls. The rest of the ID is also randomized with the current local
@@ -358,11 +358,11 @@ declare namespace FlowScript {
         var FUNC_NAME_REGEX: RegExp;
         /** Attempts to pull the function name from the function reference, and returns 'undefined' (void 0) for anonymous functions. */
         function getFunctionName(func: Function): string;
-        module RegEx {
+        namespace RegEx {
             /** Escapes a RegEx string so it behaves like a normal string. This is useful for RexEx string based operations, such as 'replace()'. */
             function escapeRegex(regExStr: string): string;
         }
-        module Encoding {
+        namespace Encoding {
             enum Base64Modes {
                 /** Use standard Base64 encoding characters. */
                 Standard = 0,
@@ -391,14 +391,11 @@ declare namespace FlowScript {
             */
             function base64Decode(value: string, mode?: Base64Modes): string;
         }
-        module HTML {
-            function uncommentHTML(html: string): string;
-            function getCommentText(html: string): string;
-            function getScriptCommentText(html: string): string;
+        namespace HTML {
             function clearChildNodes(node: Node): Node;
         }
-        module Data {
-            module JSON {
+        namespace Data {
+            namespace JSON {
                 /** Converts a JSON string into an object, with nested objects as required.
                   * The JSON format is validated first before conversion.
                   */
@@ -408,7 +405,7 @@ declare namespace FlowScript {
         }
     }
     /** Network communication utilities. */
-    module Net {
+    namespace Net {
         interface IHTTPRequestListener<T extends HTTPRequest> {
             (request: T, ev?: Event): void;
         }
@@ -484,7 +481,7 @@ declare namespace FlowScript {
         function get(url: string, payload?: IHTTPRequestPayload, cacheMode?: CacheMode, appName?: string, appVersion?: string): CachedRequest;
     }
     /** Web storage utilities. */
-    module Storage {
+    namespace Storage {
         /** Set to true if local storage is available. */
         var hasLocalStorage: boolean;
         /** Set to true if session storage is available. */
@@ -591,6 +588,8 @@ declare namespace FlowScript {
     }
     interface ISavedType extends ISavedTrackableObject {
         name: string;
+        /** Am optional help tip for this type. */
+        tip?: string;
         comment: string;
         nestedTypes: ISavedType[];
     }
@@ -606,8 +605,6 @@ declare namespace FlowScript {
         static All: Core.All;
         /** Use internally with component return types to infer the resulting type based on given arguments. */
         static Inferred: Core.Inferred;
-        /** A user defined visual element to associate with this component. This is not used internally. */
-        visualElement: HTMLElement;
         /** A user defined arbitrary value to associate with this component. This is not used internally. */
         tag: any;
         /** Returns a reference to the parent type.  If there is no parent, or the parent is the script root namespace, then 'null' is returned.
@@ -621,6 +618,8 @@ declare namespace FlowScript {
         readonly script: IFlowScript;
         /** A developer comment for this type. */
         comment: string;
+        /** An optional help tip for this type. */
+        tip: string;
         /** A reference to an inherited type, if any.  Some types (such as objects) inherit properties from their super types if specified. */
         superType: Component;
         private _superType;
@@ -832,7 +831,7 @@ declare namespace FlowScript {
         /** The root type for all other types. */
         System: Core.System;
         /** The main entry component.  When the script starts, this is the first component run. */
-        main: Component;
+        Main: Component;
         /** Resolves a type path under this script.  Script instances are the root of all namespaces and types.
           * Examples: 'System', 'System.String', 'Main' (for the main entry component), 'Tests' (default namespace for test components), etc.
           * @param {function} requiredType A required type reference that the returned type must be an instance of.
@@ -1123,7 +1122,7 @@ declare namespace FlowScript {
         constructor(expr: Expression, parent?: Expression);
         protected _clone(parent?: Expression): Expression;
         save(target?: ISavedExpressionReference): ISavedExpressionReference;
-        load(target?: ISavedExpressionReference): ISavedExpressionReference;
+        load(target?: ISavedExpressionReference): this;
         toString(): string;
     }
     interface ISavedConstant extends ISavedExpression {
@@ -1241,7 +1240,7 @@ declare module FlowScript {
     interface IPropertyCollectionHandler {
         (collection: PropertyCollection, p: Property, data?: any, ev?: IEventDispatcher<PropertyCollection>): void;
     }
-    interface ISavedPropeties {
+    interface ISavedProperties {
         properties: ISavedProperty[];
     }
     class PropertyCollection {
@@ -1294,7 +1293,7 @@ declare module FlowScript {
         shift(): Property;
         /** Clear all properties from this collection. */
         clear(): void;
-        save(target?: ISavedPropeties): ISavedPropeties;
+        save(target?: ISavedProperties): ISavedProperties;
     }
     interface ISavedPropertyReference extends ISavedExpression {
         propertyPath: string;
@@ -1374,10 +1373,10 @@ declare namespace FlowScript {
     interface ISavedComponent extends ISavedType {
         title: string;
         blocks: ISavedBlock[];
-        parameters: ISavedPropeties;
-        localVars: ISavedPropeties;
-        returnVars: ISavedPropeties;
-        instanceProperties: ISavedPropeties;
+        parameters: ISavedProperties;
+        localVars: ISavedProperties;
+        returnVars: ISavedProperties;
+        instanceProperties: ISavedProperties;
         events: ISavedEvent[];
     }
     interface ITitleParseResult {
@@ -1446,6 +1445,7 @@ declare namespace FlowScript {
         readonly hasDataObjectTypeParent: boolean;
         constructor(parent: Type, componentType: ComponentTypes, typeName: string, signatureTitle: string, script?: IFlowScript);
         save(target?: ISavedComponent): ISavedComponent;
+        load(target?: ISavedComponent): this;
         addBlock(block?: Block): Block;
         removeBlock(block?: Block): Block;
         private _checkName;
@@ -1520,7 +1520,7 @@ declare namespace FlowScript {
           */
         defineInstanceType(type: Type): Component;
         /** Register a callback event. */
-        registerEvent(name: string): Event;
+        registerEvent(name: string): object;
         /** Configures a new runtime context with the supplied arguments. */
         configureRuntimeContext(ctx: RuntimeContext, args?: ICallerArguments): RuntimeContext;
         /** Sets an argument on any target object to a given value based on the expected parameters of this component. */
@@ -1702,7 +1702,7 @@ declare namespace FlowScript {
         createVisualTree<T extends VisualNode>(parent?: VisualNode, visualNodeType?: IVisualNodeType<T>): T;
         protected _clone(parent?: Expression): BlockReference;
         save(target?: ISavedBlockReference): ISavedBlockReference;
-        load(target?: ISavedBlockReference): ISavedBlockReference;
+        load(target?: ISavedBlockReference): this;
         toString(): string;
     }
 }
@@ -2022,7 +2022,7 @@ declare module FlowScript.Core {
         onInit(): void;
     }
     class Main extends Component {
-        constructor(script: IFlowScript);
+        constructor(typeName?: string, signatureTitle?: string, script?: IFlowScript);
         onInit(): void;
     }
     class Operator extends Component {
@@ -3166,11 +3166,9 @@ declare namespace FlowScript {
         constructor(
         /** The title of the project. */ title: string, 
         /** The project's description. */ description?: string);
-        save(): string;
         addToBin(expr: Expression, triggerEvent?: boolean): void;
         removeFromBin(expr: Expression, triggerEvent?: boolean): void;
         isInBin(expr: Expression): boolean;
-        private _findChildNode;
     }
     /**
      * Holds a collection of projects.
@@ -3194,6 +3192,40 @@ declare namespace FlowScript {
             new (title: string, description?: string): T;
         }): T;
     }
+}
+declare namespace FlowScript.Components {
+    interface IType {
+        name: string;
+        types?: ITypes;
+        components?: IComponents;
+        tip?: string;
+    }
+    interface ITypes {
+        [index: string]: IComponent | IType;
+    }
+    interface IParameter {
+        name: string;
+        /** Comma separated list of valid types for this property. */
+        types: string;
+        /** True if this property is an alias for another property. */
+        isAlias: boolean;
+        tip?: string;
+    }
+    interface IParameters {
+        [index: string]: IParameter;
+    }
+    interface IComponent extends IType {
+        title?: string;
+        componentType?: ComponentTypes;
+        parameters?: IParameters;
+        returnType?: string;
+    }
+    interface IComponents extends ITypes {
+        [index: string]: IComponent;
+    }
+}
+declare namespace FlowScript.Components {
+    var System: IType;
 }
 declare namespace FlowScript {
     /** Contains the default core system types expected by the compiler. Since these core types must always exist, a default

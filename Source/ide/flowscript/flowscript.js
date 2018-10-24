@@ -1031,44 +1031,6 @@ var FlowScript;
         var HTML;
         (function (HTML) {
             //  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . 
-            // Removes the '<!-- -->' comment sequence from the the ends of the specified HTML.
-            function uncommentHTML(html) {
-                var content = ("" + html).trim();
-                var i1 = 0, i2 = content.length;
-                if (content.substring(0, 4) == "<!--")
-                    i1 = 4;
-                if (content.substr(content.length - 3) == "-->")
-                    i2 -= 3;
-                if (i1 > 0 || i2 < content.length)
-                    content = content.substring(i1, i2);
-                return content;
-            }
-            HTML.uncommentHTML = uncommentHTML;
-            //  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . 
-            // Gets the text between '<!-- -->' (assumed to be at each end of the given HTML).
-            function getCommentText(html) {
-                var content = ("" + html).trim();
-                var i1 = content.indexOf("<!--"), i2 = content.lastIndexOf("-->");
-                if (i1 < 0)
-                    i1 = 0;
-                if (i2 < 0)
-                    i2 = content.length;
-                return content.substring(i1, i2);
-            }
-            HTML.getCommentText = getCommentText;
-            //  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . 
-            // Gets the text between '<!-- -->' (assumed to be at each end of the given HTML).
-            function getScriptCommentText(html) {
-                var content = ("" + html).trim();
-                var i1 = content.indexOf("/*"), i2 = content.lastIndexOf("*/");
-                if (i1 < 0)
-                    i1 = 0;
-                if (i2 < 0)
-                    i2 = content.length;
-                return content.substring(i1, i2);
-            }
-            HTML.getScriptCommentText = getScriptCommentText;
-            //  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . 
             function clearChildNodes(node) {
                 if (node)
                     while (node.firstChild)
@@ -1076,6 +1038,7 @@ var FlowScript;
                 return node;
             }
             HTML.clearChildNodes = clearChildNodes;
+            //  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . 
         })(HTML = Utilities.HTML || (Utilities.HTML = {}));
         // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
         var nativeJSON = typeof window != 'undefined' ? window.JSON : void 0;
@@ -1312,7 +1275,6 @@ var FlowScript;
         Storage.hasLocalStorage = _storageAvailable("localStorage");
         /** Set to true if session storage is available. */
         Storage.hasSessionStorage = _storageAvailable("sessionStorage");
-        // ------------------------------------------------------------------------------------------------------------------
         var StorageType;
         (function (StorageType) {
             /** Use the local storage. This is a permanent store, until data is removed, or it gets cleared by the user. */
@@ -1320,6 +1282,7 @@ var FlowScript;
             /** Use the session storage. This is a temporary store, and only lasts for as long as the current browser session is open. */
             StorageType[StorageType["Session"] = 1] = "Session";
         })(StorageType = Storage.StorageType || (Storage.StorageType = {}));
+        // ------------------------------------------------------------------------------------------------------------------
         function getStorage(type) {
             switch (type) {
                 case StorageType.Local:
@@ -1750,11 +1713,12 @@ var FlowScript;
             target = target || {};
             target.name = this.name;
             target.comment = this.comment;
+            target.tip = this.tip;
+            _super.prototype.save.call(this, target);
             target.nestedTypes = [];
             if (this.nestedTypes)
                 for (var i = 0, n = this.nestedTypes.length; i < n; ++i)
                     target.nestedTypes[i] = this._nestedTypes[i].save();
-            _super.prototype.save.call(this, target);
             return target;
         };
         Type.getCompositeTypeKey = function (compositeTypes) {
@@ -2131,11 +2095,11 @@ var FlowScript;
             if (main && main.script != _this_1)
                 throw "The custom 'Main' component does not reference this script instance.  When creating components, make sure to pass in the script instance they will be associated with.";
             _this_1.System = new FlowScript_1.Core.System(_this_1);
-            _this_1._main = main || new FlowScript_1.Core.Main(_this_1);
+            _this_1._main = main || new FlowScript_1.Core.Main(void 0, void 0, _this_1);
             _this_1.initialize(); // (initialize all currently set core types before returning)
             return _this_1;
         }
-        Object.defineProperty(FlowScript.prototype, "main", {
+        Object.defineProperty(FlowScript.prototype, "Main", {
             get: function () { return this._main; },
             set: function (value) {
                 if (value != this._main) {
@@ -2158,7 +2122,7 @@ var FlowScript;
         // --------------------------------------------------------------------------------------------------------------------
         /** Run the script with the supplied arguments. */
         FlowScript.prototype.run = function (args) {
-            if (!this.main)
+            if (!this.Main)
                 throw "Error: The script environment does not have a 'main' entry point set.";
             return new FlowScript_1.Compiler(this).compileSimulation().start(args).run();
         };
@@ -2225,65 +2189,6 @@ var FlowScript;
             this._messages.push(m);
             this._messagesIndex[m.id] = m;
             return m;
-        };
-        // --------------------------------------------------------------------------------------------------------------------
-        FlowScript.prototype.loadSystem = function () {
-            var _this_1 = this;
-            if (!this.System) {
-                var xmlhttp = new XMLHttpRequest();
-                xmlhttp.onerror = function (ev) {
-                    var msg = "Error opening System.xml.";
-                    if (document && document.writeln)
-                        document.writeln(msg);
-                    if (alert)
-                        alert(msg);
-                };
-                xmlhttp.onload = function (ev) {
-                    _this_1.System = _this_1._loadTypeXML(xmlhttp.responseXML, null);
-                    if (!_this_1.System) {
-                        var msg = "Error: Failed to parse the loaded system XML, or the XML data was empty.";
-                        if (document && document.writeln)
-                            document.writeln(msg);
-                        if (alert)
-                            alert(msg);
-                    }
-                };
-                xmlhttp.open("GET", "System.xml", true);
-                xmlhttp.send();
-            }
-        };
-        FlowScript.prototype._loadTypeXML = function (typeNode, parentType) {
-            if (typeNode && typeof typeNode == 'object' && typeNode instanceof Node) {
-                var nodeName = typeNode.nodeName, type;
-                if (typeNode instanceof Element)
-                    if (nodeName == "type") {
-                        // ... create a namespace type ...
-                        var name = typeNode.attributes.getNamedItem('name').value;
-                        var type = new FlowScript_1.Type(parentType, name, this);
-                    }
-                    else if (nodeName == "component") {
-                        // ... create a component type ...
-                        var nameAttr = typeNode.attributes.getNamedItem('name');
-                        var name = nameAttr ? nameAttr.value : null;
-                        var titleAttr = typeNode.attributes.getNamedItem('title');
-                        var title = titleAttr ? titleAttr.value : null;
-                        var compTAttr = typeNode.attributes.getNamedItem('componentType');
-                        if (!compTAttr)
-                            throw "Component type is missing in System.xml for type '" + (parentType ? parentType + "." : "") + (name || title) + "'.";
-                        var compType = compTAttr ? compTAttr.value : null;
-                        try {
-                            var comp = type = new FlowScript_1.Component(parentType, FlowScript_1.ComponentTypes[compType], name, title, this);
-                        }
-                        catch (e) {
-                            throw "Error loading System.xml: " + e;
-                        }
-                    }
-                    else
-                        throw "Unknown element name '" + nodeName + "' in System.xml.";
-                for (var i = 0, n = typeNode.childNodes.length; i < n; ++i)
-                    this._loadTypeXML(typeNode.childNodes[i], type);
-                return type;
-            }
         };
         return FlowScript;
     }(FlowScript_1.Type));
@@ -3045,7 +2950,7 @@ var FlowScript;
         };
         ExpressionReference.prototype.load = function (target) {
             target = target || {};
-            return target;
+            return this;
         };
         // --------------------------------------------------------------------------------------------------------------------
         ExpressionReference.prototype.toString = function () { return "Expression reference: " + this._expr; };
@@ -3856,6 +3761,12 @@ var FlowScript;
             target.events = [];
             _super.prototype.save.call(this, target);
             return target;
+        };
+        Component.prototype.load = function (target) {
+            if (target) {
+            }
+            // super.load(target);
+            return this;
         };
         // --------------------------------------------------------------------------------------------------------------------
         Component.prototype.addBlock = function (block) {
@@ -4811,7 +4722,7 @@ var FlowScript;
             }
             target.blockPath = typePath + ":" + (i >= 0 ? i : block._id);
             // super.load(target);
-            return target;
+            return this;
         };
         // --------------------------------------------------------------------------------------------------------------------
         BlockReference.prototype.toString = function () { return "Block reference: " + (this._block && this.block.serializedPath); };
@@ -5657,8 +5568,10 @@ var FlowScript;
         // ========================================================================================================================
         var Main = /** @class */ (function (_super) {
             __extends(Main, _super);
-            function Main(script) {
-                return _super.call(this, script, FlowScript.ComponentTypes.Functional, "Main", null) || this;
+            function Main(typeName, signatureTitle, script) {
+                if (typeName === void 0) { typeName = "Main"; }
+                if (signatureTitle === void 0) { signatureTitle = null; }
+                return _super.call(this, script, FlowScript.ComponentTypes.Functional, typeName, signatureTitle) || this;
             }
             Main.prototype.onInit = function () {
                 _super.prototype.onInit.call(this);
@@ -7219,7 +7132,7 @@ var FlowScript;
         });
         // --------------------------------------------------------------------------------------------------------------------
         Compiler.prototype._checkMain = function () {
-            if (!this.script.main || this.script.main.componentType != FlowScript.ComponentTypes.Functional)
+            if (!this.script.Main || this.script.Main.componentType != FlowScript.ComponentTypes.Functional)
                 throw "Error: Cannot add script to compiler without a proper main component.  A proper function-based component is required.";
         };
         /** Compiles the underlying script into code.
@@ -7230,7 +7143,7 @@ var FlowScript;
             // ... create a default root level renderer ...
             var rootRenderer = TypeRenderer.createRootTypeRenderer(this);
             // ... render the main functional component ...
-            this._renderFunctionalComponent(rootRenderer, this.script.main);
+            this._renderFunctionalComponent(rootRenderer, this.script.Main);
             return rootRenderer.toString(targetVar);
         };
         // --------------------------------------------------------------------------------------------------------------------
@@ -7240,7 +7153,7 @@ var FlowScript;
             // ... create a default root level renderer ...
             var rootRenderer = TypeRenderer.createRootTypeRenderer(this, true);
             // ... render the main functional component ...
-            var mainRenderer = this._renderFunctionalComponent(rootRenderer, this.script.main);
+            var mainRenderer = this._renderFunctionalComponent(rootRenderer, this.script.Main);
             return new FlowScript.Simulator(this, mainRenderer);
         };
         // --------------------------------------------------------------------------------------------------------------------
@@ -8123,7 +8036,7 @@ var FlowScript;
             this.rootContext = new FlowScript.RuntimeContext(null);
             this.rootContext.$__compRenderer = this._mainRenderer;
             this.callStack = [];
-            this._enter(this.compiler.script.main.configureRuntimeContext(this.rootContext, args));
+            this._enter(this.compiler.script.Main.configureRuntimeContext(this.rootContext, args));
             return this;
         };
         // --------------------------------------------------------------------------------------------------------------------
@@ -8661,7 +8574,7 @@ var FlowScript;
             if (!block)
                 return this._createErrorElement("Error: This visual node does not reference a block instance.");
             var element = this.createVisualElement("div", parentElement);
-            element.className = blockRef ? "block_referernce" : "block";
+            element.className = blockRef ? "block_reference" : "block";
             element.onclick = function (ev) { _this._doSelect(ev, "Code Block"); ev.stopPropagation(); };
             if (!blockRef) {
                 var linesContainer = this.createContainerElement("div", element);
@@ -9545,9 +9458,9 @@ var FlowScript;
             configurable: true
         });
         // --------------------------------------------------------------------------------------------------------------------
-        Project.prototype.save = function () {
-            return this.script.saveToStorage(this.title);
-        };
+        // save(): string {
+        //     return this.script.saveToStorage(this.title);
+        // }
         // --------------------------------------------------------------------------------------------------------------------
         Project.prototype.addToBin = function (expr, triggerEvent) {
             if (triggerEvent === void 0) { triggerEvent = true; }
@@ -9567,16 +9480,6 @@ var FlowScript;
             }
         };
         Project.prototype.isInBin = function (expr) { return this._expressionBin.indexOf(expr) >= 0; };
-        // --------------------------------------------------------------------------------------------------------------------
-        Project.prototype._findChildNode = function (node, fstype) {
-            if (node) {
-                for (var i = 0, len = node.childNodes.length; i < len; ++i)
-                    if (node.childNodes[i]["$__fs_type"] == fstype)
-                        return node.childNodes[i];
-            }
-            else
-                return null;
-        };
         return Project;
     }());
     FlowScript.Project = Project;
@@ -9602,6 +9505,741 @@ var FlowScript;
     }());
     FlowScript.Projects = Projects;
     // ========================================================================================================================
+})(FlowScript || (FlowScript = {}));
+var FlowScript;
+(function (FlowScript) {
+    var Components;
+    (function (Components) {
+        Components.System = {
+            "name": "System",
+            "types": [
+                {
+                    "name": "Any",
+                    "tip": "A type that matches all other types."
+                },
+                {
+                    "name": "Property",
+                    "tip": "Represents a property type reference."
+                },
+                {
+                    "name": "CodeBlock",
+                    "tip": "Represents a block of script, usually representing code to execute when a condition or event occurs."
+                },
+                {
+                    "name": "FunctionalComponent",
+                    "tip": "Represents a callable component."
+                },
+                {
+                    "name": "Event",
+                    "tip": "Represents an asynchronous callback event that can be triggered at a future time.\\r\\nNote: It is possible for events to be synchronous in certain cases, but they should be treated as though they are not."
+                },
+                {
+                    "name": "Binary",
+                    "tip": "The binary namespace contains binary related component types.",
+                    "components": [
+                        {
+                            "name": "Not",
+                            "title": "not $a",
+                            "componentType": "Operation",
+                            "isUnary": "true",
+                            "returnType": "Boolean",
+                            "parameters": [{
+                                    "name": "a",
+                                    "types": "Boolean,Integer"
+                                }]
+                        },
+                        {
+                            "name": "XOR",
+                            "title": "xor $a",
+                            "componentType": "Operation",
+                            "isUnary": "true",
+                            "returnType": "Integer",
+                            "parameters": [{
+                                    "name": "a",
+                                    "types": "Boolean,Integer"
+                                }]
+                        },
+                        {
+                            "name": "ShiftLeft",
+                            "title": "$value << $count",
+                            "componentType": "Operation",
+                            "isUnary": "true",
+                            "returnType": "Integer",
+                            "parameters": [
+                                {
+                                    "name": "value",
+                                    "types": "Boolean,Integer"
+                                },
+                                {
+                                    "name": "count",
+                                    "types": "Boolean,Integer"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "ShiftRight",
+                            "title": "$value >> $count",
+                            "componentType": "Operation",
+                            "isUnary": "true",
+                            "returnType": "Integer",
+                            "parameters": [
+                                {
+                                    "name": "value",
+                                    "types": "Boolean,Integer"
+                                },
+                                {
+                                    "name": "count",
+                                    "types": "Boolean,Integer"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Comparison",
+                    "tip": "Contains components for comparing values.",
+                    "components": [
+                        {
+                            "name": "Equals",
+                            "title": "$a == $b",
+                            "componentType": "Operation",
+                            "returnType": "Boolean",
+                            "tip": "Tests if one value equals another.",
+                            "parameters": [
+                                {
+                                    "name": "a",
+                                    "types": "All"
+                                },
+                                {
+                                    "name": "b",
+                                    "types": "All"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "StrictEquals",
+                            "title": "$a === $b",
+                            "componentType": "Operation",
+                            "returnType": "Boolean",
+                            "tip": "Tests if one value AND its type equals another.",
+                            "parameters": [
+                                {
+                                    "name": "a",
+                                    "types": "All"
+                                },
+                                {
+                                    "name": "b",
+                                    "types": "All"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "NotEquals",
+                            "title": "$a != $b",
+                            "componentType": "Operation",
+                            "returnType": "Boolean",
+                            "tip": "Tests if one value does NOT equal another.",
+                            "parameters": [
+                                {
+                                    "name": "a",
+                                    "types": "All"
+                                },
+                                {
+                                    "name": "b",
+                                    "types": "All"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "StrictNotEquals",
+                            "title": "$a !== $b",
+                            "componentType": "Operation",
+                            "returnType": "Boolean",
+                            "tip": "Tests if one value AND its type do NOT equal another.",
+                            "parameters": [
+                                {
+                                    "name": "a",
+                                    "types": "All"
+                                },
+                                {
+                                    "name": "b",
+                                    "types": "All"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "LessThan",
+                            "title": "$a < $b",
+                            "componentType": "Operation",
+                            "returnType": "Boolean",
+                            "tip": "Tests if one value is less than another.",
+                            "parameters": [
+                                {
+                                    "name": "a",
+                                    "types": "All"
+                                },
+                                {
+                                    "name": "b",
+                                    "types": "All"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "GreaterThan",
+                            "title": "$a > $b",
+                            "componentType": "Operation",
+                            "returnType": "Boolean",
+                            "tip": "Tests if one value is greater than another.",
+                            "parameters": [
+                                {
+                                    "name": "a",
+                                    "types": "All"
+                                },
+                                {
+                                    "name": "b",
+                                    "types": "All"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "LessThanOrEqual",
+                            "title": "$a >= $b",
+                            "componentType": "Operation",
+                            "returnType": "Boolean",
+                            "tip": "Tests if one value is less than or equal to another.",
+                            "parameters": [
+                                {
+                                    "name": "a",
+                                    "types": "All"
+                                },
+                                {
+                                    "name": "b",
+                                    "types": "All"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "GreaterThanOrEqual",
+                            "title": "$a >= $b",
+                            "componentType": "Operation",
+                            "returnType": "Boolean",
+                            "tip": "Tests if one value is greater than or equal to another.",
+                            "parameters": [
+                                {
+                                    "name": "a",
+                                    "types": "All"
+                                },
+                                {
+                                    "name": "b",
+                                    "types": "All"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Math",
+                    "tip": "Contains statements for comparing values.",
+                    "components": [
+                        {
+                            "name": "Add",
+                            "title": "$a + $b",
+                            "componentType": "Operation",
+                            "returnType": "*",
+                            "tip": "Adds one value to another.",
+                            "parameters": [
+                                {
+                                    "name": "a",
+                                    "types": "All"
+                                },
+                                {
+                                    "name": "b",
+                                    "types": "All"
+                                }
+                            ],
+                            "typeMaps": [
+                                {
+                                    "types": "Boolean, Boolean",
+                                    "result": "Integer"
+                                },
+                                {
+                                    "types": "Boolean, Currency",
+                                    "result": "Currency"
+                                },
+                                {
+                                    "types": "Boolean, DateTime",
+                                    "result": "DateTime"
+                                },
+                                {
+                                    "types": "Boolean, Double",
+                                    "result": "Double"
+                                },
+                                {
+                                    "types": "Boolean, Integer",
+                                    "result": "Integer"
+                                },
+                                {
+                                    "types": "Currency, Boolean",
+                                    "result": "Currency"
+                                },
+                                {
+                                    "types": "Currency, Currency",
+                                    "result": "Currency"
+                                },
+                                {
+                                    "types": "Currency, Double",
+                                    "result": "Currency"
+                                },
+                                {
+                                    "types": "Currency, Integer",
+                                    "result": "Currency"
+                                },
+                                {
+                                    "types": "DateTime, Boolean",
+                                    "result": "DateTime"
+                                },
+                                {
+                                    "types": "DateTime, DateTime",
+                                    "result": "DateTime"
+                                },
+                                {
+                                    "types": "DateTime, Double",
+                                    "result": "DateTime"
+                                },
+                                {
+                                    "types": "DateTime, Integer",
+                                    "result": "DateTime"
+                                },
+                                {
+                                    "types": "Double, Boolean",
+                                    "result": "Integer"
+                                },
+                                {
+                                    "types": "Double, Currency",
+                                    "result": "Currency"
+                                },
+                                {
+                                    "types": "Double, DateTime",
+                                    "result": "DateTime"
+                                },
+                                {
+                                    "types": "Double, Double",
+                                    "result": "Double"
+                                },
+                                {
+                                    "types": "Double, Integer",
+                                    "result": "Double"
+                                },
+                                {
+                                    "types": "Integer, Boolean",
+                                    "result": "Integer"
+                                },
+                                {
+                                    "types": "Integer, Currency",
+                                    "result": "Currency"
+                                },
+                                {
+                                    "types": "Integer, DateTime",
+                                    "result": "DateTime"
+                                },
+                                {
+                                    "types": "Integer, Double",
+                                    "result": "Double"
+                                },
+                                {
+                                    "types": "Integer, Integer",
+                                    "result": "Integer"
+                                },
+                                {
+                                    "types": "String, All",
+                                    "result": "String"
+                                },
+                                {
+                                    "types": "All, String",
+                                    "result": "String"
+                                },
+                                {
+                                    "types": "Any, All",
+                                    "result": "Any"
+                                },
+                                {
+                                    "types": "All, Any",
+                                    "result": "Any"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Multiply",
+                            "title": "$a * $b",
+                            "componentType": "Operation",
+                            "returnType": "*",
+                            "tip": "Multiple two numerical values.",
+                            "parameters": [
+                                {
+                                    "name": "a",
+                                    "types": "Double, Integer"
+                                },
+                                {
+                                    "name": "b",
+                                    "types": "Double, Integer"
+                                }
+                            ],
+                            "typeMaps": [
+                                {
+                                    "types": "Double, Double",
+                                    "result": "Double"
+                                },
+                                {
+                                    "types": "Double, Integer",
+                                    "result": "Double"
+                                },
+                                {
+                                    "types": "Integer, Double",
+                                    "result": "Double"
+                                },
+                                {
+                                    "types": "Integer, Integer",
+                                    "result": "Integer"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "SQRT",
+                            "title": "√$a",
+                            "componentType": "Operation",
+                            "returnType": "Double",
+                            "tip": "Gets the square root of a value.",
+                            "parameters": [{
+                                    "name": "a",
+                                    "types": "Double, Integer"
+                                }]
+                        }
+                    ]
+                },
+                {
+                    "name": "ControlFlow",
+                    "tip": "Contains statements for controlling script execution flow.",
+                    "components": [
+                        {
+                            "name": "If",
+                            "title": "if $condition then $block",
+                            "componentType": "ControlFlow",
+                            "tip": "Executes a block of script based if a given conditioon is true (false = 0 = null = \"\", and anyything else is true).",
+                            "parameters": [
+                                {
+                                    "name": "condition",
+                                    "types": "Boolean"
+                                },
+                                {
+                                    "name": "block",
+                                    "types": "CodeBlock"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "IfElse",
+                            "title": "if $condition then $block1 else $block2",
+                            "componentType": "ControlFlow",
+                            "tip": "Executes a block of script based if a given conditioon is true (false = 0 = null = \"\", and anyything else is true).",
+                            "parameters": [
+                                {
+                                    "name": "condition",
+                                    "types": "Boolean"
+                                },
+                                {
+                                    "name": "block1",
+                                    "types": "CodeBlock"
+                                },
+                                {
+                                    "name": "block2",
+                                    "types": "CodeBlock"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "While",
+                            "title": "while $condition do $block",
+                            "componentType": "ControlFlow",
+                            "tip": "Executes a block of script while a given conditioon is true (false = 0 = null = \"\", and anyything else is true).",
+                            "parameters": [
+                                {
+                                    "name": "condition",
+                                    "types": "Boolean"
+                                },
+                                {
+                                    "name": "block",
+                                    "types": "CodeBlock"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "DoWhile",
+                            "title": "do $block while $condition",
+                            "componentType": "ControlFlow",
+                            "tip": "Executes a block of script while a given conditioon is true (false = 0 = null = \"\", and anyything else is true).",
+                            "parameters": [
+                                {
+                                    "name": "condition",
+                                    "types": "Boolean"
+                                },
+                                {
+                                    "name": "block",
+                                    "types": "CodeBlock"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Loop",
+                            "title": "with $init while $condition loop $block and repeat with $update",
+                            "componentType": "ControlFlow",
+                            "tip": "Loops a given block of script while a given conditioon is true (false = 0 = null = \"\", and anything else is true).",
+                            "parameters": [
+                                {
+                                    "name": "init",
+                                    "types": "CodeBlock"
+                                },
+                                {
+                                    "name": "condition",
+                                    "types": "Boolean"
+                                },
+                                {
+                                    "name": "block",
+                                    "types": "CodeBlock"
+                                },
+                                {
+                                    "name": "update",
+                                    "types": "CodeBlock"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Net",
+                    "tip": "Contains components for rendering HTML.",
+                    "component": {
+                        "name": "LoadFromURL",
+                        "title": "Load from url: $url, using method: $method",
+                        "componentType": "Functional",
+                        "parameters": [{
+                                "name": "url",
+                                "types": "String",
+                                "validation": "^(\\w+:\\/\\/)?((?:\\w*):(?:\\w*)@)?((?:\\w+)(?:\\.\\w+)*)?((?:\\/[-_a-zA-Z0-9.~!$&'()*+,;=:@%]+)*\\/?)?(\\?\\w+=.*)?(#.*)?$"
+                            }]
+                    }
+                },
+                {
+                    "name": "HTML",
+                    "tip": "Contains components for rendering HTML."
+                }
+            ],
+            "components": [
+                {
+                    "name": "Boolean",
+                    "title": "Boolean($?value)",
+                    "componentType": "Unary",
+                    "returnType": "Boolean",
+                    "tip": "Represents a boolean (true/false) type."
+                },
+                {
+                    "name": "String",
+                    "title": "String($?value)",
+                    "componentType": "Unary",
+                    "returnType": "String",
+                    "tip": "Represents a string of characters."
+                },
+                {
+                    "name": "Double",
+                    "title": "Double($?value)",
+                    "componentType": "Unary",
+                    "returnType": "Double",
+                    "tip": "Represents a 64-bit floating point number."
+                },
+                {
+                    "name": "Currency",
+                    "title": "Currency($?value)",
+                    "componentType": "Unary",
+                    "returnType": "Currency",
+                    "tip": "Represents currency using higher precision that a double type."
+                },
+                {
+                    "name": "Integer",
+                    "title": "Integer($?value)",
+                    "componentType": "Unary",
+                    "returnType": "Integer",
+                    "tip": "Represents a whole number."
+                },
+                {
+                    "name": "DateTime",
+                    "title": "DateTime($?value)",
+                    "componentType": "Unary",
+                    "returnType": "DateTime",
+                    "tip": "Represents the date and time in the form of a double value.",
+                    "parameters": [{
+                            "name": "value",
+                            "types": "DateTime,Double,Integer,String"
+                        }]
+                },
+                {
+                    "name": "Object",
+                    "title": "Object($?value)",
+                    "componentType": "Object",
+                    "returnType": "Object",
+                    "tip": "Represents a regular expression object."
+                },
+                {
+                    "name": "Array",
+                    "title": "Array($?value)",
+                    "componentType": "Unary",
+                    "returnType": "Array",
+                    "tip": "Represents a one dimensional array object."
+                },
+                {
+                    "name": "RegEx",
+                    "title": "RegEx($?value)",
+                    "componentType": "Unary",
+                    "returnType": "RegEx",
+                    "tip": "Represents a regular expression object."
+                },
+                {
+                    "name": "Assign",
+                    "title": "$a = $b",
+                    "componentType": "Assignment",
+                    "returnType": "*",
+                    "tip": "Assign a parameter, local variable, or return target with the value of a given expression.",
+                    "parameters": [
+                        {
+                            "name": "a",
+                            "types": "Property",
+                            "isAlias": "true",
+                            "tip": "Set a property that will received the value of 'b'."
+                        },
+                        {
+                            "name": "b",
+                            "types": "Any",
+                            "tip": "The value to assign to 'a'.  Though this is 'any' type, the type must be assignable to 'a' at compile time."
+                        }
+                    ]
+                },
+                {
+                    "name": "Accessor",
+                    "title": "$a.$b",
+                    "componentType": "Operation",
+                    "returnType": "*",
+                    "tip": "Used to access properties of an object.",
+                    "parameters": [
+                        {
+                            "name": "a",
+                            "types": "Object",
+                            "isAlias": "true",
+                            "tip": "An object type reference."
+                        },
+                        {
+                            "name": "b",
+                            "types": "String",
+                            "tip": "A property name on the specified object."
+                        }
+                    ]
+                },
+                {
+                    "name": "With",
+                    "title": "with $a do $b",
+                    "componentType": "CodeBlock",
+                    "returnType": "*",
+                    "tip": "Execute a block of lines within the context of a given object.\\r\\nEach statement in the block is checked if the object is a direct parent object, and if so, invokes the call using the object as the $quot;this$quot; context.",
+                    "parameters": [
+                        {
+                            "name": "a",
+                            "types": "Object",
+                            "isAlias": "true"
+                        },
+                        {
+                            "name": "b",
+                            "types": "CodeBlock"
+                        }
+                    ]
+                },
+                {
+                    "name": "WithCall",
+                    "title": "with $a call $b",
+                    "componentType": "Operation",
+                    "returnType": "*",
+                    "tip": "Execute a functional component call using the context of a given object.  The call is invoked using the object as the $quot;this$quot; context.",
+                    "parameters": [
+                        {
+                            "name": "a",
+                            "types": "Object",
+                            "isAlias": "true"
+                        },
+                        {
+                            "name": "b",
+                            "types": "FunctionalComponent"
+                        }
+                    ]
+                },
+                {
+                    "name": "PreIncrement",
+                    "title": "++$n",
+                    "componentType": "Operation",
+                    "isUnary": "true",
+                    "returnType": "*",
+                    "parameters": [{
+                            "name": "n",
+                            "types": "Double,Integer",
+                            "isAlias": "true"
+                        }]
+                },
+                {
+                    "name": "PostIncrement",
+                    "title": "$n++",
+                    "componentType": "Operation",
+                    "isUnary": "true",
+                    "returnType": "*",
+                    "parameters": [{
+                            "name": "n",
+                            "types": "Double,Integer",
+                            "isAlias": "true"
+                        }]
+                },
+                {
+                    "name": "PreDecrement",
+                    "title": "--$n",
+                    "componentType": "Operation",
+                    "isUnary": "true",
+                    "returnType": "*",
+                    "parameters": [{
+                            "name": "n",
+                            "types": "Double,Integer",
+                            "isAlias": "true"
+                        }]
+                },
+                {
+                    "name": "PostDecrement",
+                    "title": "$n--",
+                    "componentType": "Operation",
+                    "isUnary": "true",
+                    "returnType": "*",
+                    "parameters": [{
+                            "name": "n",
+                            "types": "Double,Integer",
+                            "isAlias": "true"
+                        }]
+                },
+                {
+                    "name": "Code",
+                    "title": "$code",
+                    "componentType": "Operation",
+                    "isUnary": "true",
+                    "returnType": "*",
+                    "tip": "Represents a custom block of JavaScript code.\\r\\nNote: JavaScript code must exist, even if just an empty string, otherwise the simulator will fail when this component is reached.",
+                    "parameters": [{
+                            "name": "code",
+                            "types": "String"
+                        }]
+                }
+            ]
+        };
+    })(Components = FlowScript.Components || (FlowScript.Components = {}));
 })(FlowScript || (FlowScript = {}));
 var FlowScript;
 (function (FlowScript) {
@@ -9642,6 +10280,7 @@ var FlowScript;
 /// <reference path="visualtree.ts" />
 /// <reference path="views.ts" />
 /// <reference path="projects.ts" />
+/// <reference path="system.ts" />
 /// <reference path="bootup.ts" />
 // ############################################################################################################################
 //# sourceMappingURL=flowscript.js.map

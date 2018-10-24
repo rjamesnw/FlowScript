@@ -62,12 +62,13 @@ namespace FlowScript {
     // ========================================================================================================================
 
     export interface ISavedComponent extends ISavedType {
+        componentType: ComponentTypes;
         title: string;
         blocks: ISavedBlock[];
-        parameters: ISavedPropeties;
-        localVars: ISavedPropeties;
-        returnVars: ISavedPropeties;
-        instanceProperties: ISavedPropeties;
+        parameters: ISavedProperties;
+        localVars: ISavedProperties;
+        returnVars: ISavedProperties;
+        instanceProperties: ISavedProperties;
         events: ISavedEvent[];
     }
 
@@ -341,6 +342,7 @@ namespace FlowScript {
         save(target?: ISavedComponent): ISavedComponent {
             target = target || <ISavedComponent>{};
 
+            target.type = this._componentType;
             target.title = this.title;
 
             target.blocks = [];
@@ -356,6 +358,22 @@ namespace FlowScript {
             super.save(target);
 
             return target;
+        }
+
+        load(target?: ISavedComponent): this {
+            
+            if (target) {
+                this._componentType = target.componentType;
+                this.title = target.title;
+
+                if (target.blocks)
+                    for (var i = 0, n = target.blocks.length; i < n; ++i)
+                        this._blocks[i] = new Block(this).load(target.blocks[i]);
+            }
+
+            super.load(target);
+
+            return this;
         }
 
         // --------------------------------------------------------------------------------------------------------------------
@@ -1085,10 +1103,10 @@ namespace FlowScript {
         }
 
         load(target?: ISavedBlockReference): ISavedBlockReference {
-            target = target || <ISavedBlockReference>{};
-
-            // super.load(target);
-
+            if (target) {
+                // super.load(target);
+            }
+            
             return target;
         }
 

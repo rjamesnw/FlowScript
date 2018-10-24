@@ -80,6 +80,16 @@ namespace FlowScript {
             return target;
         }
 
+        load(target?: ISavedBlock): this {
+            if (target) {
+                if (target.lines)
+                    for (var i = 0, n = target.lines.length; i < n; ++i)
+                        this.lines[i] = new Line(this).load(target.lines[i]);
+                super.load(target);
+            }
+            return this;
+        }
+
         // --------------------------------------------------------------------------------------------------------------------
 
         /** Returns a new line for this block. */
@@ -212,7 +222,7 @@ namespace FlowScript {
             return target;
         }
 
-        load(target?: ISavedBlockReference): ISavedBlockReference {
+        load(target?: ISavedBlockReference): this {
             target = target || <ISavedBlockReference>{};
 
             var block = this.block;
@@ -244,7 +254,7 @@ namespace FlowScript {
             target.blockPath = typePath + ":" + (i >= 0 ? i : block._id);
 
             // super.load(target);
-            return target;
+            return this;
         }
 
         // --------------------------------------------------------------------------------------------------------------------

@@ -59,13 +59,13 @@
 
     // ... add a new statement in the main block to call the new custom component ...
 
-    fs.main.title = "main $x, $y";
-    fs.main.defineReturnVar(null, fs.System.Double);
+    fs.Main.title = "main $x, $y";
+    fs.Main.defineReturnVar(null, fs.System.Double);
 
-    var line = fs.main.block.newLine();
+    var line = fs.Main.block.newLine();
     var statement = line.addStatement(ds, {
-        dx: fs.main.defineParameter("x", [fs.System.Double]).createExpression(), // (note: can set 'dx:' or '0:' here for defining arguments)
-        1: fs.main.defineParameter("y", [fs.System.Double]).createExpression() // (note: can set '1:' or 'dy:' here for defining arguments),
+        dx: fs.Main.defineParameter("x", [fs.System.Double]).createExpression(), // (note: can set 'dx:' or '0:' here for defining arguments)
+        1: fs.Main.defineParameter("y", [fs.System.Double]).createExpression() // (note: can set '1:' or 'dy:' here for defining arguments),
     });
 
     // ... run the script ...
@@ -82,10 +82,10 @@
     // Test if
     // ########################################################################################################################
 
-    line = fs.main.block.clear().newLine();
+    line = fs.Main.block.clear().newLine();
     statement = line.addStatement(fs.System.ControlFlow.If, {
         0: new Constant(true),
-        1: new Block(fs.main).newLine().addStatement(fs.System.Double, { 0: new Constant(123.456) }).block.createExpression()
+        1: new Block(fs.Main).newLine().addStatement(fs.System.Double, { 0: new Constant(123.456) }).block.createExpression()
     });
 
     compiler = fs.getCompiler();
@@ -98,11 +98,11 @@
     // Test if .. else
     // ########################################################################################################################
 
-    line = fs.main.block.clear().newLine();
+    line = fs.Main.block.clear().newLine();
     statement = line.addStatement(fs.System.ControlFlow.IfElse, {
         0: new Constant(false),
-        1: new Block(fs.main).newLine().addStatement(fs.System.Double, { 0: new Constant(123.456) }).block.createExpression(),
-        2: new Block(fs.main).createExpression()
+        1: new Block(fs.Main).newLine().addStatement(fs.System.Double, { 0: new Constant(123.456) }).block.createExpression(),
+        2: new Block(fs.Main).createExpression()
     });
 
     compiler = fs.getCompiler();
@@ -115,12 +115,12 @@
     // Test while
     // ########################################################################################################################
 
-    line = fs.main.block.clear().newLine();
-    line.addStatement(fs.System.Assign, { 0: fs.main.getProperty("x").createExpression(), 1: new Constant(0) });
-    line = fs.main.block.newLine();
+    line = fs.Main.block.clear().newLine();
+    line.addStatement(fs.System.Assign, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(0) });
+    line = fs.Main.block.newLine();
     statement = line.addStatement(fs.System.ControlFlow.While, {
-        0: new ComponentReference(fs.System.Comparison.LessThan, { 0: fs.main.getProperty("x").createExpression(), 1: new Constant(10) }),
-        1: new Block(fs.main).newLine().addStatement(fs.System.PreIncrement, { 0: fs.main.getProperty("x").createExpression() }).block.createExpression(),
+        0: new ComponentReference(fs.System.Comparison.LessThan, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(10) }),
+        1: new Block(fs.Main).newLine().addStatement(fs.System.PreIncrement, { 0: fs.Main.getProperty("x").createExpression() }).block.createExpression(),
     });
 
     compiler = fs.getCompiler();
@@ -133,12 +133,12 @@
     // Test do .. while
     // ########################################################################################################################
 
-    line = fs.main.block.clear().newLine();
-    line.addStatement(fs.System.Assign, { 0: fs.main.getProperty("x").createExpression(), 1: new Constant(0) });
-    line = fs.main.block.newLine();
+    line = fs.Main.block.clear().newLine();
+    line.addStatement(fs.System.Assign, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(0) });
+    line = fs.Main.block.newLine();
     statement = line.addStatement(fs.System.ControlFlow.DoWhile, {
-        0: new Block(fs.main).newLine().addStatement(fs.System.PreIncrement, { 0: fs.main.getProperty("x").createExpression() }).block.createExpression(),
-        1: new ComponentReference(fs.System.Comparison.LessThan, { 0: fs.main.getProperty("x").createExpression(), 1: new Constant(10) }),
+        0: new Block(fs.Main).newLine().addStatement(fs.System.PreIncrement, { 0: fs.Main.getProperty("x").createExpression() }).block.createExpression(),
+        1: new ComponentReference(fs.System.Comparison.LessThan, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(10) }),
     });
 
     compiler = fs.getCompiler();
@@ -151,14 +151,14 @@
     // Test advanced looping
     // ########################################################################################################################
 
-    line = fs.main.block.clear().newLine();
+    line = fs.Main.block.clear().newLine();
     //line = fs.Main.block.newLine();
     statement = line.addStatement(fs.System.ControlFlow.Loop, {
-        0: new Block(fs.main).newLine().addStatement(fs.System.Assign, { 0: fs.main.getProperty("x").createExpression(), 1: new Constant(0) })
-            .block.newLine().addStatement(fs.System.Assign, { 0: fs.main.getProperty("y").createExpression(), 1: new Constant(0) }).block.createExpression(),
-        1: new ComponentReference(fs.System.Comparison.LessThan, { 0: fs.main.getProperty("x").createExpression(), 1: new Constant(10) }),
-        2: new Block(fs.main).newLine().addStatement(fs.System.PostDecrement, { 0: fs.main.getProperty("y").createExpression() }).block.createExpression(),
-        3: new Block(fs.main).newLine().addStatement(fs.System.PreIncrement, { 0: fs.main.getProperty("x").createExpression() }).block.createExpression(),
+        0: new Block(fs.Main).newLine().addStatement(fs.System.Assign, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(0) })
+            .block.newLine().addStatement(fs.System.Assign, { 0: fs.Main.getProperty("y").createExpression(), 1: new Constant(0) }).block.createExpression(),
+        1: new ComponentReference(fs.System.Comparison.LessThan, { 0: fs.Main.getProperty("x").createExpression(), 1: new Constant(10) }),
+        2: new Block(fs.Main).newLine().addStatement(fs.System.PostDecrement, { 0: fs.Main.getProperty("y").createExpression() }).block.createExpression(),
+        3: new Block(fs.Main).newLine().addStatement(fs.System.PreIncrement, { 0: fs.Main.getProperty("x").createExpression() }).block.createExpression(),
     });
 
     compiler = fs.getCompiler();
