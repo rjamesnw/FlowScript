@@ -99,6 +99,7 @@
 			"typescript",
 			"typescriptreact",
 			"yml"
-		]
+		],
+		"tsimporter.disabled": true
 	}
 }

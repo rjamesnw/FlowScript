@@ -2,10 +2,11 @@
 {
     "extends": "../tsconfig.common.json",
     "compilerOptions": {
+        "target": "es2017", // (Makes sure we take advantage of Node's built-in async functionality.)
         "outFile": "flowscript.js",
         "declaration": true,
         "lib": [
-            "es5", "dom"
+            "es2017", "es2015.promise", "dom"
         ],
         "types": [
         ]

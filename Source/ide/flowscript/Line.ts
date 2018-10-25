@@ -52,9 +52,9 @@ namespace FlowScript {
         }
         getReference(): NamedReference<Line> {
             if (this.script)
-                return new NamedReference<Line>(this.script, this.referenceStr);
+                return new NamedReference<Line>(this.referenceStr);
             else
-                return new NamedReference<Line>(this, null);
+                return NamedReference.fromInstance<Line>(this, null);
         }
 
         // --------------------------------------------------------------------------------------------------------------------
@@ -152,10 +152,10 @@ namespace FlowScript {
     export class LineReference extends Expression {
         // --------------------------------------------------------------------------------------------------------------------
 
-        get script(): IFlowScript { return this._lineRef ? this._lineRef.valueOf().script : null; }
+        get script(): IFlowScript { return this.line ? this.line.script : null; }
 
         /** The line object that is referenced. */
-        get line() { return this._lineRef.valueOf(); }
+        get line() { return this._lineRef && this._lineRef.valueOf() || null; }
         private _lineRef: NamedReference<Line>;
 
         /** The component that the referenced line belongs to. */
@@ -163,13 +163,13 @@ namespace FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        constructor(line: Line, parent?: Expression) {
+        constructor(line: Line | NamedReference<Line>, parent?: Expression) {
             super(parent);
+            var isLine = line instanceof Line;
+            if (!line || typeof line != 'object' || !(isLine || line instanceof NamedReference))
+                throw "A valid line object/reference is required.";
 
-            if (!line || typeof line != 'object' || !(line instanceof Line))
-                throw "A valid line object is required.";
-
-            this._lineRef = line.getReference();
+            this._lineRef = isLine ? (<Line>line).getReference() : <NamedReference<Line>>line;
         }
 
         // --------------------------------------------------------------------------------------------------------------------
@@ -185,7 +185,7 @@ namespace FlowScript {
         // --------------------------------------------------------------------------------------------------------------------
 
         protected _clone(parent?: Expression): LineReference {
-            return new LineReference(this._lineRef.valueOf(), parent);
+            return new LineReference(this.line, parent);
         }
 
         // --------------------------------------------------------------------------------------------------------------------
@@ -193,20 +193,22 @@ namespace FlowScript {
         save(target?: ISavedLineReference): ISavedLineReference {
             target = target || <ISavedLineReference>{};
 
-            target.linePath = this._lineRef.valueOf().serializedPath;
+            target.linePath = this.line.serializedPath;
 
             super.save(target);
             return target;
         }
 
-        load(target?: ISavedLineReference): ISavedLineReference {
-            target = target || <ISavedLineReference>{};
-            return target;
+        load(target?: ISavedLineReference): this {
+            if (target) {
+                this._lineRef = new NamedReference<Line>(this.script, target.linePath);
+            }
+            return this;
         }
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        toString(): string { return "Line reference: " + this._lineRef.valueOf().serializedPath; }
+        toString(): string { return "Line reference: " + this.line.serializedPath; }
 
         // --------------------------------------------------------------------------------------------------------------------
     }

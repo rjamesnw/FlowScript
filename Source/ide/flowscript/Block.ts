@@ -47,9 +47,9 @@ namespace FlowScript {
         }
         getReference(): NamedReference<Block> {
             if (this.script)
-                return new NamedReference<Block>(this.script, this.referenceStr);
+                return new NamedReference<Block>(this.referenceStr);
             else
-                return new NamedReference<Block>(this, null);
+                return NamedReference.fromInstance<Block>(this, null);
         }
 
         // --------------------------------------------------------------------------------------------------------------------
