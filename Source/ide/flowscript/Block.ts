@@ -30,27 +30,39 @@ namespace FlowScript {
 
         get totalLines(): number { return this._lines.length; }
 
-        /** A string path that represents this block during serialization. */
-        get serializedPath(): string {
-            var typePath = this._component ? this._component.fullTypeName : "";
-            var i = this.index;
-            return typePath + ":" + (typePath && i >= 0 ? i : this._id);
-        }
+        // /** A string path that represents this block during serialization. */
+        // get serializedPath(): string {
+        //     var typePath = this._component ? this._component.fullTypeName : "";
+        //     var i = this.index;
+        //     return typePath + ":" + (typePath && i >= 0 ? i : this._id);
+        // }
 
-        /** An instance reference string that represents this block in the system. */
+        /** An instance reference string that represents this block in the system.
+         * Reference strings are used instead of object references to locate components, blocks, or lines. This is especially
+         * handy in cases where an item might get deleted and later restored. In such case the system can remake any connections.
+         * @see getReference()
+         */
         get referenceStr(): string {
             var comp = this.component;
             if (comp)
-                return comp.referenceStr + ".blocks[" + this.index + "]";
+                return comp.referenceStr + ".$[" + this.index + "]";
             else
                 return "[" + this.index + "]";
         }
+
+        /** Gets a @type {NamedReference} reference instance that represents this block in the system. 
+         * @see referenceStr
+         */
         getReference(): NamedReference<Block> {
             if (this.script)
                 return new NamedReference<Block>(this.referenceStr);
             else
                 return NamedReference.fromInstance<Block>(this, null);
         }
+
+        /** Used to dereferences a line by index. 
+         * @see referenceStr */
+        private get $() { return this._lines; }
 
         // --------------------------------------------------------------------------------------------------------------------
 
@@ -161,7 +173,7 @@ namespace FlowScript {
 
     // ========================================================================================================================
 
-    export interface ISavedBlockReference extends ISavedExpression { blockPath: string; }
+    export interface ISavedBlockReference extends ISavedExpression { blockRef: string; }
 
     /** References a block for use in expressions. */
     export class BlockReference extends Expression {
@@ -216,7 +228,7 @@ namespace FlowScript {
             //?if (!typePath || i < 0)
             //    throw "Cannot save a block reference to a block that is not part of a component - there would be no way to reconcile it when loading.";
 
-            target.blockPath = this.block.serializedPath;
+            target.blockRef = this.block.referenceStr;
 
             super.save(target);
             return target;
@@ -230,8 +242,8 @@ namespace FlowScript {
             var typePath = block.component ? block.component.fullTypeName : null;
             var i = block.index;
 
-            if (target.blockPath) {
-                var parts = target.blockPath.split(':');
+            if (target.blockRef) {
+                var parts = target.blockRef.split(':');
 
                 if (parts.length)
                     if (parts.length == 1)
@@ -245,13 +257,13 @@ namespace FlowScript {
                     // ... this is a numerical index into the component blocks ...
                     if (!path) throw "A numerical block index requires a component type path.";
                     var comp = this.script.resolve(path, Component);
-                    if (!comp) throw "There is no component '" + path + "'; cannot reconcile block reference '" + target.blockPath + "'.";
+                    if (!comp) throw "There is no component '" + path + "'; cannot reconcile block reference '" + target.blockRef + "'.";
                     var i = +id;
                     if (i < 0) throw "The numerical block index (" + i + ") is out of bounds.";
                 }
             }
 
-            target.blockPath = typePath + ":" + (i >= 0 ? i : block._id);
+            target.blockRef = typePath + ":" + (i >= 0 ? i : block._id);
 
             // super.load(target);
             return this;
@@ -259,7 +271,7 @@ namespace FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        toString(): string { return "Block reference: " + (this._block && this.block.serializedPath); }
+        toString(): string { return "Block reference: " + (this._block && this.block.referenceStr); }
 
         // --------------------------------------------------------------------------------------------------------------------
     }

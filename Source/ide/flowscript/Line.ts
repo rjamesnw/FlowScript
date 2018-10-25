@@ -3,7 +3,7 @@
 namespace FlowScript {
     // ========================================================================================================================
 
-    export interface ISavedLine extends ISavedTrackableObject { statements: ISavedExpression[] }
+    export interface ISavedLine extends ISavedTrackableObject { statements: ISavedStatement[] }
 
     // ========================================================================================================================
 
@@ -35,21 +35,32 @@ namespace FlowScript {
 
         get totalLines(): number { return this._block ? this._block.totalLines : void 0; }
 
-        /** A string path that represents this block during serialization. */
-        get serializedPath(): string {
-            var blockPath = this._block ? this._block.serializedPath : "";
-            var i = this.lineNumber;
-            return blockPath + "," + (blockPath && i >= 1 ? i : this._id);
-        }
+        // /** 
+        //  * A string path that represents this line during serialization. 
+        //  */
+        // get serializedPath(): string {
+        //     var blockPath = this._block ? this._block.serializedPath : "";
+        //     var i = this.lineNumber;
+        //     return blockPath + "," + (blockPath && i >= 1 ? i : this._id);
+        // }
 
-        /** An instance reference string that represents this block in the system. */
+        /** 
+         * An instance reference string that represents this line in the system.
+         * Reference strings are used instead of object references to locate components, blocks, or lines.This is especially
+         * handy in cases where an item might get deleted and later restored.In such case the system can remake any connections.
+         * @see getReference()
+         */
         get referenceStr(): string {
             var block = this.block;
             if (block)
-                return block.referenceStr + ".lines[" + this.lineIndex + "]";
+                return block.referenceStr + ".$[" + this.lineIndex + "]";
             else
                 return "[" + this.lineIndex + "]";
         }
+
+        /** Gets a @type {NamedReference} reference instance that represents this line in the system. 
+         * @see referenceStr
+         */
         getReference(): NamedReference<Line> {
             if (this.script)
                 return new NamedReference<Line>(this.referenceStr);
@@ -103,7 +114,7 @@ namespace FlowScript {
 
                 super.load(target);
             }
-            return target;
+            return this;
         }
 
         // --------------------------------------------------------------------------------------------------------------------
@@ -201,7 +212,7 @@ namespace FlowScript {
 
         load(target?: ISavedLineReference): this {
             if (target) {
-                this._lineRef = new NamedReference<Line>(this.script, target.linePath);
+                this._lineRef = new NamedReference<Line>(target.linePath);
             }
             return this;
         }

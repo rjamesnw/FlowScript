@@ -97,6 +97,7 @@ namespace FlowScript {
 
     /** Represents a single FlowScript instance. Each instance wraps a single "main" script block. Multiple scripts will have multiple 'IFlowScript' instances. */
     export interface IFlowScript extends Type {
+
         /** The root type for all other types. */
         System: Core.System;
 
@@ -112,10 +113,10 @@ namespace FlowScript {
         /** Loads a script by URL. The URL should return JSON. Once loaded and deserialized into nested objects, the object
           * tree is passed to 'load()' again.
           */
-        load(urlOrJSON?: string): void;
+        load(urlOrJSON?: string): this;
 
         /** Load from the root object of a deserialized JSON string. */
-        load(root: ISavedScript): void;
+        load(root: ISavedScript): this;
 
         /** Saves the script to a nested tree of objects that can be later serialized to JSON if desired, or just stored in an
           * array as a reference for later (i.e. for undo operations, etc.).
@@ -207,6 +208,10 @@ namespace FlowScript {
             }
         }
 
+        /** Dereferences an absolute reference string. 
+         * @see referenceStr */
+        private $(path: string): Type { return this.resolve(path); }
+
         // --------------------------------------------------------------------------------------------------------------------
 
         constructor(main?: Component) {
@@ -281,12 +286,12 @@ namespace FlowScript {
         // --------------------------------------------------------------------------------------------------------------------
 
         /** Loads the script from the specified root object (usually from a deserialized JSON string). */
-        load(root: ISavedScript): void;
+        load(root: ISavedScript): this;
         /** Loads the script from the specified URL or JSON string. If no URL is given, any previously given URL is used,
           * and the script is reloaded.
           */
-        load(urlOrJSON?: string): void;
-        load(objRootOrURL?: any): void {
+        load(urlOrJSON?: string): this;
+        load(objRootOrURL?: any): this {
             if (typeof objRootOrURL == 'string') {
                 if (objRootOrURL) {
                     if ((<string>objRootOrURL).charAt(0) == '{') {
@@ -302,6 +307,7 @@ namespace FlowScript {
                 var root = <ISavedScript>objRootOrURL;
                 this._url = root.url;
             }
+            return this;
         }
 
         /** Saves the script to a nested tree of objects that can be later serialized to JSON if desired, or just stored in an
@@ -482,6 +488,17 @@ namespace FlowScript {
 
     // ========================================================================================================================
 
+    var scripts: { [id: string]: IFlowScript };
+
+    /** Locates a script by its ID. 
+     * @see FlowScript._id
+     */
+    export function getScript(id: string) {
+        return scripts[id];
+    }
+    (<any>FlowScript)['$'] = getScript; // (this is used with dereferencing the root path in `NamedReference<T>` for script object references)
+
+
     /** Creates a new empty script instance. */
     export function createNew(): IFlowScript {
         return <IFlowScript>new FlowScript();
@@ -490,6 +507,7 @@ namespace FlowScript {
     /** Creates a new script instance from a given URL. */
     export function createFrom(url: string): IFlowScript {
         var fs = <IFlowScript>new FlowScript();
+        fs._id
         fs.load(url);
         return fs;
     };

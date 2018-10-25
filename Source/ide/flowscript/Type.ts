@@ -21,9 +21,11 @@ namespace FlowScript {
         // --------------------------------------------------------------------------------------------------------------------
         static objects: { [id: string]: any } = {};
         static register(obj: TrackableObject): string { var id = obj._id || (obj._id = Utilities.createGUID(false)); TrackableObject.objects[id] = obj; return id; }
-        static unreconciledQueue: IUnreconciledReference[];
+        //? static unreconciledQueue: IUnreconciledReference[];
         // --------------------------------------------------------------------------------------------------------------------
+        /** The globally unique identified for this object, which allows tracking this object on multiple machines.  */
         _id: string = TrackableObject.register(this);
+        /** The constructor function name used to create this object instance. */
         _type: string = Utilities.getFunctionName(this.constructor);
         // --------------------------------------------------------------------------------------------------------------------
         /** The script instance this object belongs to. Derived types should override this to return the proper reference. */
@@ -44,6 +46,11 @@ namespace FlowScript {
                 this._type = target.type;
             }
             return this;
+        }
+        // --------------------------------------------------------------------------------------------------------------------
+        /** Release this object from the internal list of tracked objects. Derived implementations may perform other cleanup tasks as well. */
+        dispose() {
+            delete TrackableObject.objects[this._id];
         }
         // --------------------------------------------------------------------------------------------------------------------
     }
@@ -286,9 +293,6 @@ namespace FlowScript {
             return null;
         }
 
-        private static _loadType(parent: Type, target: ISavedComponent): Type {
-        }
-
         // --------------------------------------------------------------------------------------------------------------------
 
         /** Returns a string that identifies the signature of the given types combined. This is used internally for mapping purposes. */
@@ -460,6 +464,12 @@ namespace FlowScript {
             return this;
         }
 
+        /** Detaches this type and removes the object from internal tracking. Derived implementations by perform other cleanup tasks as well. */
+        dispose() {
+            this.detach();
+            super.dispose();
+        }
+
         /** Sets a type for template types using the given name, default type, and any expected based type (as a constraint).
           * This only works for types that represent templates.
           */
@@ -488,25 +498,33 @@ namespace FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        /** An instance reference string that represents this type in the type hierarchy. 
+        /** An instance reference string that represents this type in the type hierarchy.
+         * Reference strings are used instead of object references to locate components, blocks, or lines. This is especially
+         * handy in cases where an item might get deleted and later restored. In such case the system can remake any connections.
          * @see getReference()
          */
         get referenceStr(): string {
-            if (this.parent instanceof Component)
-                return (<Component>this.parent).referenceStr + "resolve('" + Utilities.replace(this.name, "'", "\'") + "')";
-            else
-                return "resolve('" + Utilities.replace(this.fullTypeName, "'", "\'") + "')";
+            // if (this.parent != null)
+            //     return this.parent.referenceStr + ".$('" + Utilities.replace(this.name, "'", "\'") + "')";
+            // else
+            //? x^ Because this is now done directly on the script objects.
+            return NamedReference.fromScriptPath(this.script, "$('" + Utilities.replace(this.fullTypeName, "'", "\'") + "')").fullPath;
         }
 
         /** Gets a @type {NamedReference} reference instance that represents this type in the type hierarchy. 
          * @see referenceStr
          */
-        getReference(): NamedReference<Component> {
+        getReference(): NamedReference<this> {
             if (this.script)
-                return new NamedReference<Component>(this.script, this.referenceStr);
+                return new NamedReference<this>(this.referenceStr);
             else
-                return new NamedReference<Component>(this, null);
+                return NamedReference.fromInstance<this>(this, null);
         }
+
+        // /** Used to dereferences a type by name. 
+        //  * @see referenceStr */
+        // private get $() { return this._nestedTypesIndex; }
+        //? This is now done directly on the script objects.
 
         // --------------------------------------------------------------------------------------------------------------------
 
@@ -514,105 +532,6 @@ namespace FlowScript {
         valueOf() { return this.fullTypeName; }
 
         // --------------------------------------------------------------------------------------------------------------------
-    }
-
-    // ========================================================================================================================
-
-    export interface IReferencedObject {
-        referenceStr: string;
-        getReference(): NamedReference<{}>;
-    }
-
-    /**
-     * References types in the type tree. This is used to track types, instead of pointers, since types can be deleted and
-     * recreated, invalidating all references to the deleted type object.  A named reference uses a dot-delimited root path
-     * and target path to the referenced object.  Only strings are accepted in order to allow saving references during
-     * serialization.
-     */
-    export class NamedReference<T extends object> {
-        // private static _references: NamedReference<any>[] = [];
-        private _root: object;
-        root: string;
-        path: string;
-
-        private get _fullPath() {
-            return this.root && this.path && this.root + "." + this.path || this.root || this.path;
-        }
-
-        get fullPath() {
-            if (this._root)
-                throw "Cannot get the full path for reference '" + this + "' because the root object cannot be resolved from the global scope."
-                + " This typically means you used 'fromInstance()' to create a reference, and thus an absolute path (from the global scope) cannot be determined.";
-            return this._fullPath;
-        }
-
-        /**
-         * Creates a new reference.
-         * @param {string} path Dot-delimited identifiers that are the path to the value pointed to by this reference.
-         * @param {string} root An optional dot-delimited identifiers that resolve to a root object used to resolve the path. 
-         * If not specified, the path is assume to be an absolute path.
-         */
-        constructor(path: string, root?: string) {
-            root = '' + root;
-            path = '' + path;
-            if (root && root.charAt)
-                while (root.length && root.charAt(root.length - 1) == '.') root = path.substr(0, root.length - 1);
-            if (path && path.charAt)
-                while (path.length && path.charAt(0) == '.') path = path.substr(1);
-            this.root = root;
-            this.path = path;
-        }
-
-        /** Creates a reference from a root object instance.  Note that because a direct instance reference is made, the reference cannot be serialized (saved).
-         * NEVER CALL THIS FUNCTION, except for very special cases.
-         */
-        static fromInstance<T extends object>(rootObject: T, path: string): NamedReference<T> {
-            var ref = new NamedReference<T>(path, null);
-            ref._root = rootObject;
-            return ref;
-        }
-
-        /** Returns the dot-delimited path represented by this reference. */
-        toString() { return this._fullPath; }
-        valueOf(): T {
-            try {
-                var root = this._root;
-                if (!root && this.root) {
-                    root = eval(this.root);
-                    if (root === null || root === void 0)
-                        throw "Root path resolves to null or undefined.";
-                }
-                return root && (this.path ? eval("root." + this.path) : root) || eval(this.path);
-            }
-            catch (ex) {
-                if (this._root)
-                    throw "Failed to resolve path '" + this.path + "' from the root object '" + this._root + "': " + ex;
-                else
-                    throw "Failed to resolve path '" + this.path + "' from the root path '" + this.root + "': " + ex;
-            }
-        }
-
-        /** Returns true if this reference represents a null/empty reference. */
-        get isNull(): boolean { return !this.root && !this.path; }
-
-        ///**
-        // * Checks if the give root + path is valid for this reference.
-        // */
-        //? get isValid(): boolean {
-        //    if (!this.root || typeof this.root != OBJECT) return false; // (path is not valid by default with no root exists)
-        //    if (!this.path) return true; // (an empty path is valid, as it references the root object)
-        //    var names = this.path.split(',');
-        //    var o = this.root;
-        //    for (var i = 0, n = names.length; i < n; ++i) {
-        //        if (typeof o != OBJECT) return false; // (cannot get a property name of a non-object)
-        //        var name = names[i];
-        //        if (name in o)
-        //            o = o[name];
-        //        else
-        //            return false;
-        //    }
-        //    return true;
-        //}
     }
 
     // ========================================================================================================================

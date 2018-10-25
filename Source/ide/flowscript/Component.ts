@@ -304,6 +304,10 @@ namespace FlowScript {
             return this.parent && this.parent instanceof Component && (<Component>this.parent)._componentType == ComponentTypes.Object;
         }
 
+        /** Used to dereferences a block by index. 
+         * @see referenceStr */
+        private get $() { return this._blocks; }
+
         // --------------------------------------------------------------------------------------------------------------------
 
         constructor(parent: Type, componentType: ComponentTypes, typeName: string, signatureTitle: string, script?: IFlowScript) {
@@ -342,7 +346,7 @@ namespace FlowScript {
         save(target?: ISavedComponent): ISavedComponent {
             target = target || <ISavedComponent>{};
 
-            target.type = this._componentType;
+            target.componentType = this._componentType;
             target.title = this.title;
 
             target.blocks = [];
@@ -361,7 +365,7 @@ namespace FlowScript {
         }
 
         load(target?: ISavedComponent): this {
-            
+
             if (target) {
                 this._componentType = target.componentType;
                 this.title = target.title;
@@ -950,7 +954,7 @@ namespace FlowScript {
         }
 
         /** Initialize this expression with new arguments, return targets, and event handlers. */
-        initExpression(source: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[]): Expression {
+        initExpression(source: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[]): this {
             this._componentRef = source.getReference();
 
             if (args || args === null) {
@@ -1087,7 +1091,7 @@ namespace FlowScript {
         save(target?: ISavedComponentReference): ISavedComponentReference {
             target = target || <ISavedComponentReference>{};
 
-            target.source = this.component ? this.component.fullTypeName : null;
+            target.source = this.component ? this.component.referenceStr : null;
 
             if (this._arguments)
                 this._arguments.save(target);
@@ -1102,12 +1106,15 @@ namespace FlowScript {
             return target;
         }
 
-        load(target?: ISavedBlockReference): ISavedBlockReference {
+        load(target?: ISavedComponentReference): this {
             if (target) {
+                if (target.arguments)
+                    for (var i = target.arguments.length - 1; i >= 0; --i)
+
                 // super.load(target);
             }
-            
-            return target;
+
+            return this;
         }
 
         // --------------------------------------------------------------------------------------------------------------------
@@ -1163,76 +1170,6 @@ namespace FlowScript {
         // --------------------------------------------------------------------------------------------------------------------
 
         toString(): string { return "" + this.component; } // TODO: Extend this with arguments and return mappings as well.
-
-        // --------------------------------------------------------------------------------------------------------------------
-    }
-
-    // ========================================================================================================================
-
-    export interface ISavedStatement extends ISavedComponentReference { }
-
-    /** The root expression is call a "statement", which is a single stand-alone component call, assignment operation, or flow
-      * control block.  Lines usually reference statements, and other expressions are nested within them.
-      */
-    export class Statement extends ComponentReference {
-        // --------------------------------------------------------------------------------------------------------------------
-
-        get script(): IFlowScript { return this._line ? this._line.script : null; }
-
-        /** The line this expression belongs to. */
-        get line() { return this._line; }
-        private _line: Line;
-
-        /** The line number this statement is on. */
-        get lineNumer() { return this._line ? this._line.lineNumber : void 0; }
-
-        /** Returns the functional component this expression belongs to. */
-        get functionalComponent(): Component { return this.line ? this.line.component : null; }
-
-        get block(): Block { return this._line ? this._line.block : null; }
-
-        // --------------------------------------------------------------------------------------------------------------------
-
-        constructor(line: Line, action: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[]) {
-            super(action, args, returnTargets, eventHandlers, (eval('this._line = line'), null)); // (need to set the line reference first before calling into the base)
-        }
-
-        // --------------------------------------------------------------------------------------------------------------------
-
-        /** Creates a visual tree snapshot for this component and the component's first block. */
-        createVisualTree<T extends VisualNode>(parent?: VisualNode, visualNodeType?: IVisualNodeType<T>): T {
-            var node = super.createVisualTree(parent, visualNodeType);
-            return <T>node;
-        }
-
-        // --------------------------------------------------------------------------------------------------------------------
-
-        protected _clone(parent?: Expression): Statement {
-            return new Statement(this._line, this.component);
-        }
-        // --------------------------------------------------------------------------------------------------------------------
-
-        save(target?: ISavedStatement): ISavedStatement {
-            target = target || <ISavedStatement>{};
-            super.save(target);
-            return target;
-        }
-
-        // --------------------------------------------------------------------------------------------------------------------
-
-        /** Removes a child expression from the expression tree. */
-        remove(child: Expression): Expression;
-        /** Removes self from the associated line. */
-        remove(): Expression;
-        remove(child?: Expression): Expression {
-            if (child)
-                return super.remove(child);
-            else {
-                if (this._line)
-                    return this._line.removeStatement(this);
-                return void 0;
-            }
-        }
 
         // --------------------------------------------------------------------------------------------------------------------
     }

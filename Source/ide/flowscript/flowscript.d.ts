@@ -580,6 +580,7 @@ declare namespace FlowScript {
         protected _script: IFlowScript;
         constructor(script?: IFlowScript);
         save(target?: ISavedTrackableObject): ISavedTrackableObject;
+        load(target?: ISavedTrackableObject): this;
     }
     interface ITemplateType {
         name: string;
@@ -673,6 +674,8 @@ declare namespace FlowScript {
         */
         protected onInit(): void;
         save(target?: ISavedType): ISavedType;
+        load(target?: ISavedType): this;
+        static load(parent: Type, target?: ISavedType): Type;
         /** Returns a string that identifies the signature of the given types combined. This is used internally for mapping purposes. */
         static getCompositeTypeKey(...compositeTypes: Type[]): string;
         /** Returns a string that identifies the signature of the given types combined. This is used internally for mapping purposes. */
@@ -729,13 +732,15 @@ declare namespace FlowScript {
         /** Creates a type from this template type using the supplied types.  This only works for types that represent templates. */
         createTemplateType(templateTypes: Type[]): Type;
         /** An instance reference string that represents this type in the type hierarchy.
+         * Reference strings are used instead of object references to locate components, blocks, or lines. This is especially
+         * handy in cases where an item might get deleted and later restored. In such case the system can remake any connections.
          * @see getReference()
          */
         readonly referenceStr: string;
         /** Gets a @type {NamedReference} reference instance that represents this type in the type hierarchy.
          * @see referenceStr
          */
-        getReference(): NamedReference<Component>;
+        getReference(): NamedReference<this>;
         toString(): string;
         valueOf(): string;
     }
@@ -745,18 +750,28 @@ declare namespace FlowScript {
     }
     /**
      * References types in the type tree. This is used to track types, instead of pointers, since types can be deleted and
-     * recreated, invalidating all references to the deleted type object.  A named reference uses a root object, and a
-     * dot-delimited name to the referenced object.
+     * recreated, invalidating all references to the deleted type object.  A named reference uses a dot-delimited root path
+     * and target path to the referenced object.  Only strings are accepted in order to allow saving references during
+     * serialization.
      */
-    class NamedReference<T extends {}> {
-        root: {};
+    class NamedReference<T extends object> {
+        private _root;
+        root: string;
         path: string;
+        private readonly _fullPath;
+        readonly fullPath: string;
         /**
          * Creates a new reference.
-         * @param root The object the is the root to resolve the named path against.
-         * @param path Dot-delimited names that are the path to the value pointed to by this reference.
+         * @param {string} path Dot-delimited identifiers that are the path to the value pointed to by this reference.
+         * @param {string} root An optional dot-delimited identifiers that resolve to a root object used to resolve the path.
+         * If not specified, the path is assume to be an absolute path.
          */
-        constructor(root: {}, path: string);
+        constructor(path: string, root?: string);
+        /** Creates a reference from a root object instance.  Note that because a direct instance reference is made, the reference cannot be serialized (saved).
+         * NEVER CALL THIS FUNCTION, except for very special cases.
+         */
+        static fromInstance<T extends object>(rootObject: T, path: string): NamedReference<T>;
+        /** Returns the dot-delimited path represented by this reference. */
         toString(): string;
         valueOf(): T;
         /** Returns true if this reference represents a null/empty reference. */
@@ -842,9 +857,9 @@ declare namespace FlowScript {
         /** Loads a script by URL. The URL should return JSON. Once loaded and deserialized into nested objects, the object
           * tree is passed to 'load()' again.
           */
-        load(urlOrJSON?: string): void;
+        load(urlOrJSON?: string): this;
         /** Load from the root object of a deserialized JSON string. */
-        load(root: ISavedScript): void;
+        load(root: ISavedScript): this;
         /** Saves the script to a nested tree of objects that can be later serialized to JSON if desired, or just stored in an
           * array as a reference for later (i.e. for undo operations, etc.).
           */
@@ -1371,6 +1386,7 @@ declare namespace FlowScript {
         Type = 11
     }
     interface ISavedComponent extends ISavedType {
+        componentType: ComponentTypes;
         title: string;
         blocks: ISavedBlock[];
         parameters: ISavedProperties;
@@ -1587,7 +1603,7 @@ declare namespace FlowScript {
         _eventHandlers: BlockReference[];
         constructor(source: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[], parent?: Expression);
         /** Initialize this expression with new arguments, return targets, and event handlers. */
-        initExpression(source: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[]): Expression;
+        initExpression(source: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[]): this;
         protected _clone(parent?: Expression): ComponentReference;
         /** Searches all children for the given expression reference. This is used to prevent cyclical references within expressions. */
         containsChildExpression(expr: Expression): boolean;
@@ -1604,13 +1620,15 @@ declare namespace FlowScript {
         /** Removes all event handlers. */
         clearEventHandlers(): void;
         save(target?: ISavedComponentReference): ISavedComponentReference;
-        load(target?: ISavedBlockReference): ISavedBlockReference;
+        load(target?: ISavedComponentReference): this;
         /** Returns available properties that can be used given the parent expression hierarchy. */
         getAvailablePropertyList(): IAvailableProperty[];
         /** Creates a visual tree snapshot for this component and the component's first block. */
         createVisualTree<T extends VisualNode>(parent?: VisualNode, visualNodeType?: IVisualNodeType<T>): T;
         toString(): string;
     }
+}
+declare namespace FlowScript {
     interface ISavedStatement extends ISavedComponentReference {
     }
     /** The root expression is call a "statement", which is a single stand-alone component call, assignment operation, or flow
@@ -1631,6 +1649,7 @@ declare namespace FlowScript {
         createVisualTree<T extends VisualNode>(parent?: VisualNode, visualNodeType?: IVisualNodeType<T>): T;
         protected _clone(parent?: Expression): Statement;
         save(target?: ISavedStatement): ISavedStatement;
+        load(target?: ISavedStatement): this;
         /** Removes a child expression from the expression tree. */
         remove(child: Expression): Expression;
         /** Removes self from the associated line. */
@@ -1657,13 +1676,19 @@ declare namespace FlowScript {
         readonly totalLines: number;
         /** A string path that represents this block during serialization. */
         readonly serializedPath: string;
-        /** An instance reference string that represents this block in the system. */
+        /** An instance reference string that represents this block in the system.
+         *
+         */
         readonly referenceStr: string;
+        /** Gets a @type {NamedReference} reference instance that represents this block in the system.
+         * @see referenceStr
+         */
         getReference(): NamedReference<Block>;
         constructor(containingComponent: Component);
         /** Creates an expression wrapper for this block. An optional expression parent can be given. */
         createExpression(parent?: Expression): BlockReference;
         save(target?: ISavedBlock): ISavedBlock;
+        load(target?: ISavedBlock): this;
         /** Returns a new line for this block. */
         newLine(): Line;
         /** Returns a new line before the given line number (where 0 is the first line). */
@@ -1708,7 +1733,7 @@ declare namespace FlowScript {
 }
 declare namespace FlowScript {
     interface ISavedLine extends ISavedTrackableObject {
-        statements: ISavedExpression[];
+        statements: ISavedStatement[];
     }
     /** A line represents a single execution step in a code block.
       * A line essentially wraps a component, and acts as a single execution step in a code block.
@@ -1728,10 +1753,20 @@ declare namespace FlowScript {
         /** Returns the 1-based line number for this line, used mainly for the UI. */
         readonly lineNumber: number;
         readonly totalLines: number;
-        /** A string path that represents this block during serialization. */
+        /**
+         * A string path that represents this line during serialization.
+         */
         readonly serializedPath: string;
-        /** An instance reference string that represents this block in the system. */
+        /**
+         * An instance reference string that represents this line in the system.
+         * Reference strings are used instead of object references to locate components, blocks, or lines.This is especially
+         * handy in cases where an item might get deleted and later restored.In such case the system can remake any connections.
+         * @see getReference()
+         */
         readonly referenceStr: string;
+        /** Gets a @type {NamedReference} reference instance that represents this line in the system.
+         * @see referenceStr
+         */
         getReference(): NamedReference<Line>;
         constructor(parent: Block);
         clone(parent: Block): Line;
@@ -1740,6 +1775,7 @@ declare namespace FlowScript {
         /** Remove this line and all statements, and returns the removed line. */
         remove(): Line;
         save(target?: ISavedLine): ISavedLine;
+        load(target?: ISavedLine): this;
         addStatement(action: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[]): Statement;
         removeStatement(statement: Statement): Statement;
         /** Creates a visual tree snapshot for this line and any statements. */
@@ -1758,12 +1794,12 @@ declare namespace FlowScript {
         private _lineRef;
         /** The component that the referenced line belongs to. */
         readonly component: Component;
-        constructor(line: Line, parent?: Expression);
+        constructor(line: Line | NamedReference<Line>, parent?: Expression);
         /** Creates a visual tree snapshot for this expression object. */
         createVisualTree<T extends VisualNode>(parent?: VisualNode, visualNodeType?: IVisualNodeType<T>): T;
         protected _clone(parent?: Expression): LineReference;
         save(target?: ISavedLineReference): ISavedLineReference;
-        load(target?: ISavedLineReference): ISavedLineReference;
+        load(target?: ISavedLineReference): this;
         toString(): string;
     }
 }
@@ -1880,7 +1916,7 @@ declare namespace FlowScript {
 /** The core namespace contains all the very basic low level components that can be used as building blocks.
   * You can think of them as the individual "Lego" pieces that would be use to create the larger parts of a more complex design.
   */
-declare module FlowScript.Core {
+declare namespace FlowScript.Core {
     /** A script based type that matches all other types. */
     class Any extends Component {
         constructor(parent: Type);
@@ -2085,6 +2121,37 @@ declare module FlowScript.Core {
         Code: string;
         constructor(parent: Type);
         onInit(): void;
+    }
+}
+declare namespace FlowScript.Components {
+    interface IType {
+        name: string;
+        types?: ITypes;
+        components?: IComponents;
+        tip?: string;
+    }
+    interface ITypes {
+        [index: string]: IComponent | IType;
+    }
+    interface IParameter {
+        name: string;
+        /** Comma separated list of valid types for this property. */
+        types: string;
+        /** True if this property is an alias for another property. */
+        isAlias: boolean;
+        tip?: string;
+    }
+    interface IParameters {
+        [index: string]: IParameter;
+    }
+    interface IComponent extends IType {
+        title?: string;
+        componentType?: ComponentTypes;
+        parameters?: IParameters;
+        returnType?: string;
+    }
+    interface IComponents extends ITypes {
+        [index: string]: IComponent;
     }
 }
 declare module FlowScript.Core.Net.HTTPRequest {
@@ -3191,37 +3258,6 @@ declare namespace FlowScript {
         createProject<T extends Project>(title: string, description?: string, projectType?: {
             new (title: string, description?: string): T;
         }): T;
-    }
-}
-declare namespace FlowScript.Components {
-    interface IType {
-        name: string;
-        types?: ITypes;
-        components?: IComponents;
-        tip?: string;
-    }
-    interface ITypes {
-        [index: string]: IComponent | IType;
-    }
-    interface IParameter {
-        name: string;
-        /** Comma separated list of valid types for this property. */
-        types: string;
-        /** True if this property is an alias for another property. */
-        isAlias: boolean;
-        tip?: string;
-    }
-    interface IParameters {
-        [index: string]: IParameter;
-    }
-    interface IComponent extends IType {
-        title?: string;
-        componentType?: ComponentTypes;
-        parameters?: IParameters;
-        returnType?: string;
-    }
-    interface IComponents extends ITypes {
-        [index: string]: IComponent;
     }
 }
 declare namespace FlowScript.Components {

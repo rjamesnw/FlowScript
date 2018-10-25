@@ -59,12 +59,11 @@ interface Array<T> {
 //    origin: string;
 //}
 
-declare var FlowScript_debugging: boolean;
-
 // ############################################################################################################################
 
 /** The base namespace for all FlowScript types. */
 namespace FlowScript {
+    export var rootName = "FlowScript";
     // ========================================================================================================================
 
     export var undefined: any = void 0;
@@ -442,13 +441,13 @@ namespace FlowScript {
             // On the server side, create a basic "shell" to maintain some compatibility with some system functions.
             window = <any>{};
             (<any>window).document = <any>{ title: "SERVER" }
-            navigator = <any>{ userAgent: "Mozilla/5.0 (FlowScript) like Gecko" };
+            navigator = <any>{ userAgent: "Mozilla/5.0 ("+rootName+") like Gecko" };
             location = <any>{
                 hash: "",
-                host: "flowscript.com",
-                hostname: "flowscript.com",
-                href: "https://flowscript.com/",
-                origin: "https://flowscript.com",
+                host: rootName.toLowerCase() +".com",
+                hostname: rootName.toLowerCase()+".com",
+                href: "https://" + rootName.toLowerCase() +".com/",
+                origin: "https://" + rootName.toLowerCase() +".com",
                 pathname: "/",
                 port: "",
                 protocol: "https:"

@@ -104,9 +104,9 @@ module FlowScript {
         }
         getReference(): NamedReference<Property> {
             if (this.script)
-                return new NamedReference<Property>(this.script, this.referenceStr);
+                return new NamedReference<Property>(this.referenceStr);
             else
-                return new NamedReference<Property>(this, null);
+                return NamedReference.fromInstance<Property>(this, null);
         }
 
         _value: any;
