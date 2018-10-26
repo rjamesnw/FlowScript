@@ -204,7 +204,7 @@ namespace FlowScript {
         save(target?: ISavedLineReference): ISavedLineReference {
             target = target || <ISavedLineReference>{};
 
-            target.linePath = this.line.serializedPath;
+            target.linePath = this.line.referenceStr;
 
             super.save(target);
             return target;
@@ -219,7 +219,7 @@ namespace FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        toString(): string { return "Line reference: " + this.line.serializedPath; }
+        toString(): string { return "Line reference: " + this.line.referenceStr; }
 
         // --------------------------------------------------------------------------------------------------------------------
     }
