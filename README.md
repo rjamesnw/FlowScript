@@ -1,6 +1,6 @@
 # FlowScript #
 
-FlowScript is a visual programming language used for build client and server applications using a browser. It is built using TypeScript and NodeJS.
+FlowScript is a visual programming language used for build client and server applications using a browser. It is built using TypeScript and NodeJS. FlowScript started under the name CircuitScript around 2010, but was later renamed to FlowScript in 2014 within a private repo during the prototype phase.  It is now being release in alpha (still a WIP) on GitHub as of Oct 30, 2018.
 
 ### Version ###
 
@@ -13,7 +13,7 @@ FlowScript is a visual programming language used for build client and server app
 * To setup a new VS Code environment you can run `install_extensions.cmd`.
 * Dependencies for development: NodeJS, NPM, nodemon (`install -g install nodemon`)
 * Don't forget to run `npm install` from the command line within the workspace path to restore the required node modules.
-* Database configuration: MySQL
+* Database configuration: MySQL v(TBD)+
 * How to run tests: TBD
 * Deployment instructions: TBD
 
@@ -24,7 +24,7 @@ FlowScript is a visual programming language used for build client and server app
 * Other guidelines: 
     1. All code must be documented using JSDoc comments.  That means all class, functions, properties, etc.  The code within the function bodies should have blank lines and comments separating ideas.  Since many other developers may have to work on your code/changes, it can be hard to understand the reasoning for any quirks that may be related on conditions not immediately apparent in the current context, or simply just because if a particular conviction.
 
-        Make sure to document the parameters as well, such as `@param {string} value  ...description...`
+        Make sure to document the parameters as well, such as `@param {string} value  ...description...`.
     
         If I cannot read the comments and immediately understand what is going on, I will most likely reject the pull request.
 
