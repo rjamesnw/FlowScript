@@ -1,6 +1,6 @@
 # FlowScript #
 
-FlowScript is a visual programming language used for build client and server applications using a browser. It is built using TypeScript and NodeJS. FlowScript started under the name CircuitScript around 2010, but was later renamed to FlowScript in 2014 within a private repo during the prototype phase.  It is now being release in alpha (still a WIP) on GitHub as of Oct 30, 2018.
+FlowScript is a visual programming language (VPL) used for build client and server applications using a browser. It is built using TypeScript and NodeJS. FlowScript started under the name CircuitScript around 2010, but was later renamed to FlowScript in 2014 within a private repo during the prototype phase.  It is now being release in alpha (still a WIP) on GitHub as of Oct 30, 2018.
 
 ### Version ###
 
@@ -14,12 +14,12 @@ FlowScript is a visual programming language used for build client and server app
 * Dependencies for development: NodeJS, NPM, nodemon (`install -g install nodemon`)
 * Don't forget to run `npm install` from the command line within the workspace path to restore the required node modules.
 * Database configuration: MySQL v(TBD)+
-* How to run tests: TBD
-* Deployment instructions: TBD
+* How to run tests: At the moment, simple tests are being run by loading the path at `Source\ide\scripts\tests\simple\index.html` in the browser. Since the `ide` folder is the web root, the page can be loaded at `http://localhost:8080/scripts/tests/simple`.
+* Deployment instructions: You run the NodeJS server project (the config called `Launch Server`) to serve the project's site and handle server side flow scripts. A simple browser is all that is needed to run the website on the client side (`http://localhost:8080/`).
 
 ### Contribution guidelines ###
 
-* Writing tests: TBD
+* Writing tests: 
 * Code review: I will review all pull requests.
 * Other guidelines: 
     1. All code must be documented using JSDoc comments.  That means all class, functions, properties, etc.  The code within the function bodies should have blank lines and comments separating ideas.  Since many other developers may have to work on your code/changes, it can be hard to understand the reasoning for any quirks that may be related on conditions not immediately apparent in the current context, or simply just because if a particular conviction.
@@ -38,7 +38,11 @@ FlowScript is a visual programming language used for build client and server app
 
     4. No modules. Everything compiles into a single script and loads as such.
 
+### Examples: ###
+
+Coming soon...
+
 ### Who do I talk to? ###
 
-* Repo owner or admin: James W.
-* Other community or team contact: TBD
+* Repo owner or admin: [James W.](https://www.quora.com/How-long-did-it-take-you-to-write-your-own-programming-language)
+* Other community or team contact: N/A (yet)
