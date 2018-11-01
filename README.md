@@ -49,6 +49,21 @@ Note: This is the old editor.  A new one is being worked on.
 ##### Editor: #####
 ![Editor](https://github.com/rjamesnw/FlowScript/blob/master/Screenshots/Editor.png)
 
+##### TS Code Editor: #####
+![TS Code Editor](https://github.com/rjamesnw/FlowScript/blob/master/Screenshots/Code%20Editor%20(TS).png)
+
+*TypeScript is used to insert custom JS code into custom components, and provides code-completion for server side development as well.*
+
+##### Type Tree (top): #####
+![Types 1](https://github.com/rjamesnw/FlowScript/blob/master/Screenshots/Types_1.png)
+
+*The `Script` node is the root of all types for the script instance.*
+
+##### Type Tree (bottom): #####
+![Types 2](https://github.com/rjamesnw/FlowScript/blob/master/Screenshots/Types_2.png)
+
+*The `Main` component is the main entry point when the script runs.*
+
 ### Who do I talk to? ###
 
 * Repo owner or admin: [James W.](https://www.quora.com/How-long-did-it-take-you-to-write-your-own-programming-language)
