@@ -42,6 +42,13 @@ FlowScript is a visual programming language (VPL) used for build client and serv
 
 Coming soon...
 
+### Editor Screen Shots ###
+
+Note: This is the old editor.  A new one is being worked on.
+
+##### Editor: #####
+![Editor](https://github.com/rjamesnw/FlowScript/blob/master/Screenshots/Editor.png)
+
 ### Who do I talk to? ###
 
 * Repo owner or admin: [James W.](https://www.quora.com/How-long-did-it-take-you-to-write-your-own-programming-language)
