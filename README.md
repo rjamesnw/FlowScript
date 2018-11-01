@@ -46,3 +46,17 @@ Coming soon...
 
 * Repo owner or admin: [James W.](https://www.quora.com/How-long-did-it-take-you-to-write-your-own-programming-language)
 * Other community or team contact: N/A (yet)
+
+### FAQ ###
+
+#### What is FlowScript? ####
+In a nutshell, FlowScript is a type of visual programming language (VPL). The goal of FlowScript is to reduce the amount of typing involved, and to help constrain the connections between components (functions and objects), such that there would be less coding errors, and thus, less time taken for debugging. The end result when compiling is pure efficient JavaScript, which can easily integrate with any client and server environment. We hope you'll find the somewhat new concept very pleasant to work worth, allowing you to focus more on the flow of creativity, and less on syntax and semantics.
+
+#### Can I trust this system to be efficient and fast? ####
+The development of the FlowScript system is backed by years of experience in dozens of languages, from assembly coding, up to various high level languages. Also with many years developing JavaScript libraries, and rigorous testing of the compiled code, you can be assured the output JavaScript is the fastest possible (at the time it was designed).
+
+#### What makes FlowScript different from other programming concepts? ####
+The biggest difference is the extensibility and data flow. Here are some main highlights:
+* First, FlowScript allows one to easily create new components (representing functions and objects) from other components. These components can easily be applied to other projects, and even shared with the FlowScript community. You can even create your libraries using FlowScript, and output TypeScript definitions for end users.
+* Second, FlowScript allows returning multiple values at once, without the need to return these values in objects. This was tailored specifically to allow for efficient game development. It allows multiple input and output data points via a special stack system designed to prevent the need to create objects for returning these values.
+* Finally, debugging is actually done entirely in JavaScript itself! FlowScript is designed to render various statements and expressions in a step-sequencer that resembles a form of assembly language processing. This allows stepping through code and analyzing state entirely in the IDE. When ready, the final release compiled output is rendered as pure well-formatted JavaScript (and soon, optional TypeScript definition files as well).
