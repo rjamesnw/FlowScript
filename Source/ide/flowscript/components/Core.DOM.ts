@@ -1,33 +1,160 @@
 ﻿// ############################################################################################################################
 
 /** The namespace for HTML related components. */
-module FlowScript.Core.HTML {
+module FlowScript.Core.DOM {
     // ========================================================================================================================
     // Core HTML Components
     // ========================================================================================================================
 
-    export class HTMLReaderModes extends Enum<Number> {
+    /** Defines the HTML namespace type. */
+    export class HTML extends Type { // (a type that is inferred by the given arguments)
+
+        /** Represents an HTML node. */
+        Node = new Node(this);
+        /** Represents a list of DOM nodes. */
+        NodeList = new NodeList(this);
+        /** Represents a list of DOM nodes indexed by name. */
+        NamedNodeMap = new NamedNodeMap(this);
+        /** Represents an HTML DOM element. */
+        Element = new Element(this);
+        /** Represents the HTML root element. */
+        HTMLElement = new HTMLElement(this);
+        /** Represents an browser window document object. */
+        Document = new Document(this);
+        /** Enumeration of node types. */
+        NodeTypes = new NodeTypes(this);
+        /** Enumeration of document positions. */
+        DocumentPositions = new NodeTypes(this);
+
         constructor(parent: Type) {
-            super(parent, "HTMLReaderModes", {
-                /** There's no more to read (end of HTML). */
-                End = -1,
-                /** Reading hasn't yet started. */
-                NotStarted = 0,
-                /** A tag was just read. The 'runningText' property holds the text prior to the tag, and the tag name is in 'tagName'. */
-                Tag = 1,
-                /** An attribute was just read from the last tag. The name will be placed in 'attributeName' and the value (if value) in 'attributeValue'.*/
-                Attribute = 2,
-                /** An ending tag bracket was just read (no more attributes). */
-                EndOfTag = 3,
-                /** A template token in the form '{{...}}' was just read. */
-                TemplateToken = 4
+            super(parent, "HTML");
+        }
+
+        onInit() {
+            super.onInit();
+        }
+    }
+
+    // ========================================================================================================================
+
+    /** Attaches an event listener to an element that supports DOM related events.
+      */
+    export class On extends Component {
+        // --------------------------------------------------------------------------------------------------------------------
+
+        constructor(parent: Type) {
+            super(parent, ComponentTypes.Text, "On", "on $eventName do $block");
+        }
+
+        onInit() {
+            // Setup the expected parameters and return types:
+
+            var sys = this.script.System;
+
+            super.onInit();
+        }
+
+        // --------------------------------------------------------------------------------------------------------------------
+    }
+
+    // ========================================================================================================================
+    // Node Components 
+
+    export class Node_removeChild extends Component {
+        constructor(parent: Type) {
+            super(parent, ComponentTypes.Text, "Node_removeChild", "remove child node $oldChild");
+        }
+
+        onInit() {
+            var sys = this.script.System;
+            this.defineParameter("oldChild", [sys.HTML.Node]);
+            this.defineDefaultReturnVar(sys.HTML.Node);
+            super.onInit();
+        }
+    }
+
+    export class Node_appendChild extends Component {
+        constructor(parent: Type) {
+            super(parent, ComponentTypes.Text, "Node_appendChild", "append child node $newChild");
+        }
+
+        onInit() {
+            var sys = this.script.System;
+            this.defineParameter("newChild", [sys.HTML.Node]);
+            this.defineDefaultReturnVar(sys.HTML.Node);
+            super.onInit();
+        }
+    }
+
+    // ========================================================================================================================
+
+    export class NodeList extends FSObject {
+        // --------------------------------------------------------------------------------------------------------------------
+
+        constructor(parent: Type) {
+            super(parent, null, "NodeList");
+        }
+
+        onInit() {
+            super.onInit();
+        }
+
+        // --------------------------------------------------------------------------------------------------------------------
+    }
+
+    // ========================================================================================================================
+
+    export class NamedNodeMap extends FSObject {
+        // --------------------------------------------------------------------------------------------------------------------
+
+        constructor(parent: Type) {
+            super(parent, null, "NamedNodeMap");
+        }
+
+        onInit() {
+            super.onInit();
+        }
+
+        // --------------------------------------------------------------------------------------------------------------------
+    }
+
+    // ========================================================================================================================
+
+    export class NodeTypes extends Enum<Number> {
+        constructor(parent: Type) {
+            super(parent, "NodeTypes", {
+                ELEMENT_NODE: 1,
+                ATTRIBUTE_NODE: 2,
+                TEXT_NODE: 3,
+                CDATA_SECTION_NODE: 4,
+                ENTITY_REFERENCE_NODE: 5,
+                ENTITY_NODE: 6,
+                PROCESSING_INSTRUCTION_NODE: 7,
+                COMMENT_NODE: 8,
+                DOCUMENT_NODE: 9,
+                DOCUMENT_TYPE_NODE: 10,
+                DOCUMENT_FRAGMENT_NODE: 11,
+                NOTATION_NODE: 12
+            });
+        }
+    }
+
+    export class DocumentPositions extends Enum<Number> {
+        constructor(parent: Type) {
+            super(parent, "DocumentPositions", {
+                DISCONNECTED: 1,
+                PRECEDING: 2,
+                FOLLOWING: 4,
+                CONTAINS: 8,
+                CONTAINED_BY: 16,
+                IMPLEMENTATION_SPECIFIC: 32
             });
         }
     }
 
     // ========================================================================================================================
 
-    export class HTMLReader extends FSObject {
+    export class Node extends FSObject {
         // --------------------------------------------------------------------------------------------------------------------
 
         removeChild: Component;
@@ -59,30 +186,23 @@ module FlowScript.Core.HTML {
 
             var sys = this.script.System;
 
-            this.defineInstanceProperty("__splitRegEx", [sys.String],
-                /<!(?:--[\S\s]*?--)?[\S\s]*?>|<script\b[\S\s]*?<\/script[\S\s]*?>|<style\b[\S\s]*?<\/style[\S\s]*?>|<\![A-Z0-9]+|<\/[A-Z0-9]+|<[A-Z0-9]+|\/?>|&[A-Z]+;?|&#[0-9]+;?|&#x[A-F0-9]+;?|(?:'[^<>]*?'|"[^<>]*?")|=|\s+|\{\{[^\{\}]*?\}\}/gi.toString(),
-                null, true
-            ).setDescription(@"(The RegEx will identify areas that MAY need to delimited for parsing [not a guarantee].  The area outside of the delimiters is usually \
-defined by the delimiter types, so the delimiters are moved out into their own array for quick parsing (this also allows the host browser's native \
-environment to do much of the parsing instead of JavaScript).");
+            this.defineInstanceProperty("nodeType", [sys.Double]);
+            this.defineInstanceProperty("previousSibling", [sys.HTML.Node]);
+            this.defineInstanceProperty("localName", [sys.String]);
+            this.defineInstanceProperty("namespaceURI", [sys.String]);
+            this.defineInstanceProperty("textContent", [sys.String]);
+            this.defineInstanceProperty("parentNode", [sys.HTML.Node]);
+            this.defineInstanceProperty("nextSibling", [sys.HTML.Node]);
+            this.defineInstanceProperty("nodeValue", [sys.String]);
+            this.defineInstanceProperty("lastChild", [sys.HTML.Node]);
+            this.defineInstanceProperty("childNodes", [sys.HTML.NodeList]);
+            this.defineInstanceProperty("nodeName", [sys.String]);
+            this.defineInstanceProperty("ownerDocument", [sys.HTML.Document]);
+            this.defineInstanceProperty("attributes", [sys.HTML.NamedNodeMap]);
+            this.defineInstanceProperty("firstChild", [sys.HTML.Node]);
+            this.defineInstanceProperty("prefix", [sys.String]);
 
-            this.defineInstanceProperty("partIndex", [sys.Integer]);
-
-            this.defineInstanceProperty("textStartIndex", [sys.Integer])
-                .setDescription(@"The start index of the running text.");
-
-            this.defineInstanceProperty("textEndIndex", [sys.Integer]);
-                .setDescription(@"The end index of the running text. This is also the start index of the next tag, if any (since text runs between tags). \
-                (this advances with every read so text can be quickly extracted from the source HTML instead of adding array items [just faster])");
-
-            this.defineInstanceProperty("__lastTextEndIndex", [sys.Integer]);
-                .setDescription(@"For backing up from a read ([)see '__readNext()' && '__goBack()').");
-
-            this.defineInstanceProperty("nonDelimiters", [sys.Array.createTemplateType([sys.String])]);
-                .setDescription(@" A list of text parts that correspond to each delimiter (i.e. TDTDT [T=Text, D=Delimiter]).");
-
-
-                this.removeChild = new ComponentBuilder(this, ComponentTypes.Expression, "removeChild", "remove child node $oldChild")
+            this.removeChild = new ComponentBuilder(this, ComponentTypes.Expression, "removeChild", "remove child node $oldChild")
                 .defineInstanceType(this).defineParameter("oldChild", [sys.HTML.Node]).defineReturn(null, sys.HTML.Node)
                 .addStatement(sys.Code, ["$this.removeChild($oldChild)"]).Component;
 
@@ -178,6 +298,75 @@ environment to do much of the parsing instead of JavaScript).");
             this.defineInstanceProperty("DOCUMENT_POSITION_CONTAINS", [sys.Integer], 8);
             this.defineInstanceProperty("DOCUMENT_POSITION_CONTAINED_BY", [sys.Integer], 16);
             this.defineInstanceProperty("DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC", [sys.Integer], 32);
+
+            this.defineDefaultReturnVar(sys.String);
+
+            super.onInit();
+        }
+
+        // --------------------------------------------------------------------------------------------------------------------
+    }
+
+    // ========================================================================================================================
+
+    export class Element extends FSObject {
+        // --------------------------------------------------------------------------------------------------------------------
+
+        constructor(parent: Type) {
+            super(parent, parent.script.System.HTML.Node, "Element");
+        }
+
+        onInit() {
+            // Setup the expected parameters and return types:
+
+            var sys = this.script.System;
+
+            this.defineInstanceProperty("name", [sys.String]);
+            this.defineInstanceProperty("id", [sys.String]);
+
+            this.defineDefaultReturnVar(sys.String);
+
+            super.onInit();
+        }
+
+        // --------------------------------------------------------------------------------------------------------------------
+    }
+
+    // ========================================================================================================================
+
+    export class HTMLElement extends FSObject {
+        // --------------------------------------------------------------------------------------------------------------------
+
+        constructor(parent: Type) {
+            super(parent, parent.script.System.HTML.Element, "HTMLElement");
+        }
+
+        onInit() {
+            // Setup the expected parameters and return types:
+
+            var sys = this.script.System;
+
+            this.defineDefaultReturnVar(sys.String);
+
+            super.onInit();
+        }
+
+        // --------------------------------------------------------------------------------------------------------------------
+    }
+
+    // ========================================================================================================================
+
+    export class Document extends FSObject {
+        // --------------------------------------------------------------------------------------------------------------------
+
+        constructor(parent: Type) {
+            super(parent, parent.script.System.HTML.Element, "Document");
+        }
+
+        onInit() {
+            // Setup the expected parameters and return types:
+
+            var sys = this.script.System;
 
             this.defineDefaultReturnVar(sys.String);
 

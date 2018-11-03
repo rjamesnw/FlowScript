@@ -138,6 +138,7 @@ namespace FlowScript {
         /** Holds a list of template parameters required for template component types. */
         get templateTypes() { return this._templateTypes; }
         protected _templateTypes: ITemplateType[]; // (used if this type represents a template type that requires other types to be given)
+        //protected _templatedTypes: { [index: string]: Type } = {}; // ()
 
         get name(): string { return this._name || "{Unnamed Type, ID " + this._id + "}"; }
         set name(value: string) {
@@ -489,10 +490,18 @@ namespace FlowScript {
 
         /** Creates a type from this template type using the supplied types.  This only works for types that represent templates. */
         createTemplateType(templateTypes: Type[]): Type {
+            if (!templateTypes || templateTypes.length == 0) return this;
             if (!this._templateTypes || !this._templateTypes.length)
                 throw "Type '" + this + "' does not represent a template type.";
-            var templateType = new Type(null, this.name, this.script);
-            templateType._parent = this; // (one way back only, as this is a dynamic type that is never added to the meta type tree)
+            // var templateType = new Type(null, this.name, this.script);
+            // templateType._parent = this; // (one way back only, as this is a dynamic type that is never added to the meta type tree)
+            var typeNames: string[] = [];
+            for (var i = 0; i < templateTypes.length; ++i)
+                typeNames.push(templateTypes[i].fullTypeName);
+            var templateTypeName = this.name + "<" + typeNames.join(',') + " > ";
+            var child = this.resolve(templateTypeName);
+            if (child) return child;
+            var templateType = new Type(this, templateTypeName, this.script);
             return templateType;
         }
 
