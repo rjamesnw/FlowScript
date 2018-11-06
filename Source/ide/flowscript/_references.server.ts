@@ -22,6 +22,7 @@
 /// <reference path="components/core.math.ts" />
 /// <reference path="components/core.binary.ts" />
 /// <reference path="components/core.comparison.ts" />
+/// <reference path="components/core.DOM.ts" />
 /// <reference path="components/core.HTML.ts" />
 /// <reference path="compiler.ts" />
 /// <reference path="simulator.ts" />

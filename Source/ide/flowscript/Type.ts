@@ -66,7 +66,7 @@ namespace FlowScript {
     export interface ISavedType extends ISavedTrackableObject {
         name: string;
         /** Am optional help tip for this type. */
-        tip?: string;
+        description?: string;
         comment: string;
         nestedTypes: ISavedType[];
     }
@@ -120,7 +120,17 @@ namespace FlowScript {
         comment: string;
 
         /** An optional help tip for this type. */
-        tip: string;
+        description: string
+        /** Set a description for this type. */
+        setDescription(desc: string): this;
+        /** Set a description for this type from an array of lines. CRLF (line endings) will be inserted in between each line. */
+        setDescription(desc: string[]): this;
+        setDescription(desc: string | string[]): this {
+            if ((<string[]>desc).join)
+                desc = (<string[]>desc).join("\r\n");
+            this.description = '' + desc;
+            return this;
+        }
 
         /** A reference to an inherited type, if any.  Some types (such as objects) inherit properties from their super types if specified. */
         get superType() { return this._superType; }
@@ -251,7 +261,7 @@ namespace FlowScript {
 
             target.name = this.name;
             target.comment = this.comment;
-            target.tip = this.tip;
+            target.description = this.description;
 
             super.save(target);
 
@@ -267,7 +277,7 @@ namespace FlowScript {
             if (target) {
                 this.name = target.name;
                 this.comment = target.comment;
-                this.tip = target.tip;
+                this.description = target.description;
 
                 super.load(target);
 

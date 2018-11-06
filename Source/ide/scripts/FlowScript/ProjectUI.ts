@@ -1,7 +1,7 @@
 ﻿// ========================================================================================================================
 // Project UI
 
-module FlowScript.UI {
+namespace FlowScript.UI {
     // ========================================================================================================================
 
     /**
@@ -54,7 +54,7 @@ module FlowScript.UI {
 
             // ... if there is no current component as the focus for editing, set one (usually the 'main' component) ...
             if (!this._currentComponent)
-                this._currentComponent = this._script.main;
+                this._currentComponent = this._script.Main;
 
             this._onRender();
 

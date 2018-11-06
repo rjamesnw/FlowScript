@@ -66,44 +66,43 @@ define(["require", "exports", "./DocumentPositionUtil", "ace/lib/oop", "ace/work
         sender.emit("initAfter");
     }
     ;
-    var TypeScriptWorker = /** @class */ (function () {
-        function TypeScriptWorker(sender) {
-            var _this = this;
+    class TypeScriptWorker {
+        constructor(sender) {
             this.sender = sender;
-            this.setOptions = function (options) {
-                _this.options = options || {};
+            this.setOptions = (options) => {
+                this.options = options || {};
             };
-            this.changeOptions = function (newOptions) {
-                oop.mixin(_this.options, newOptions);
-                _this.deferredUpdate.schedule(100);
+            this.changeOptions = (newOptions) => {
+                oop.mixin(this.options, newOptions);
+                this.deferredUpdate.schedule(100);
             };
-            this.addlibrary = function (filename, content) {
+            this.addlibrary = (filename, content) => {
                 tsProject.languageServiceHost.addScript(filename, content);
             };
-            this.getCompletionsAtPosition = function (fileName, pos, isMemberCompletion, id) {
+            this.getCompletionsAtPosition = (fileName, pos, isMemberCompletion, id) => {
                 var ret = tsProject.languageService.getCompletionsAtPosition(fileName, pos);
-                _this.sender.callback(ret, id);
+                this.sender.callback(ret, id);
             };
-            this.onUpdate = function () {
+            this.onUpdate = () => {
                 // TODO: get the name of the actual file
                 var fileName = "temp.ts";
                 if (tsProject.languageServiceHost.hasScript(fileName)) {
-                    tsProject.languageServiceHost.updateScript(fileName, _this.doc.getValue());
+                    tsProject.languageServiceHost.updateScript(fileName, this.doc.getValue());
                 }
                 else {
-                    tsProject.languageServiceHost.addScript(fileName, _this.doc.getValue());
+                    tsProject.languageServiceHost.addScript(fileName, this.doc.getValue());
                 }
                 var services = tsProject.languageService;
                 var output = services.getEmitOutput(fileName);
-                var jsOutput = output.outputFiles.map(function (o) { return o.text; }).join('\n');
+                var jsOutput = output.outputFiles.map(o => o.text).join('\n');
                 var allDiagnostics = services.getCompilerOptionsDiagnostics()
                     .concat(services.getSyntacticDiagnostics(fileName))
                     .concat(services.getSemanticDiagnostics(fileName));
-                _this.sender.emit("compiled", jsOutput);
+                this.sender.emit("compiled", jsOutput);
                 var annotations = [];
-                allDiagnostics.forEach(function (error) {
-                    var message = ts.flattenDiagnosticMessageText(error.messageText, "\n");
-                    var pos = DocumentPositionUtil_1.DocumentPositionUtil.getPosition(_this.doc, error.start);
+                allDiagnostics.forEach((error) => {
+                    let message = ts.flattenDiagnosticMessageText(error.messageText, "\n");
+                    var pos = DocumentPositionUtil_1.DocumentPositionUtil.getPosition(this.doc, error.start);
                     annotations.push({
                         row: pos.row,
                         column: pos.column,
@@ -114,13 +113,12 @@ define(["require", "exports", "./DocumentPositionUtil", "ace/lib/oop", "ace/work
                         raw: message
                     });
                 });
-                _this.sender.emit("compileErrors", annotations);
+                this.sender.emit("compileErrors", annotations);
             };
             // Code from `mirror.js` TODO: find a better way 
             setupInheritanceCall.call(this, sender);
         }
-        return TypeScriptWorker;
-    }());
+    }
     exports.TypeScriptWorker = TypeScriptWorker;
     // Complete the inheritance
     oop.inherits(TypeScriptWorker, mirror_1.Mirror);

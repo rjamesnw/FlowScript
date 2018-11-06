@@ -10,10 +10,14 @@ Array.prototype.where = function (func) { if (!func)
     return this; var _ = [], __; for (var i = 0; i < this.length; ++i)
     if (func(__ = this[i]))
         _.push(__); return _; };
+//?interface Location { // included in lib now
+//    origin: string;
+//}
 // ############################################################################################################################
 /** The base namespace for all FlowScript types. */
 var FlowScript;
 (function (FlowScript) {
+    FlowScript.rootName = "FlowScript";
     // ========================================================================================================================
     FlowScript.undefined = void 0;
     /** A reference to the host's global environment (convenient for nested TypeScript code, or when using strict mode [where this=undefined]).
@@ -294,13 +298,13 @@ var FlowScript;
             // On the server side, create a basic "shell" to maintain some compatibility with some system functions.
             window = {};
             window.document = { title: "SERVER" };
-            navigator = { userAgent: "Mozilla/5.0 (FlowScript) like Gecko" };
+            navigator = { userAgent: "Mozilla/5.0 (" + FlowScript.rootName + ") like Gecko" };
             location = {
                 hash: "",
-                host: "flowscript.com",
-                hostname: "flowscript.com",
-                href: "https://flowscript.com/",
-                origin: "https://flowscript.com",
+                host: FlowScript.rootName.toLowerCase() + ".com",
+                hostname: FlowScript.rootName.toLowerCase() + ".com",
+                href: "https://" + FlowScript.rootName.toLowerCase() + ".com/",
+                origin: "https://" + FlowScript.rootName.toLowerCase() + ".com",
                 pathname: "/",
                 port: "",
                 protocol: "https:"
@@ -1466,8 +1470,11 @@ var FlowScript;
     class TrackableObject {
         // --------------------------------------------------------------------------------------------------------------------
         constructor(script) {
+            //? static unreconciledQueue: IUnreconciledReference[];
             // --------------------------------------------------------------------------------------------------------------------
+            /** The globally unique identified for this object, which allows tracking this object on multiple machines.  */
             this._id = TrackableObject.register(this);
+            /** The constructor function name used to create this object instance. */
             this._type = FlowScript.Utilities.getFunctionName(this.constructor);
             this._script = script || (FlowScript.isFlowScriptObject(this) ? this : void 0);
         }
@@ -1488,6 +1495,11 @@ var FlowScript;
                 this._type = target.type;
             }
             return this;
+        }
+        // --------------------------------------------------------------------------------------------------------------------
+        /** Release this object from the internal list of tracked objects. Derived implementations may perform other cleanup tasks as well. */
+        dispose() {
+            delete TrackableObject.objects[this._id];
         }
     }
     // --------------------------------------------------------------------------------------------------------------------
@@ -1528,6 +1540,12 @@ var FlowScript;
         }
         /** Traverses up to the root to find and return the script, which is root namespace for all types. */
         get script() { return this._parent ? this._parent.script : (FlowScript.isFlowScriptObject(this) ? this : null); }
+        setDescription(desc) {
+            if (desc.join)
+                desc = desc.join("\r\n");
+            this.description = '' + desc;
+            return this;
+        }
         /** A reference to an inherited type, if any.  Some types (such as objects) inherit properties from their super types if specified. */
         get superType() { return this._superType; }
         set superType(value) { this._superType = value; }
@@ -1537,6 +1555,7 @@ var FlowScript;
         get nestedTypesIndex() { return this._nestedTypesIndex; }
         /** Holds a list of template parameters required for template component types. */
         get templateTypes() { return this._templateTypes; }
+        //protected _templatedTypes: { [index: string]: Type } = {}; // ()
         get name() { return this._name || "{Unnamed Type, ID " + this._id + "}"; }
         set name(value) {
             if (!value)
@@ -1628,7 +1647,7 @@ var FlowScript;
             target = target || {};
             target.name = this.name;
             target.comment = this.comment;
-            target.tip = this.tip;
+            target.description = this.description;
             super.save(target);
             target.nestedTypes = [];
             if (this.nestedTypes)
@@ -1640,7 +1659,7 @@ var FlowScript;
             if (target) {
                 this.name = target.name;
                 this.comment = target.comment;
-                this.tip = target.tip;
+                this.description = target.description;
                 super.load(target);
                 if (target.nestedTypes)
                     for (var i = 0, n = target.nestedTypes.length; i < n; ++i)
@@ -1798,6 +1817,11 @@ var FlowScript;
                 this._parent.remove(this);
             return this;
         }
+        /** Detaches this type and removes the object from internal tracking. Derived implementations by perform other cleanup tasks as well. */
+        dispose() {
+            this.detach();
+            super.dispose();
+        }
         /** Sets a type for template types using the given name, default type, and any expected based type (as a constraint).
           * This only works for types that represent templates.
           */
@@ -1813,10 +1837,20 @@ var FlowScript;
         // --------------------------------------------------------------------------------------------------------------------
         /** Creates a type from this template type using the supplied types.  This only works for types that represent templates. */
         createTemplateType(templateTypes) {
+            if (!templateTypes || templateTypes.length == 0)
+                return this;
             if (!this._templateTypes || !this._templateTypes.length)
                 throw "Type '" + this + "' does not represent a template type.";
-            var templateType = new Type(null, this.name, this.script);
-            templateType._parent = this; // (one way back only, as this is a dynamic type that is never added to the meta type tree)
+            // var templateType = new Type(null, this.name, this.script);
+            // templateType._parent = this; // (one way back only, as this is a dynamic type that is never added to the meta type tree)
+            var typeNames = [];
+            for (var i = 0; i < templateTypes.length; ++i)
+                typeNames.push(templateTypes[i].fullTypeName);
+            var templateTypeName = this.name + "<" + typeNames.join(',') + " > ";
+            var child = this.resolve(templateTypeName);
+            if (child)
+                return child;
+            var templateType = new Type(this, templateTypeName, this.script);
             return templateType;
         }
         // --------------------------------------------------------------------------------------------------------------------
@@ -1826,25 +1860,75 @@ var FlowScript;
          * @see getReference()
          */
         get referenceStr() {
-            if (this.parent instanceof FlowScript.Component)
-                return this.parent.referenceStr + "resolve('" + FlowScript.Utilities.replace(this.name, "'", "\'") + "')";
-            else
-                return "resolve('" + FlowScript.Utilities.replace(this.fullTypeName, "'", "\'") + "')";
+            // if (this.parent != null)
+            //     return this.parent.referenceStr + ".$('" + Utilities.replace(this.name, "'", "\'") + "')";
+            // else
+            //? x^ Because this is now done directly on the script objects.
+            return FlowScript.NamedReference.fromScriptPath(this.script, "$('" + FlowScript.Utilities.replace(this.fullTypeName, "'", "\'") + "')").fullPath;
         }
         /** Gets a @type {NamedReference} reference instance that represents this type in the type hierarchy.
          * @see referenceStr
          */
         getReference() {
             if (this.script)
-                return new NamedReference(this.referenceStr);
+                return new FlowScript.NamedReference(this.referenceStr);
             else
-                return NamedReference.fromInstance(this, null);
+                return FlowScript.NamedReference.fromInstance(this, null);
         }
+        // /** Used to dereferences a type by name. 
+        //  * @see referenceStr */
+        // private get $() { return this._nestedTypesIndex; }
+        //? This is now done directly on the script objects.
         // --------------------------------------------------------------------------------------------------------------------
         toString() { return this.fullTypeName; }
         valueOf() { return this.fullTypeName; }
     }
     FlowScript.Type = Type;
+    // ========================================================================================================================
+    let Core;
+    (function (Core) {
+        /** A wild-card that is used internally with type maps to match all defined type objects.  This is never used within scripts.
+          * This operates similar to "Any", but differs in how the internal type matching works.  Types ONLY match to themselves
+          * internally, so "Any" does NOT match "String" for example.  This is required for matching specific types; however, some
+          * internal matches literally need to specify "any of the defined types", and that is where 'All' comes in.
+          */
+        class All extends Type {
+            constructor() { super(null, "All"); }
+            assignableTo(type) {
+                return true;
+            }
+        }
+        Core.All = All;
+        class Event extends Type {
+            constructor(parent) { super(parent, "Event"); }
+            assignableTo(type) {
+                if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
+                    return false;
+                switch (type.fullTypeName) {
+                    case this.script.System.Event.fullTypeName:
+                        return true;
+                }
+                return super.assignableTo(type);
+            }
+        }
+        Core.Event = Event;
+        class Inferred extends Type {
+            constructor() { super(null, "Inferred"); }
+            assignableTo(type) {
+                if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
+                    return false;
+                return super.assignableTo(type);
+            }
+        }
+        Core.Inferred = Inferred;
+    })(Core = FlowScript.Core || (FlowScript.Core = {}));
+    // ========================================================================================================================
+})(FlowScript || (FlowScript = {}));
+// ############################################################################################################################
+// ############################################################################################################################
+var FlowScript;
+(function (FlowScript) {
+    // ========================================================================================================================
     /**
      * References types in the type tree. This is used to track types, instead of pointers, since types can be deleted and
      * recreated, invalidating all references to the deleted type object.  A named reference uses a dot-delimited root path
@@ -1887,6 +1971,12 @@ var FlowScript;
             ref._root = rootObject;
             return ref;
         }
+        /** Creates a reference to an object under a specific script.
+         */
+        static fromScriptPath(script, path) {
+            var ref = new NamedReference(path, FlowScript.rootName + ".$(" + script._id + ")");
+            return ref;
+        }
         /** Returns the dot-delimited path represented by this reference. */
         toString() { return this._fullPath; }
         valueOf() {
@@ -1911,46 +2001,7 @@ var FlowScript;
     }
     FlowScript.NamedReference = NamedReference;
     // ========================================================================================================================
-    let Core;
-    (function (Core) {
-        /** A wild-card that is used internally with type maps to match all defined type objects.  This is never used within scripts.
-          * This operates similar to "Any", but differs in how the internal type matching works.  Types ONLY match to themselves
-          * internally, so "Any" does NOT match "String" for example.  This is required for matching specific types; however, some
-          * internal matches literally need to specify "any of the defined types", and that is where 'All' comes in.
-          */
-        class All extends Type {
-            constructor() { super(null, "All"); }
-            assignableTo(type) {
-                return true;
-            }
-        }
-        Core.All = All;
-        class Event extends Type {
-            constructor(parent) { super(parent, "Event"); }
-            assignableTo(type) {
-                if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
-                    return false;
-                switch (type.fullTypeName) {
-                    case this.script.System.Event.fullTypeName:
-                        return true;
-                }
-                return super.assignableTo(type);
-            }
-        }
-        Core.Event = Event;
-        class Inferred extends Type {
-            constructor() { super(null, "Inferred"); }
-            assignableTo(type) {
-                if (typeof type !== 'object' || !(type instanceof FlowScript.Component))
-                    return false;
-                return super.assignableTo(type);
-            }
-        }
-        Core.Inferred = Inferred;
-    })(Core = FlowScript.Core || (FlowScript.Core = {}));
-    // ========================================================================================================================
 })(FlowScript || (FlowScript = {}));
-// ############################################################################################################################
 // ############################################################################################################################
 var FlowScript;
 (function (FlowScript_1) {
@@ -2038,9 +2089,12 @@ var FlowScript;
                 this._main = value;
             }
         }
+        /** Dereferences an absolute reference string.
+         * @see referenceStr */
+        $(path) { return this.resolve(path); }
         // --------------------------------------------------------------------------------------------------------------------
         constructor(main) {
-            super(null, "Script", eval('this'));
+            super(null, "Script");
             this._messages = [];
             this._messagesIndex = {};
             this._threads = [new FlowScript_1.Thread(this)]; // (there is always one main thread)
@@ -2195,6 +2249,15 @@ var FlowScript;
         Storage.getSavedProjectDataList = getSavedProjectDataList;
     })(Storage = FlowScript_1.Storage || (FlowScript_1.Storage = {}));
     // ========================================================================================================================
+    var scripts;
+    /** Locates a script by its ID.
+     * @see FlowScript._id
+     */
+    function getScript(id) {
+        return scripts[id];
+    }
+    FlowScript_1.getScript = getScript;
+    FlowScript['$'] = getScript; // (this is used with dereferencing the root path in `NamedReference<T>` for script object references)
     /** Creates a new empty script instance. */
     function createNew() {
         return new FlowScript();
@@ -2204,6 +2267,7 @@ var FlowScript;
     /** Creates a new script instance from a given URL. */
     function createFrom(url) {
         var fs = new FlowScript();
+        fs._id;
         fs.load(url);
         return fs;
     }
@@ -2943,7 +3007,12 @@ var FlowScript;
             this._validTypes = types;
             return this;
         }
-        setDescription(desc) { this._description = desc; return this; }
+        setDescription(desc) {
+            if (desc.join)
+                desc = desc.join("\r\n");
+            this._description = '' + desc;
+            return this;
+        }
         get validationRegex() { return this._validationRegex; }
         set validationRegexStr(pattern) {
             this._validationRegex = new RegExp(pattern);
@@ -3439,6 +3508,9 @@ var FlowScript;
         get hasDataObjectTypeParent() {
             return this.parent && this.parent instanceof Component && this.parent._componentType == ComponentTypes.Object;
         }
+        /** Used to dereferences a block by index.
+         * @see referenceStr */
+        get $() { return this._blocks; }
         // --------------------------------------------------------------------------------------------------------------------
         save(target) {
             target = target || {};
@@ -3712,9 +3784,9 @@ var FlowScript;
             return name;
         }
         /** Defines a new local instance related variable for this component. */
-        defineInstanceProperty(name, validTypes, initialValue, validation) {
+        defineInstanceProperty(name, validTypes, initialValue, validation, isConst, isAlias) {
             name = this._validateInstancePropertyName(name);
-            var p = new FlowScript.Property(null, validTypes, name, { initialValue: initialValue, validation: validation, isInstance: true });
+            var p = new FlowScript.Property(null, validTypes, name, { initialValue: initialValue, validation: validation, isInstance: true, isConst: isConst, isAlias: isAlias });
             p._explicitlyDefined = true;
             this._instanceProperties.push(p);
             return p;
@@ -4021,7 +4093,7 @@ var FlowScript;
         // --------------------------------------------------------------------------------------------------------------------
         save(target) {
             target = target || {};
-            target.source = this.component ? this.component.fullTypeName : null;
+            target.source = this.component ? this.component.referenceStr : null;
             if (this._arguments)
                 this._arguments.save(target);
             if (this._returnTargets)
@@ -4032,6 +4104,8 @@ var FlowScript;
         }
         load(target) {
             if (target) {
+                //if (target.arguments)
+                //    for (var i = target.arguments.length - 1; i >= 0; --i)
                 // super.load(target);
             }
             return this;
@@ -4168,19 +4242,21 @@ var FlowScript;
         get lines() { return this._lines; }
         get hasLines() { return !!this._lines && !!this._lines.length; }
         get totalLines() { return this._lines.length; }
-        /** A string path that represents this block during serialization. */
-        get serializedPath() {
-            var typePath = this._component ? this._component.fullTypeName : "";
-            var i = this.index;
-            return typePath + ":" + (typePath && i >= 0 ? i : this._id);
-        }
+        // /** A string path that represents this block during serialization. */
+        // get serializedPath(): string {
+        //     var typePath = this._component ? this._component.fullTypeName : "";
+        //     var i = this.index;
+        //     return typePath + ":" + (typePath && i >= 0 ? i : this._id);
+        // }
         /** An instance reference string that represents this block in the system.
-         *
+         * Reference strings are used instead of object references to locate components, blocks, or lines. This is especially
+         * handy in cases where an item might get deleted and later restored. In such case the system can remake any connections.
+         * @see getReference()
          */
         get referenceStr() {
             var comp = this.component;
             if (comp)
-                return comp.referenceStr + ".blocks[" + this.index + "]";
+                return comp.referenceStr + ".$[" + this.index + "]";
             else
                 return "[" + this.index + "]";
         }
@@ -4193,6 +4269,9 @@ var FlowScript;
             else
                 return FlowScript.NamedReference.fromInstance(this, null);
         }
+        /** Used to dereferences a line by index.
+         * @see referenceStr */
+        get $() { return this._lines; }
         /** Creates an expression wrapper for this block. An optional expression parent can be given. */
         createExpression(parent) {
             return new BlockReference(this, parent);
@@ -4300,7 +4379,7 @@ var FlowScript;
             target = target || {};
             //?if (!typePath || i < 0)
             //    throw "Cannot save a block reference to a block that is not part of a component - there would be no way to reconcile it when loading.";
-            target.blockPath = this.block.serializedPath;
+            target.blockRef = this.block.referenceStr;
             super.save(target);
             return target;
         }
@@ -4309,8 +4388,8 @@ var FlowScript;
             var block = this.block;
             var typePath = block.component ? block.component.fullTypeName : null;
             var i = block.index;
-            if (target.blockPath) {
-                var parts = target.blockPath.split(':');
+            if (target.blockRef) {
+                var parts = target.blockRef.split(':');
                 if (parts.length)
                     if (parts.length == 1)
                         var path, id = parts[0];
@@ -4325,18 +4404,18 @@ var FlowScript;
                         throw "A numerical block index requires a component type path.";
                     var comp = this.script.resolve(path, FlowScript.Component);
                     if (!comp)
-                        throw "There is no component '" + path + "'; cannot reconcile block reference '" + target.blockPath + "'.";
+                        throw "There is no component '" + path + "'; cannot reconcile block reference '" + target.blockRef + "'.";
                     var i = +id;
                     if (i < 0)
                         throw "The numerical block index (" + i + ") is out of bounds.";
                 }
             }
-            target.blockPath = typePath + ":" + (i >= 0 ? i : block._id);
+            target.blockRef = typePath + ":" + (i >= 0 ? i : block._id);
             // super.load(target);
             return this;
         }
         // --------------------------------------------------------------------------------------------------------------------
-        toString() { return "Block reference: " + (this._block && this.block.serializedPath); }
+        toString() { return "Block reference: " + (this._block && this.block.referenceStr); }
     }
     FlowScript.BlockReference = BlockReference;
     // ========================================================================================================================
@@ -4370,14 +4449,14 @@ var FlowScript;
         /** Returns the 1-based line number for this line, used mainly for the UI. */
         get lineNumber() { return this._block ? this._block.getLineNumber(this) : void 0; }
         get totalLines() { return this._block ? this._block.totalLines : void 0; }
-        /**
-         * A string path that represents this line during serialization.
-         */
-        get serializedPath() {
-            var blockPath = this._block ? this._block.serializedPath : "";
-            var i = this.lineNumber;
-            return blockPath + "," + (blockPath && i >= 1 ? i : this._id);
-        }
+        // /** 
+        //  * A string path that represents this line during serialization. 
+        //  */
+        // get serializedPath(): string {
+        //     var blockPath = this._block ? this._block.serializedPath : "";
+        //     var i = this.lineNumber;
+        //     return blockPath + "," + (blockPath && i >= 1 ? i : this._id);
+        // }
         /**
          * An instance reference string that represents this line in the system.
          * Reference strings are used instead of object references to locate components, blocks, or lines.This is especially
@@ -4387,7 +4466,7 @@ var FlowScript;
         get referenceStr() {
             var block = this.block;
             if (block)
-                return block.referenceStr + ".lines[" + this.lineIndex + "]";
+                return block.referenceStr + ".$[" + this.lineIndex + "]";
             else
                 return "[" + this.lineIndex + "]";
         }
@@ -4496,7 +4575,7 @@ var FlowScript;
         // --------------------------------------------------------------------------------------------------------------------
         save(target) {
             target = target || {};
-            target.linePath = this.line.serializedPath;
+            target.linePath = this.line.referenceStr;
             super.save(target);
             return target;
         }
@@ -4507,7 +4586,7 @@ var FlowScript;
             return this;
         }
         // --------------------------------------------------------------------------------------------------------------------
-        toString() { return "Line reference: " + this.line.serializedPath; }
+        toString() { return "Line reference: " + this.line.referenceStr; }
     }
     FlowScript.LineReference = LineReference;
     // ========================================================================================================================
@@ -4551,8 +4630,57 @@ var FlowScript;
                         this.values[p] = values[p];
             return this;
         }
+        // --------------------------------------------------------------------------------------------------------------------
+        /**
+         * Creates an expressions that references an enumeration value.
+         * @param enumName The enum name.
+         * @param parent An optional parent expression.
+         */
+        createExpression(enumName, parent) {
+            return new EnumReference(this, enumName, parent);
+        }
     }
     FlowScript.Enum = Enum;
+    /** References a component property for use in expressions. */
+    class EnumReference extends FlowScript.Expression {
+        // --------------------------------------------------------------------------------------------------------------------
+        /**
+         * Constructs a reference to an enum type.
+         * @param enumType The enum type.
+         * @param name The name on the enum to select.
+         * @param parent An optional parent expression.
+         */
+        constructor(enumType, name, parent) {
+            super(parent);
+            if (!enumType || typeof enumType != 'object' || !(enumType instanceof FlowScript.Property))
+                throw "A valid property object is required.";
+            this._enumRef = enumType.getReference();
+            this.name = name;
+        }
+        // --------------------------------------------------------------------------------------------------------------------
+        get script() { return this._enumRef ? this.enumType.script : null; }
+        /** The enum type that is referenced. */
+        get enumType() { return this._enumRef.valueOf(); }
+        get enumRef() { return this._enumRef; }
+        /**
+         * Gets the enum value represented by this reference.
+         */
+        valueOf() { var t = this.enumType; return t && t.values[this.name]; }
+        // --------------------------------------------------------------------------------------------------------------------
+        _clone(parent) {
+            return new EnumReference(this.enumType, this.name, parent);
+        }
+        // --------------------------------------------------------------------------------------------------------------------
+        save(target) {
+            target = target || {};
+            target.enumuType = this.enumType ? this.enumType.fullTypeName : void 0;
+            super.save(target);
+            return target;
+        }
+        // --------------------------------------------------------------------------------------------------------------------
+        toString() { return this._enumRef.toString(); }
+    }
+    FlowScript.EnumReference = EnumReference;
     // ========================================================================================================================
 })(FlowScript || (FlowScript = {}));
 // ############################################################################################################################
@@ -5794,8 +5922,8 @@ var FlowScript;
 (function (FlowScript) {
     var Core;
     (function (Core) {
-        var HTML;
-        (function (HTML_1) {
+        var DOM;
+        (function (DOM) {
             // ========================================================================================================================
             // Core HTML Components
             // ========================================================================================================================
@@ -5824,7 +5952,7 @@ var FlowScript;
                     super.onInit();
                 }
             }
-            HTML_1.HTML = HTML;
+            DOM.HTML = HTML;
             // ========================================================================================================================
             /** Attaches an event listener to an element that supports DOM related events.
               */
@@ -5839,7 +5967,7 @@ var FlowScript;
                     super.onInit();
                 }
             }
-            HTML_1.On = On;
+            DOM.On = On;
             // ========================================================================================================================
             // Node Components 
             class Node_removeChild extends FlowScript.Component {
@@ -5853,7 +5981,7 @@ var FlowScript;
                     super.onInit();
                 }
             }
-            HTML_1.Node_removeChild = Node_removeChild;
+            DOM.Node_removeChild = Node_removeChild;
             class Node_appendChild extends FlowScript.Component {
                 constructor(parent) {
                     super(parent, FlowScript.ComponentTypes.Text, "Node_appendChild", "append child node $newChild");
@@ -5865,7 +5993,7 @@ var FlowScript;
                     super.onInit();
                 }
             }
-            HTML_1.Node_appendChild = Node_appendChild;
+            DOM.Node_appendChild = Node_appendChild;
             // ========================================================================================================================
             class NodeList extends Core.FSObject {
                 // --------------------------------------------------------------------------------------------------------------------
@@ -5876,7 +6004,7 @@ var FlowScript;
                     super.onInit();
                 }
             }
-            HTML_1.NodeList = NodeList;
+            DOM.NodeList = NodeList;
             // ========================================================================================================================
             class NamedNodeMap extends Core.FSObject {
                 // --------------------------------------------------------------------------------------------------------------------
@@ -5887,7 +6015,7 @@ var FlowScript;
                     super.onInit();
                 }
             }
-            HTML_1.NamedNodeMap = NamedNodeMap;
+            DOM.NamedNodeMap = NamedNodeMap;
             // ========================================================================================================================
             class NodeTypes extends FlowScript.Enum {
                 constructor(parent) {
@@ -5907,7 +6035,7 @@ var FlowScript;
                     });
                 }
             }
-            HTML_1.NodeTypes = NodeTypes;
+            DOM.NodeTypes = NodeTypes;
             class DocumentPositions extends FlowScript.Enum {
                 constructor(parent) {
                     super(parent, "DocumentPositions", {
@@ -5920,7 +6048,7 @@ var FlowScript;
                     });
                 }
             }
-            HTML_1.DocumentPositions = DocumentPositions;
+            DOM.DocumentPositions = DocumentPositions;
             // ========================================================================================================================
             class Node extends Core.FSObject {
                 // --------------------------------------------------------------------------------------------------------------------
@@ -6029,7 +6157,7 @@ var FlowScript;
                     super.onInit();
                 }
             }
-            HTML_1.Node = Node;
+            DOM.Node = Node;
             // ========================================================================================================================
             class Element extends Core.FSObject {
                 // --------------------------------------------------------------------------------------------------------------------
@@ -6045,7 +6173,7 @@ var FlowScript;
                     super.onInit();
                 }
             }
-            HTML_1.Element = Element;
+            DOM.Element = Element;
             // ========================================================================================================================
             class HTMLElement extends Core.FSObject {
                 // --------------------------------------------------------------------------------------------------------------------
@@ -6059,7 +6187,7 @@ var FlowScript;
                     super.onInit();
                 }
             }
-            HTML_1.HTMLElement = HTMLElement;
+            DOM.HTMLElement = HTMLElement;
             // ========================================================================================================================
             class Document extends Core.FSObject {
                 // --------------------------------------------------------------------------------------------------------------------
@@ -6073,7 +6201,162 @@ var FlowScript;
                     super.onInit();
                 }
             }
-            HTML_1.Document = Document;
+            DOM.Document = Document;
+            // ========================================================================================================================
+        })(DOM = Core.DOM || (Core.DOM = {}));
+    })(Core = FlowScript.Core || (FlowScript.Core = {}));
+})(FlowScript || (FlowScript = {}));
+// ############################################################################################################################
+// ############################################################################################################################
+/** The namespace for HTML related components. */
+var FlowScript;
+(function (FlowScript) {
+    var Core;
+    (function (Core) {
+        var HTML;
+        (function (HTML) {
+            // ========================================================================================================================
+            // Core HTML Components
+            // ========================================================================================================================
+            class HTMLReaderModes extends FlowScript.Enum {
+                constructor(parent) {
+                    super(parent, "HTMLReaderModes", {
+                        /** There's no more to read (end of HTML). */
+                        End: -1,
+                        /** Reading hasn't yet started. */
+                        NotStarted: 0,
+                        /** A tag was just read. The 'runningText' property holds the text prior to the tag, and the tag name is in 'tagName'. */
+                        Tag: 1,
+                        /** An attribute was just read from the last tag. The name will be placed in 'attributeName' and the value (if value) in 'attributeValue'.*/
+                        Attribute: 2,
+                        /** An ending tag bracket was just read (no more attributes). */
+                        EndOfTag: 3,
+                        /** A template token in the form '{{...}}' was just read. */
+                        TemplateToken: 4
+                    });
+                }
+            }
+            HTML.HTMLReaderModes = HTMLReaderModes;
+            // ========================================================================================================================
+            class HTMLReader extends Core.FSObject {
+                // --------------------------------------------------------------------------------------------------------------------
+                constructor(parent) {
+                    super(parent, null, "Node");
+                    this.CloneTypes = new FlowScript.Enum(this, "CloneTypes", { Shallow: false, Deep: true });
+                }
+                onInit() {
+                    // Setup the expected parameters and return types:
+                    var sys = this.script.System;
+                    this.HTMLReaderModes = new HTMLReaderModes(this);
+                    this.defineInstanceProperty("__splitRegEx", [sys.String], /<!(?:--[\S\s]*?--)?[\S\s]*?>|<script\b[\S\s]*?<\/script[\S\s]*?>|<style\b[\S\s]*?<\/style[\S\s]*?>|<\![A-Z0-9]+|<\/[A-Z0-9]+|<[A-Z0-9]+|\/?>|&[A-Z]+;?|&#[0-9]+;?|&#x[A-F0-9]+;?|(?:'[^<>]*?'|"[^<>]*?")|=|\s+|\{\{[^\{\}]*?\}\}/gi.toString(), null, true).setDescription("(The RegEx will identify areas that MAY need to delimited for parsing [not a guarantee].  The area outside of the delimiters is usually"
+                        + " defined by the delimiter types, so the delimiters are moved out into their own array for quick parsing (this also allows the host browser's native"
+                        + " environment to do much of the parsing instead of JavaScript).");
+                    this.defineInstanceProperty("partIndex", [sys.Integer]);
+                    this.defineInstanceProperty("textStartIndex", [sys.Integer])
+                        .setDescription("The start index of the running text.");
+                    this.defineInstanceProperty("textEndIndex", [sys.Integer])
+                        .setDescription("The end index of the running text. This is also the start index of the next tag, if any (since text runs between tags)."
+                        + " (this advances with every read so text can be quickly extracted from the source HTML instead of adding array items [just faster])");
+                    this.defineInstanceProperty("__lastTextEndIndex", [sys.Integer])
+                        .setDescription("For backing up from a read ([)see '__readNext()' && '__goBack()').");
+                    this.defineInstanceProperty("nonDelimiters", [sys.Array.createTemplateType([sys.String])])
+                        .setDescription("A list of text parts that correspond to each delimiter (i.e. TDTDT [T=Text, D=Delimiter]).");
+                    this.defineInstanceProperty("delimiters", [sys.Array.createTemplateType([sys.String])])
+                        .setDescription("A list of the delimiters that correspond to each of the text parts (i.e. TDTDT [T=Text, D=Delimiter]).");
+                    this.defineInstanceProperty("text", [sys.String]).setDescription("The text that was read.");
+                    this.defineInstanceProperty("delimiter", [sys.String]).setDescription("The delimiter that was read.");
+                    this.defineInstanceProperty("runningText", [sys.String]).setDescription("The text that runs between indexes 'textStartIndex' and 'textEndIndex-1' (inclusive).");
+                    this.defineInstanceProperty("tagBracket", [sys.String]).setDescription("The bracket sequence before the tag name, such as '<' or '</'. */.");
+                    this.defineInstanceProperty("tagName", [sys.String]).setDescription("The tag name, if a tag was read.");
+                    this.defineInstanceProperty("attributeName", [sys.String]).setDescription("The attribute name, if attribute was read.");
+                    this.defineInstanceProperty("attributeValue", [sys.String]).setDescription("The attribute value, if attribute was read.");
+                    var readMode = this.defineInstanceProperty("readMode", [this.HTMLReaderModes]).setDescription("The attribute value, if attribute was read.");
+                    this.defineInstanceProperty("strictMode", [sys.Boolean]).setDescription([
+                        "If true, then the parser will produce errors on ill-formed HTML (eg. 'attribute=' with no value).",
+                        "This can greatly help identify possible areas of page errors."
+                    ]);
+                    this.isMarkupDeclaration = new FlowScript.ComponentBuilder(this, FlowScript.ComponentTypes.Expression, "isMarkupDeclaration", "$reader is markup declaration?")
+                        .defineInstanceType(this).defineParameter("$reader", [this]).defineReturn(null, sys.Boolean)
+                        .addStatement(sys.Comparison.Equals, [readMode.createExpression(), this.HTMLReaderModes.createExpression("Tag")]).Component
+                        .setDescription("Returns true if tag current tag block is a mark-up declaration in the form \"<!...>\", where '...' is any text EXCEPT the start of a comment ('--').");
+                    //this.isSupported = new ComponentBuilder(this, ComponentTypes.Expression, "isSupported", "$feature and $version are supported?")
+                    //    .defineInstanceType(this).defineParameter("feature", [sys.String]).defineParameter("version", [sys.String]).defineReturn(null, sys.Boolean)
+                    //    .addStatement(sys.Code, ["$this.isSupported($feature, $version)"]).Component;
+                    //this.isEqualNode = new ComponentBuilder(this, ComponentTypes.Expression, "isEqualNode", "$node is equal?")
+                    //    .defineInstanceType(this).defineParameter("node", [sys.HTML.Node]).defineReturn(null, sys.Boolean)
+                    //    .addStatement(sys.Code, ["$this.isEqualNode($node)"]).Component;
+                    //this.lookupPrefix = new ComponentBuilder(this, ComponentTypes.Expression, "lookupPrefix", "lookup prefix $namespaceURI")
+                    //    .defineInstanceType(this).defineParameter("namespaceURI", [sys.String]).defineReturn(null, sys.String)
+                    //    .addStatement(sys.Code, ["$this.lookupPrefix($namespaceURI)"]).Component;
+                    //this.isDefaultNamespace = new ComponentBuilder(this, ComponentTypes.Expression, "isDefaultNamespace", "$prefix is the default?")
+                    //    .defineInstanceType(this).defineParameter("prefix", [sys.String]).defineReturn(null, sys.Boolean)
+                    //    .addStatement(sys.Code, ["$this.isDefaultNamespace($prefix)"]).Component;
+                    //this.compareDocumentPosition = new ComponentBuilder(this, ComponentTypes.Expression, "compareDocumentPosition", "compare position of $node")
+                    //    .defineInstanceType(this).defineParameter("node", [sys.HTML.Node]).defineReturn(null, sys.Boolean)
+                    //    .addStatement(sys.Code, ["$this.compareDocumentPosition($node)"]).Component;
+                    //this.normalize = new ComponentBuilder(this, ComponentTypes.Expression, "normalize")
+                    //    .defineInstanceType(this).addStatement(sys.Code, ["$this.normalize()"]).Component;
+                    //this.isSameNode = new ComponentBuilder(this, ComponentTypes.Expression, "isSameNode", "$node is the same?")
+                    //    .defineInstanceType(this).defineParameter("node", [sys.HTML.Node]).defineReturn(null, sys.Boolean)
+                    //    .addStatement(sys.Code, ["$this.isSameNode($node)"]).Component;
+                    //this.hasAttributes = new ComponentBuilder(this, ComponentTypes.Expression, "hasAttributes", "attributes exist?")
+                    //    .defineInstanceType(this).defineReturn(null, sys.Boolean)
+                    //    .addStatement(sys.Code, ["$this.hasAttributes()"]).Component;
+                    //this.lookupNamespaceURI = new ComponentBuilder(this, ComponentTypes.Expression, "lookupNamespaceURI", "lookup namespace URI by $prefix")
+                    //    .defineInstanceType(this).defineParameter("prefix", [sys.String]).defineReturn(null, sys.String)
+                    //    .addStatement(sys.Code, ["$this.lookupNamespaceURI($prefix)"]).Component;
+                    //this.cloneNode = new ComponentBuilder(this, ComponentTypes.Expression, "cloneNode", "$cloneType clone this node")
+                    //    .defineInstanceType(this).defineEnumProperty("cloneType", this.CloneTypes, true).defineReturn(null, sys.HTML.Node)
+                    //    .addStatement(sys.Code, ["$this.cloneNode($prefix)"]).Component;
+                    //this.hasChildNodes = new ComponentBuilder(this, ComponentTypes.Expression, "hasChildNodes", "child nodes exist?")
+                    //    .defineInstanceType(this).defineReturn(null, sys.Boolean)
+                    //    .addStatement(sys.Code, ["$this.hasChildNodes()"]).Component;
+                    //this.replaceChild = new ComponentBuilder(this, ComponentTypes.Expression, "replaceChild", "replace $oldChild with $newChild")
+                    //    .defineInstanceType(this).defineParameter("oldChild", [sys.HTML.Node]).defineParameter("newChild", [sys.HTML.Node]).defineReturn(null, sys.HTML.Node)
+                    //    .addStatement(sys.Code, ["$this.replaceChild($newChild, $oldChild)"]).Component;
+                    //this.insertBefore = new ComponentBuilder(this, ComponentTypes.Expression, "insertBefore", "insert $newNode before $?existingChild")
+                    //    .defineInstanceType(this).defineParameter("newNode", [sys.HTML.Node]).defineParameter("existingChild", [sys.HTML.Node]).defineReturn(null, sys.HTML.Node)
+                    //    .addStatement(sys.Code, ["$this.insertBefore($newChild, $oldChild)"]).Component;
+                    /*
+                        /removeChild(oldChild: Node): Node;
+                        /appendChild(newChild: Node): Node;
+                        /isSupported(feature: string, version: string): boolean;
+                        /isEqualNode(arg: Node): boolean;
+                        /lookupPrefix(namespaceURI: string): string;
+                        /isDefaultNamespace(namespaceURI: string): boolean;
+                        /compareDocumentPosition(other: Node): number;
+                        /normalize(): void ;
+                        /isSameNode(other: Node): boolean;
+                        /hasAttributes(): boolean;
+                        /lookupNamespaceURI(prefix: string): string;
+                        /cloneNode(deep?: boolean): Node;
+                        /hasChildNodes(): boolean;
+                        /replaceChild(newChild: Node, oldChild: Node): Node;
+                        /insertBefore(newChild: Node, refChild?: Node): Node;
+                    */
+                    this.defineInstanceProperty("ELEMENT_NODE", [sys.Integer], 1);
+                    this.defineInstanceProperty("ATTRIBUTE_NODE", [sys.Integer], 2);
+                    this.defineInstanceProperty("TEXT_NODE", [sys.Integer], 3);
+                    this.defineInstanceProperty("CDATA_SECTION_NODE", [sys.Integer], 4);
+                    this.defineInstanceProperty("ENTITY_REFERENCE_NODE", [sys.Integer], 5);
+                    this.defineInstanceProperty("ENTITY_NODE", [sys.Integer], 6);
+                    this.defineInstanceProperty("PROCESSING_INSTRUCTION_NODE", [sys.Integer], 7);
+                    this.defineInstanceProperty("COMMENT_NODE", [sys.Integer], 8);
+                    this.defineInstanceProperty("DOCUMENT_NODE", [sys.Integer], 9);
+                    this.defineInstanceProperty("DOCUMENT_TYPE_NODE", [sys.Integer], 10);
+                    this.defineInstanceProperty("DOCUMENT_FRAGMENT_NODE", [sys.Integer], 11);
+                    this.defineInstanceProperty("NOTATION_NODE", [sys.Integer], 12);
+                    this.defineInstanceProperty("DOCUMENT_POSITION_DISCONNECTED", [sys.Integer], 1);
+                    this.defineInstanceProperty("DOCUMENT_POSITION_PRECEDING", [sys.Integer], 2);
+                    this.defineInstanceProperty("DOCUMENT_POSITION_FOLLOWING", [sys.Integer], 4);
+                    this.defineInstanceProperty("DOCUMENT_POSITION_CONTAINS", [sys.Integer], 8);
+                    this.defineInstanceProperty("DOCUMENT_POSITION_CONTAINED_BY", [sys.Integer], 16);
+                    this.defineInstanceProperty("DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC", [sys.Integer], 32);
+                    this.defineDefaultReturnVar(sys.String);
+                    super.onInit();
+                }
+            }
+            HTML.HTMLReader = HTMLReader;
             // ========================================================================================================================
         })(HTML = Core.HTML || (Core.HTML = {}));
     })(Core = FlowScript.Core || (FlowScript.Core = {}));
@@ -6746,6 +7029,13 @@ var FlowScript;
                 (renderer.eval(expr, code), code = FlowScript.undefined);
             return code;
         }
+        _renderEnumExpression(renderer, expr) {
+            var value = expr.valueOf();
+            var code = this._renderConstant(value);
+            if (renderer.isSimulation)
+                (renderer.eval(expr, code), code = FlowScript.undefined);
+            return code;
+        }
         _renderPropertyExpression(renderer, expr, assignment = false) {
             if (typeof expr !== 'object' || !(expr instanceof FlowScript.PropertyReference))
                 throw "A valid property reference is required for the left side of an assignment operation.";
@@ -6820,6 +7110,8 @@ var FlowScript;
                     return this._renderPropertyExpression(renderer, expr, assignment);
                 else if (assignment)
                     throw "A property expression is required for the left side of an assignment operation.";
+                if (expr instanceof FlowScript.EnumReference)
+                    return this._renderEnumExpression(renderer, expr);
                 if (expr instanceof FlowScript.Constant)
                     return this._renderConstantExpression(renderer, expr);
                 if (expr instanceof FlowScript.BlockReference) {
@@ -8548,9 +8840,9 @@ var FlowScript;
           */
         get expressionBin() { return this._expressionBin; }
         // --------------------------------------------------------------------------------------------------------------------
-        // save(): string {
-        //     return this.script.saveToStorage(this.title);
-        // }
+        save() {
+            return this.script.saveToStorage(this.title);
+        }
         // --------------------------------------------------------------------------------------------------------------------
         addToBin(expr, triggerEvent = true) {
             if (this._expressionBin.indexOf(expr) < 0) {
@@ -9339,6 +9631,7 @@ var FlowScript;
 ///// <reference path="flowscriptrt.common.ts" />
 /// <reference path="flowscriptrt.ts" />
 /// <reference path="type.ts" />
+/// <reference path="NamedReference.ts" />
 /// <reference path="flowscriptmain.ts" />
 /// <reference path="expressions.ts" />
 /// <reference path="property.ts" />
@@ -9357,6 +9650,7 @@ var FlowScript;
 /// <reference path="components/core.math.ts" />
 /// <reference path="components/core.binary.ts" />
 /// <reference path="components/core.comparison.ts" />
+/// <reference path="components/core.DOM.ts" />
 /// <reference path="components/core.HTML.ts" />
 /// <reference path="compiler.ts" />
 /// <reference path="simulator.ts" />

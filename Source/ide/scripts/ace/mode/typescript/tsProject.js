@@ -10,13 +10,12 @@ define(["require", "exports", "./languageServiceHost"], function (require, expor
     /**
      * Wraps up `langaugeService` `languageServiceHost` in a single package
      */
-    var TsProject = /** @class */ (function () {
-        function TsProject() {
+    class TsProject {
+        constructor() {
             this.languageServiceHost = languageServiceHost_1.createLanguageServiceHost("", "");
             this.languageService = ts.createLanguageService(this.languageServiceHost, ts.createDocumentRegistry());
         }
-        return TsProject;
-    }());
+    }
     exports.TsProject = TsProject;
     var tsProject = null;
     function getTSProject() {

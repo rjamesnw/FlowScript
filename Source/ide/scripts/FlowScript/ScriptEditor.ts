@@ -1,4 +1,4 @@
-﻿module FlowScript.UI {
+﻿namespace FlowScript.UI {
     // ========================================================================================================================
     // Mouse position events (for pop-ups, etc.)
     export var mouseX: number;

@@ -371,7 +371,7 @@ namespace FlowScript.Core {
         Comparison: Comparison.Comparison;
 
         /** Contains components for rendering HTML. */
-        HTML: HTML.HTML;
+        HTML: DOM.HTML;
 
         /** Represents a custom code block. */
         Code: Code;

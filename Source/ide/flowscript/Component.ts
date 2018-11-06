@@ -880,8 +880,8 @@ namespace FlowScript {
             return this;
         }
         /** Adds a new statement on a new line (See {Line}.addStatement()). */
-        addStatement(action: Component, args?: IComponentReferenceArgs | string[], returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[]): ComponentBuilder {
-            var _args = <IComponentReferenceArgs>[];
+        addStatement(action: Component, args?: IExpressionArgs | string[], returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[]): ComponentBuilder {
+            var _args = <IExpressionArgs>[];
             if (args)
                 for (var i = 0; i < args.length; ++i)
                     if (args[i])
@@ -942,7 +942,7 @@ namespace FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        constructor(source: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[], parent?: Expression) {
+        constructor(source: Component, args?: IExpressionArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[], parent?: Expression) {
             super(parent);
 
             if (!source || typeof source != 'object' || !(source instanceof Component))
@@ -954,7 +954,7 @@ namespace FlowScript {
         }
 
         /** Initialize this expression with new arguments, return targets, and event handlers. */
-        initExpression(source: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[]): this {
+        initExpression(source: Component, args?: IExpressionArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[]): this {
             this._componentRef = source.getReference();
 
             if (args || args === null) {
@@ -1108,8 +1108,8 @@ namespace FlowScript {
 
         load(target?: ISavedComponentReference): this {
             if (target) {
-                if (target.arguments)
-                    for (var i = target.arguments.length - 1; i >= 0; --i)
+                //if (target.arguments)
+                //    for (var i = target.arguments.length - 1; i >= 0; --i)
 
                 // super.load(target);
             }

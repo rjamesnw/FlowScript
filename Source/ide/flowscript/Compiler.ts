@@ -814,6 +814,14 @@ namespace FlowScript {
             return code;
         }
 
+        _renderEnumExpression(renderer: TypeRenderer, expr: EnumReference): string {
+            var value = expr.valueOf();
+            var code = this._renderConstant(value);
+            if (renderer.isSimulation)
+                (renderer.eval(expr, code), code = undefined);
+            return code;
+        }
+
         _renderPropertyExpression(renderer: TypeRenderer, expr: PropertyReference, assignment: boolean = false): string {
             if (typeof expr !== 'object' || !(expr instanceof PropertyReference))
                 throw "A valid property reference is required for the left side of an assignment operation.";
@@ -908,6 +916,9 @@ namespace FlowScript {
                     return this._renderPropertyExpression(renderer, expr, assignment);
                 else if (assignment)
                     throw "A property expression is required for the left side of an assignment operation.";
+
+                if (expr instanceof EnumReference)
+                    return this._renderEnumExpression(renderer, expr);
 
                 if (expr instanceof Constant)
                     return this._renderConstantExpression(renderer, expr);

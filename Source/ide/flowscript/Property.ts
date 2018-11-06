@@ -197,7 +197,16 @@ module FlowScript {
             return this;
         }
 
-        setDescription(desc: string): Property { this._description = desc; return this; }
+        /** Set a description for this property. */
+        setDescription(desc: string): Property;
+        /** Set a description for this property from an array of lines. CRLF (line endings) will be inserted in between each line. */
+        setDescription(desc: string[]): Property;
+        setDescription(desc: string | string[]): Property {
+            if ((<string[]>desc).join)
+                desc = (<string[]>desc).join("\r\n");
+            this._description = '' + desc;
+            return this;
+        }
 
         get validationRegex(): RegExp { return this._validationRegex; }
         set validationRegexStr(pattern: string) {

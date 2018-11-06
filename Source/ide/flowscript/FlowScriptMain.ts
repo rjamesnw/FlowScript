@@ -215,7 +215,7 @@ namespace FlowScript {
         // --------------------------------------------------------------------------------------------------------------------
 
         constructor(main?: Component) {
-            super(null, "Script", eval('this'));
+            super(null, "Script");
 
             this._messages = [];
             this._messagesIndex = {};

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2046
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "FlowScript", "FlowScript.njsproj", "{F559E79B-7B88-47D7-86A3-37969D001E8B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F559E79B-7B88-47D7-86A3-37969D001E8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F559E79B-7B88-47D7-86A3-37969D001E8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F559E79B-7B88-47D7-86A3-37969D001E8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F559E79B-7B88-47D7-86A3-37969D001E8B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D0323656-C564-4630-9F0D-F03AD74918DE}
+	EndGlobalSection
+EndGlobal

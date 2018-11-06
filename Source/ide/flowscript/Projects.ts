@@ -31,9 +31,9 @@
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        // save(): string {
-        //     return this.script.saveToStorage(this.title);
-        // }
+        save(): string {
+            return this.script.saveToStorage(this.title);
+        }
 
         // --------------------------------------------------------------------------------------------------------------------
 
@@ -58,14 +58,14 @@
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        // private _findChildNode(node: HTMLElement, fstype: Type): HTMLElement { //?
-        //     if (node) {
-        //         for (var i = 0, len = node.childNodes.length; i < len; ++i)
-        //             if ((<any>node.childNodes[i])["$__fs_type"] == fstype)
-        //                 return <HTMLElement>node.childNodes[i];
-        //     }
-        //     else return null;
-        // }
+        //private _findChildNode(node: HTMLElement, fstype: Type): HTMLElement { //?
+        //    if (node) {
+        //        for (var i = 0, len = node.childNodes.length; i < len; ++i)
+        //            if ((<any>node.childNodes[i])["$__fs_type"] == fstype)
+        //                return <HTMLElement>node.childNodes[i];
+        //    }
+        //    else return null;
+        //}
 
         // --------------------------------------------------------------------------------------------------------------------
     }
@@ -92,7 +92,7 @@
          * @param description The project description.
          * @param projectType An object of type 'Project' to use to create this project entry.
          */
-        createProject<T extends Project>(title: string, description?: string, projectType?: { new (title: string, description?: string): T }): T;
+        createProject<T extends Project>(title: string, description?: string, projectType?: { new(title: string, description?: string): T }): T;
         createProject(title: string, description?: string, projectType?: typeof Project): Project {
             var project = new (projectType || Project)(title, description);
             this._projects.push(project);

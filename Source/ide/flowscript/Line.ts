@@ -119,7 +119,7 @@ namespace FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        addStatement(action: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[]): Statement {
+        addStatement(action: Component, args?: IExpressionArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[]): Statement {
             if (this._statements.length)
                 throw "Cannot add statement '" + action + "': Adding multiple statements per line is not yet supported.  Each statement must be on its own line.";
             return this._statements[this._statements.length] = new Statement(this, action, args, returnTargets, eventHandlers);

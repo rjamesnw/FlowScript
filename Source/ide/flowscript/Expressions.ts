@@ -10,7 +10,7 @@ namespace FlowScript {
     }
 
     /** Returns the expression for a component given either the fixed argument index or name. */
-    export interface IComponentReferenceArgs {
+    export interface IExpressionArgs {
         [index: number]: Expression;
         [name: string]: Expression;
     }
@@ -55,7 +55,7 @@ namespace FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        apply(args: IComponentReferenceArgs) {
+        apply(args: IExpressionArgs) {
             if (args)
                 for (var p in args)
                     if (typeof args[p] != 'object' || !(args[p] instanceof Expression))
@@ -151,14 +151,14 @@ namespace FlowScript {
         }
 
         /** Sets an expression's argument to a given operational expression and returns the added expression. */
-        setArg(argIndex: number, operation: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): ComponentReference;
+        setArg(argIndex: number, operation: Component, args?: IExpressionArgs, returnTargets?: IReturnTargetMap[]): ComponentReference;
         /** Sets an expression's argument to a given operational expression and returns the added expression. */
-        setArg(argName: string, operation: Component, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): ComponentReference;
+        setArg(argName: string, operation: Component, args?: IExpressionArgs, returnTargets?: IReturnTargetMap[]): ComponentReference;
         /** Sets an expression's argument to a given expression and returns the added expression. */
         setArg<T extends Expression>(argIndex: number, expression: T): T;
         /** Sets an expression's argument to a given expression and returns the added expression. */
         setArg(argName: string, expression: Expression): Expression;
-        setArg(arg: any, argObj: Component | Expression, args?: IComponentReferenceArgs, returnTargets?: IReturnTargetMap[]): Expression {
+        setArg(arg: any, argObj: Component | Expression, args?: IExpressionArgs, returnTargets?: IReturnTargetMap[]): Expression {
             if (!this.source.hasParameter(arg))
                 throw "Component '" + this.source + "' doesn't have a parameter named '" + arg + "'.";
             if (typeof argObj != 'object')
