@@ -19,7 +19,7 @@
     <ProjectGuid>f559e79b-7b88-47d7-86a3-37969d001e8b</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>Source\ide\server\index.ts</StartupFile>
-    <StartWebBrowser>True</StartWebBrowser>
+    <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>Source\ide\server\</WorkingDirectory>
@@ -29,7 +29,6 @@
     <NodejsPort>8080</NodejsPort>
     <TypeScriptToolsVersion>3.0</TypeScriptToolsVersion>
     <EnableTypeScript>true</EnableTypeScript>
-    <StartWebBrowser>True</StartWebBrowser>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -1270,7 +1269,7 @@
           <StartPageUrl>
           </StartPageUrl>
           <StartAction>CurrentPage</StartAction>
-          <AspNetDebugging>True</AspNetDebugging>
+          <AspNetDebugging>False</AspNetDebugging>
           <SilverlightDebugging>False</SilverlightDebugging>
           <NativeDebugging>False</NativeDebugging>
           <SQLDebugging>False</SQLDebugging>

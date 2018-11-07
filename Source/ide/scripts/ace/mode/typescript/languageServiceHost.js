@@ -15,9 +15,13 @@ define(["require", "exports"], function (require, exports) {
      * @param target the object that will receive properties.
      * @param items objects which properties will be assigned to a target.
      */
-    function assign(target, ...items) {
+    function assign(target) {
+        var items = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            items[_i - 1] = arguments[_i];
+        }
         return items.reduce(function (target, source) {
-            return Object.keys(source).reduce((target, key) => {
+            return Object.keys(source).reduce(function (target, key) {
                 target[key] = source[key];
                 return target;
             }, target);
@@ -177,27 +181,27 @@ define(["require", "exports"], function (require, exports) {
         }
         return {
             //ts.Logger implementation
-            log: () => null,
-            error: () => null,
-            trace: () => null,
+            log: function () { return null; },
+            error: function () { return null; },
+            trace: function () { return null; },
             // LanguageServiceHost implementation
-            addScript,
-            removeScript,
-            removeAll,
-            updateScript,
-            hasScript,
-            editScript,
-            getScriptContent,
-            setCompilationSettings,
-            setScriptIsOpen,
+            addScript: addScript,
+            removeScript: removeScript,
+            removeAll: removeAll,
+            updateScript: updateScript,
+            hasScript: hasScript,
+            editScript: editScript,
+            getScriptContent: getScriptContent,
+            setCompilationSettings: setCompilationSettings,
+            setScriptIsOpen: setScriptIsOpen,
             // ts.LanguageServiceHost implementation
-            getCompilationSettings: () => compilationSettings,
-            getScriptFileNames: () => Object.keys(fileNameToScript),
-            getCurrentDirectory: () => currentDir,
-            getDefaultLibFileName: () => defaultLibFileName,
-            getScriptVersion,
-            getScriptIsOpen,
-            getScriptSnapshot,
+            getCompilationSettings: function () { return compilationSettings; },
+            getScriptFileNames: function () { return Object.keys(fileNameToScript); },
+            getCurrentDirectory: function () { return currentDir; },
+            getDefaultLibFileName: function () { return defaultLibFileName; },
+            getScriptVersion: getScriptVersion,
+            getScriptIsOpen: getScriptIsOpen,
+            getScriptSnapshot: getScriptSnapshot,
         };
     }
     exports.createLanguageServiceHost = createLanguageServiceHost;
@@ -326,23 +330,23 @@ define(["require", "exports"], function (require, exports) {
                 return collapseChangesAcrossMultipleVersions(entries);
             }
             return {
-                getText: (start, end) => textSnapshot.substring(start, end),
-                getLength: () => textSnapshot.length,
-                getChangeRange,
-                getLineStartPositions: () => lineStarts,
+                getText: function (start, end) { return textSnapshot.substring(start, end); },
+                getLength: function () { return textSnapshot.length; },
+                getChangeRange: getChangeRange,
+                getLineStartPositions: function () { return lineStarts; },
                 version: version
             };
         }
         return {
-            getContent: () => content,
-            getVersion: () => scriptVersion,
-            getIsOpen: () => isOpen,
-            setIsOpen: val => isOpen = val,
-            getEditRanges: () => editRanges,
-            getLineStarts,
-            getScriptSnapshot,
-            updateContent,
-            editContent
+            getContent: function () { return content; },
+            getVersion: function () { return scriptVersion; },
+            getIsOpen: function () { return isOpen; },
+            setIsOpen: function (val) { return isOpen = val; },
+            getEditRanges: function () { return editRanges; },
+            getLineStarts: getLineStarts,
+            getScriptSnapshot: getScriptSnapshot,
+            updateContent: updateContent,
+            editContent: editContent
         };
     }
 });

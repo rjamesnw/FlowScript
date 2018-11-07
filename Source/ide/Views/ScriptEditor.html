@@ -1,18 +1,18 @@
-﻿<link href="~/Content/editor.css" rel="stylesheet" />
-<link href="~/Scripts/ace/css/editor.css" rel="stylesheet" />
-<link href="~/Content/scripteditor.css" rel="stylesheet" />
+﻿<link href="/./Content/editor.css" rel="stylesheet" />
+<link href="/./Scripts/ace/css/editor.css" rel="stylesheet" />
+<link href="/./Content/scripteditor.css" rel="stylesheet" />
 
 <div>
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
-        @*<li role="presentation" class="dropdown active">
+        <!-- <li role="presentation" class="dropdown active">
                 <a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-controls="project" role="button" aria-expanded="false">
                     Project<span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu">
                     <li role="presentation"><a href="#project-details" aria-controls="profile" role="tab" data-toggle="tab">Profile</a></li>
                 </ul>
-            </li>*@
+            </li> -->
         <li role="presentation" class="active"><a href="#editor" aria-controls="editor" role="tab" data-toggle="tab">Editor</a></li>
         <li role="presentation"><a href="#properties" aria-controls="properties" role="tab" data-toggle="tab">Properties</a></li>
         <li role="presentation"><a href="#types" aria-controls="types" role="tab" data-toggle="tab">Types</a></li>
@@ -126,7 +126,7 @@
     <hr />
     <div>
         Scratch space <i>(global space for dumping components and expressions)</i>:<br />
-        <div id="scratchContainer" class="blockContainer" style="font-family:Courier New, Courier, Lucida Console, Monaco, monospace"></div>
+        <div id="scratchContainer" class="blocksContainer active" style="font-family:Courier New, Courier, Lucida Console, Monaco, monospace"></div>
     </div>
 
 </div>
@@ -145,9 +145,8 @@
             <button id="exprMenu_Pick" class="btn btn-primary btn-sm btn-block" title="Pick a block to drop elsewhere.">Pick</button>
             <button id="exprMenu_Drop" class="btn btn-primary btn-sm btn-block" title="Drop the block you just picked here.">Drop</button>
             <button id="exprMenu_Remove" class="btn btn-primary btn-sm btn-block" title="Moves expression to scratch space, or deletes it from the scratch space.">Remove</button>
-            @*<button id="exprMenu_move" class="btn btn-primary btn-sm btn-block">Move</button>*@
-            <button id="exprMenu_Clone" class="btn btn-primary btn-sm btn-block">Clone Expression</button>
-            <button id="exprMenu_SetConstant" class="btn btn-primary btn-sm btn-block">Set Constant Value</button>
+            <!-- <button id="exprMenu_move" class="btn btn-primary btn-sm btn-block">Move</button> -->
+            <button id="exprMenu_Clone" class="btn btn-primary btn-sm btn-block">Clone Expression</button><button id="exprMenu_SetConstant" class="btn btn-primary btn-sm btn-block">Set Constant Value</button>
             <button id="exprMenu_AddLineAbove" class="btn btn-primary btn-sm btn-block">Add Line Above</button>
             <button id="exprMenu_AddLineBelow" class="btn btn-primary btn-sm btn-block">Add Line Below</button>
         </div>
@@ -162,11 +161,11 @@
     </div>
 </div>
 
-<script src="~/Scripts/FlowScript/Menu.js"></script>
-<script src="~/Scripts/FlowScript/ListEditor.js"></script>
-<script src="~/Scripts/FlowScript/TreeView.js"></script>
-<script src="~/Scripts/FlowScript/TypeTreeView.js"></script>
-<script src="~/Scripts/FlowScript/TextEditor.js"></script>
-<script src="~/Scripts/FlowScript/TextEditor.ACE.js"></script>
-<script src="~/Scripts/ace/mode/typescript/typescriptServices.js"></script>
-<script src="~/Scripts/FlowScript/ScriptEditor.js"></script>
+<script src="/./Scripts/FlowScript/Menu.js"></script>
+<script src="/./Scripts/FlowScript/ListEditor.js"></script>
+<script src="/./Scripts/FlowScript/TreeView.js"></script>
+<script src="/./Scripts/FlowScript/TypeTreeView.js"></script>
+<script src="/./Scripts/FlowScript/TextEditor.js"></script>
+<script src="/./Scripts/FlowScript/TextEditor.ACE.js"></script>
+<script src="/./Scripts/ace/mode/typescript/typescriptServices.js"></script>
+<script src="/./Scripts/FlowScript/ScriptEditor.js"></script>

@@ -304,6 +304,7 @@ export function getOutput(): string {
 
 export function initialize(editorID = "editor", outputID = "output") {
     editor = ace.edit(editorID);
+    editor.$blockScrolling = Infinity; // (to disable an "obsolete" message about auto scrolling cursor into view when selection changes)
     editor.setTheme("./theme/tomorrow");
     editor.getSession().setMode('./mode/typescript');
     document.getElementById(editorID).style.fontSize = '14px';

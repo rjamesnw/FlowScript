@@ -2,12 +2,11 @@
 {
   "extends": "../tsconfig.common.json",
   "compilerOptions": {
-    "target": "es2017", // (Makes sure we take advantage of Node's built-in async functionality.)
+    "target": "es5", // (Makes sure we take advantage of Node's built-in async functionality.)
     "declaration": false,
     "module": "AMD",
     "lib": [
-      "es2017",
-      "es2015.promise",
+      "es5",
       "dom"
     ],
     "typeRoots": [

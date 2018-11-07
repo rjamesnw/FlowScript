@@ -16,7 +16,7 @@ namespace FlowScript {
      */
     export class NamedReference<T extends object> {
         // private static _references: NamedReference<any>[] = [];
-        private _root: object;
+        private _rootObj: object;
         root: string;
         path: string;
 
@@ -25,7 +25,7 @@ namespace FlowScript {
         }
 
         get fullPath() {
-            if (this._root)
+            if (this._rootObj)
                 throw "Cannot get the full path for reference '" + this + "' because the root object cannot be resolved from the global scope."
                 + " This typically means you used 'fromInstance()' to create a reference, and thus an absolute path (from the global scope) cannot be determined.";
             return this._fullPath;
@@ -38,14 +38,15 @@ namespace FlowScript {
          * If not specified, the path is assume to be an absolute path.
          */
         constructor(path: string, root?: string) {
-            root = '' + root;
-            path = '' + path;
+            if (root) root = '' + root;
+            if (path) path = '' + path;
             if (root && root.charAt)
                 while (root.length && root.charAt(root.length - 1) == '.') root = path.substr(0, root.length - 1);
             if (path && path.charAt)
                 while (path.length && path.charAt(0) == '.') path = path.substr(1);
             this.root = root;
             this.path = path;
+            this.valueOf(); // (test it)
         }
 
         /** Creates a reference from a root object instance.  Note that because a direct instance reference is made, the reference cannot be serialized (saved).
@@ -53,14 +54,14 @@ namespace FlowScript {
          */
         static fromInstance<T extends object>(rootObject: T, path: string): NamedReference<T> {
             var ref = new NamedReference<T>(path, null);
-            ref._root = rootObject;
+            ref._rootObj = rootObject;
             return ref;
         }
 
         /** Creates a reference to an object under a specific script.
          */
         static fromScriptPath<T extends object>(script: IFlowScript, path: string): NamedReference<T> {
-            var ref = new NamedReference<T>(path, rootName + ".$(" + script._id + ")");
+            var ref = new NamedReference<T>(path, rootName + ".$('" + script._id + "')");
             return ref;
         }
 
@@ -68,7 +69,7 @@ namespace FlowScript {
         toString() { return this._fullPath; }
         valueOf(): T {
             try {
-                var root = this._root;
+                var root = this._rootObj;
                 if (!root && this.root) {
                     root = eval(this.root);
                     if (root === null || root === void 0)
@@ -77,8 +78,8 @@ namespace FlowScript {
                 return root && (this.path ? eval("root." + this.path) : root) || eval(this.path);
             }
             catch (ex) {
-                if (this._root)
-                    throw "Failed to resolve path '" + this.path + "' from the root object '" + this._root + "': " + ex;
+                if (this._rootObj)
+                    throw "Failed to resolve path '" + this.path + "' from the root object '" + this._rootObj + "': " + ex;
                 else
                     throw "Failed to resolve path '" + this.path + "' from the root path '" + this.root + "': " + ex;
             }

@@ -28,7 +28,8 @@ namespace FlowScript {
         // --------------------------------------------------------------------------------------------------------------------
 
         constructor(line: Line, action: Component, args?: IExpressionArgs, returnTargets?: IReturnTargetMap[], eventHandlers?: BlockReference[]) {
-            super(action, args, returnTargets, eventHandlers, (eval('this._line = line'), null)); // (need to set the line reference first before calling into the base)
+            super(action, args, returnTargets, eventHandlers); // (need to set the line reference first before calling into the base)
+            this._line = line;
         }
 
         // --------------------------------------------------------------------------------------------------------------------

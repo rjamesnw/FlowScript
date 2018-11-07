@@ -113,10 +113,13 @@ namespace FlowScript {
         /** Loads a script by URL. The URL should return JSON. Once loaded and deserialized into nested objects, the object
           * tree is passed to 'load()' again.
           */
-        load(urlOrJSON?: string): this;
+        load(url: string): Net.HTTPRequest;
 
         /** Load from the root object of a deserialized JSON string. */
         load(root: ISavedScript): this;
+
+        /** Loads a script by parsing JSON text. */
+        parse(json?: string): this;
 
         /** Saves the script to a nested tree of objects that can be later serialized to JSON if desired, or just stored in an
           * array as a reference for later (i.e. for undo operations, etc.).
@@ -290,23 +293,42 @@ namespace FlowScript {
         /** Loads the script from the specified URL or JSON string. If no URL is given, any previously given URL is used,
           * and the script is reloaded.
           */
-        load(urlOrJSON?: string): this;
-        load(objRootOrURL?: any): this {
+        load(url: string): Net.HTTPRequest;
+        load(objRootOrURL?: any): this | Net.HTTPRequest {
             if (typeof objRootOrURL == 'string') {
                 if (objRootOrURL) {
-                    if ((<string>objRootOrURL).charAt(0) == '{') {
-                        this.load(Utilities.Data.JSON.parse(<string>objRootOrURL));
-                        return;
-                    }
-                    this._url = <string>objRootOrURL;
+                    if ((<string>objRootOrURL).charAt(0) == '{') // (test if this is actually JSON text)
+                        return this.parse(<string>objRootOrURL);
+                    else
+                        this._url = <string>objRootOrURL;
                 }
+
                 if (!this._url)
-                    throw "No previous URL exists, so a URL must be provided.";
+                    throw "FlowScript.load(url: string): No previous URL exists, so a URL must be provided.";
+
+                var r = new Net.HTTPRequest(this._url, void 0, "GET", "json")
+                    .onloaded((r) => { this.parse(r.xhr.responseText || r.xhr.response); })
+                    .send();
+                return r;
             }
             else {
+                _unregisterScript(this);
+
                 var root = <ISavedScript>objRootOrURL;
                 this._url = root.url;
+                super.load(root);
+
+                _registerScript(this);
             }
+            return this;
+        }
+
+        /**
+         * Parse JSON text and replace the current script instance with the results.
+         * @param json The JSON text to parse and load from.
+         */
+        parse(json: string): this {
+            this.load(Utilities.Data.JSON.parse(json));
             return this;
         }
 
@@ -494,22 +516,37 @@ namespace FlowScript {
      * @see FlowScript._id
      */
     export function getScript(id: string) {
-        return scripts[id];
+        return scripts && scripts[id];
     }
-    (<any>FlowScript)['$'] = getScript; // (this is used with dereferencing the root path in `NamedReference<T>` for script object references)
 
+    function _registerScript(script: IFlowScript): IFlowScript {
+        if (!scripts) scripts = {};
+        scripts[script._id] = script;
+        return script;
+    }
 
-    /** Creates a new empty script instance. */
-    export function createNew(): IFlowScript {
-        return <IFlowScript>new FlowScript();
+    function _unregisterScript(script: IFlowScript): IFlowScript {
+        if (script && script._id && scripts)
+            delete scripts[script._id];
+        return script;
+    }
+
+    /**
+     * Creates a new empty script instance.
+     * @param register If true (the default) the script will be registered internally using it's globally unique ID.
+     * False is passed in when loading from URLs via `createFrom(url)` so that the proper ID can be used later.
+     */
+    export function createNew(register = true): IFlowScript {
+        var script = new FlowScript();
+        if (register)
+            _registerScript(script);
+        return script;
     };
 
     /** Creates a new script instance from a given URL. */
-    export function createFrom(url: string): IFlowScript {
-        var fs = <IFlowScript>new FlowScript();
-        fs._id
-        fs.load(url);
-        return fs;
+    export function createFrom(url: string): Net.HTTPRequest {
+        var fs = createNew();
+        return fs.load(url);
     };
 
     /** Returns a simple checksum from a given string. */
@@ -548,6 +585,8 @@ namespace FlowScript {
 
     // ========================================================================================================================
 }
+
+(<any>FlowScript)['$'] = FlowScript.getScript; // (this is used with dereferencing the root path in `NamedReference<T>` for script object references)
 
 //??FlowScript.IndexedArguments = <any>function IndexedArguments(values?: any[]) {
 //    if (values && values.length) {

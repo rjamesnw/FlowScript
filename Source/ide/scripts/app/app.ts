@@ -1,8 +1,8 @@
 ﻿var rootViewContainer = FlowScript.Views.buildViews();
-
 var rootBodyViewContainer = rootViewContainer.getViewContainer("renderBody");
-
 var projects = new FlowScript.Projects();
+var rootPath = "/";
+var rootViewsPath = rootPath + "Views";
 
 function setInput(id: string, newValue = "") {
     if (id) {
@@ -23,7 +23,7 @@ function getInput(id: string): string {
 }
 
 function newProject() {
-    rootBodyViewContainer.createView("NewProjectForm", "/IDE/NewProjectForm").onloaded((view, req, ev) => {
+    rootBodyViewContainer.createView("NewProjectForm", rootViewsPath + "/NewProjectForm.html").onloaded((view, req, ev) => {
         view.buildViews();
         view.show();
         setInput("projTitle");
@@ -45,7 +45,7 @@ function createProject() {
     if (FlowScript.debugging)
         FlowScript.Tests.populateProject(newProject);
 
-    rootBodyViewContainer.createView("ScriptEditor", "/IDE/ScriptEditor").onloaded((view, req, ev) => {
+    rootBodyViewContainer.createView("ScriptEditor", rootViewsPath + "/ScriptEditor.html").onloaded((view, req, ev) => {
         view.buildViews();
         newProject.setEditor(new FlowScript.UI.ScriptEditor(view));
         newProject.activate(); // (this will shows the view automatically)

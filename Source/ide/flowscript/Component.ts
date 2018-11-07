@@ -1157,7 +1157,7 @@ namespace FlowScript {
             if (this._returnTargets) {
                 this._returnTargets.createVisualTree(node);
 
-                node.appendTextNode("=");
+                //node.appendTextNode("=");
             }
 
             // ... next, add the arguments, also in order ...

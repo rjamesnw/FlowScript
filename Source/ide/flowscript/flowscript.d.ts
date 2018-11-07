@@ -785,7 +785,7 @@ declare namespace FlowScript {
      * serialization.
      */
     class NamedReference<T extends object> {
-        private _root;
+        private _rootObj;
         root: string;
         path: string;
         private readonly _fullPath;
@@ -871,9 +871,11 @@ declare namespace FlowScript {
         /** Loads a script by URL. The URL should return JSON. Once loaded and deserialized into nested objects, the object
           * tree is passed to 'load()' again.
           */
-        load(urlOrJSON?: string): this;
+        load(url: string): Net.HTTPRequest;
         /** Load from the root object of a deserialized JSON string. */
         load(root: ISavedScript): this;
+        /** Loads a script by parsing JSON text. */
+        parse(json?: string): this;
         /** Saves the script to a nested tree of objects that can be later serialized to JSON if desired, or just stored in an
           * array as a reference for later (i.e. for undo operations, etc.).
           */
@@ -933,10 +935,14 @@ declare namespace FlowScript {
      * @see FlowScript._id
      */
     function getScript(id: string): IFlowScript;
-    /** Creates a new empty script instance. */
-    function createNew(): IFlowScript;
+    /**
+     * Creates a new empty script instance.
+     * @param register If true (the default) the script will be registered internally using it's globally unique ID.
+     * False is passed in when loading from URLs via `createFrom(url)` so that the proper ID can be used later.
+     */
+    function createNew(register?: boolean): IFlowScript;
     /** Creates a new script instance from a given URL. */
-    function createFrom(url: string): IFlowScript;
+    function createFrom(url: string): Net.HTTPRequest;
     /** Returns a simple checksum from a given string. */
     function getChecksum(text: string): number;
     /** Copies an object's own instance properties to another target object. */

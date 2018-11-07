@@ -90,11 +90,11 @@ module FlowScript {
             // ... find out which collection it belongs to ...
             var comp = this.component, collectionName: string;
             if (comp) {
-                if (comp.parameters.hasPropertyReference(this))
+                if (comp.parameters.hasProperty(this.name))
                     collectionName = "parameters";
-                else if (comp.localVars.hasPropertyReference(this))
+                else if (comp.localVars.hasProperty(this.name))
                     collectionName = "localVars";
-                else if (comp.returnVars.hasPropertyReference(this))
+                else if (comp.returnVars.hasProperty(this.name))
                     collectionName = "returnVars";
             }
             if (comp && collectionName)
