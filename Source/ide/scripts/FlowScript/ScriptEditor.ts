@@ -130,6 +130,7 @@
             this._initUI_PropertyEditors();
             this._initUI_TypeTree();
             this._initUI_EditorMenu();
+            this._initUI_PickContainer();
             this._initUI_ScratchContainer();
             this._initUI_CodeOutput();
         }
@@ -410,7 +411,14 @@
         }
 
         /**
-         * Connects the scratch bin container UI elements to the script editor.
+         * Connects the picked item bin container UI element(s) to the script editor.
+         */
+        private _initUI_PickContainer() {
+            this.pickedContainer = this._view.getElementById("pickedItem");
+        }
+
+        /**
+         * Connects the scratch bin container UI element(s) to the script editor.
          */
         private _initUI_ScratchContainer() {
             this.scratchContainer = this._view.getElementById("scratchContainer");
@@ -477,6 +485,10 @@
         // --------------------------------------------------------------------------------------------------------------------
 
         private _onPickExpr() {
+            if (this.selectedNode) {
+                this.currentProject.pick(this.selectedNode.asExpression);
+                this.refreshPickedItemSpace();
+            }
         }
 
         private _onDropExpr() {
@@ -516,7 +528,7 @@
 
             if (expr) {
                 this.currentProject.addToBin(expr, false);
-                this.refreshComponentDetails(); // (eventually refreshes and visual code calls 'unselectNode()')
+                this.refreshComponentDetails(); // (eventually refreshes, and visual code calls 'unselectNode()')
             }
             else
                 this.unselectNode();
@@ -662,7 +674,7 @@
                 this.menu.hide();
         }
 
-        showBlockMenu(menuName: string, menuTitle?: string, hideSelections?: { [index: string]: string }, x?: number, y?: number) {
+        showBlockMenu(menuName: string, menuTitle?: string, hideSelections?: { [index: string]: boolean }, x?: number, y?: number) {
             if (this.selectedNode)
                 this.selectedNode._ShowSelectedStyle();
             if (this.menu) {
@@ -684,7 +696,7 @@
             }
         }
 
-        showTypeMenu(menuName: string, menuTitle: string, hideSelections?: { [index: string]: string }, x?: number, y?: number) {
+        showTypeMenu(menuName: string, menuTitle: string, hideSelections?: { [index: string]: boolean }, x?: number, y?: number) {
             if (this.menu.isVisible)
                 this.hideTypeMenu();
             this.menu.setPos(x, y).show(menuName, menuTitle, hideSelections);
@@ -694,13 +706,15 @@
         // --------------------------------------------------------------------------------------------------------------------
 
         /**
-      * Selects a given node in the UI.
-      * @param node The node to select.
-      * @param title A title for the pop-up window that shows when nodes are selected.
-      * @param promptX The 'X' position for the selection pop-up menu.
-      * @param promptY The 'Y' position for the selection pop-up menu.
-      */
-        selectNode(node: VisualNode, menuName = "exprMenu", menuTitle?: string, hideSelections?: { [index: string]: string }, promptX?: number, promptY?: number) {
+         * Selects a given node in the UI.
+         * @param node The node to select.
+         * @param menuName The name of the menu to show.
+         * @param menuTitle A title for the pop-up window that shows when nodes are selected.
+         * @param hideSelections A string list of names (element IDs) of menu items to hide.  Pass in 'null' to keep the same selections as as last time.
+         * @param promptX The 'X' position for the selection pop-up menu.
+         * @param promptY The 'Y' position for the selection pop-up menu.
+         */
+        selectNode(node: VisualNode, menuName = "exprMenu", menuTitle?: string, hideSelections?: { [index: string]: boolean }, promptX?: number, promptY?: number) {
             this.unselectNode();
 
             if (node) {
@@ -782,18 +796,18 @@
          * @param itemType The type of the underlying visual node item to find. If not specified, the parameter is ignored.
          * @param nodeType The type of visual node to find. If not specified, the parameter is ignored.
          */
-        getVisualNode(node: HTMLElement | IVisualNodeElement | VisualNode, itemType?: { new (...args: any[]): any }, nodeType?: VisualNodeTypes): VisualNode {
+        getVisualNode(node: HTMLElement | IVisualNodeElement | VisualNode, itemType?: { new(...args: any[]): any }, nodeType?: VisualNodeTypes): VisualNode {
             if (node === null || typeof node != 'object') return null;
-            var vn = node instanceof VisualNode ? node : (<IVisualNodeElement>node).$__fs_vnode;
+            var vn = node instanceof VisualNode ? node : (<IVisualNodeElement>node).$__fs_vnode; // (if this is an element, try to get the logical FS visual node)
             if (vn) {
                 if ((itemType === void 0 || vn.item instanceof itemType) && (nodeType === void 0 || vn.type == nodeType))
                     return vn;
                 else
                     return this.getVisualNode(vn.parent, itemType, nodeType);
             } else if ((<HTMLElement>node).parentElement)
-                return this.getVisualNode((<HTMLElement>node).parentElement, itemType, nodeType);
+                return this.getVisualNode((<HTMLElement>node).parentElement, itemType, nodeType); // (if the given element does not reference a FS visual node, search the parent elements)
             else
-                return null;
+                return null; // (invalid element selection)
         }
 
         /** Returns the first parent parameter from a given node, or its parents. */
@@ -843,6 +857,7 @@
                 this.refreshAllPropertyLists();
                 this.renderVisualCode(false)
                 this.refreshScratchSpace();
+                this.refreshPickedItemSpace();
             }
 
             this.refreshCodeOutput(); // (have to always to this just in case, as names and titles affect the rendered code)
@@ -881,6 +896,22 @@
 
         // --------------------------------------------------------------------------------------------------------------------
 
+        pickedContainer: HTMLElement; // (this is where blocks can be "dumped" until needed later)
+
+        refreshPickedItemSpace() {
+            Utilities.HTML.clearChildNodes(this.pickedContainer);
+
+            if (this.currentProject && this.currentProject.pickedExpression) {
+                var expr = this.currentProject.pickedExpression;
+                var vn = expr.createVisualTree();
+                vn.onNodeSelected.add((subject, title, ev) => { this.selectNode(subject, "exprMenu", title, { 
+                    exprMenu_Pick: false, exprMenu_Drop: false, exprMenu_Remove: false, exprMenu_AddLineAbove: false, exprMenu_AddLineBelow: false }); });
+                this.pickedContainer.appendChild(vn.render());
+            }
+        }
+
+        // --------------------------------------------------------------------------------------------------------------------
+
         scratchContainer: HTMLElement; // (this is where blocks can be "dumped" until needed later)
 
         refreshScratchSpace() {
@@ -893,7 +924,7 @@
                     for (var i = 0, n = exprBin.length; i < n; ++i) {
                         var expr = exprBin[i];
                         if (i > 0)
-                            this.scratchContainer.appendChild(document.createTextNode(" | "));
+                            this.scratchContainer.appendChild(document.createTextNode(" ║ "));
                         var vn = expr.createVisualTree();
                         vn.onNodeSelected.add((subject, title, ev) => { this.selectNode(subject, "exprMenu", title); });
                         this.scratchContainer.appendChild(vn.render());

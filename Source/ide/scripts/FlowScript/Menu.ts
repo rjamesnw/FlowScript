@@ -116,9 +116,9 @@
         /**
          * Show the menu by view name.
          * @param menuName The view menu for the menu to show.
-         * @param hideSelections A string list of names of menu items to hide.  Pass in 'null' to keep the same selections as as last time.
+         * @param hideSelections A string list of names (element IDs) of menu items to hide.  Pass in 'null' to keep the same selections as as last time.
          */
-        show(menuName: string, menuTitle?: string, hideSelections: { [index: string]: string } = {}): this {
+        show(menuName: string, menuTitle?: string, hideSelections: { [index: string]: boolean } = {}): this {
             var menuView = this.menuBody.showView(menuName);
             // ... show all selections by default, unless specific element IDs are given ...
             for (var i = 0, n = menuView.contentElement.childNodes.length; i < n; ++i) {

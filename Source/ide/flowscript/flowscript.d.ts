@@ -3306,6 +3306,9 @@ declare namespace FlowScript {
         private _expressionBin;
         onExpressionBinItemAdded: EventDispatcher<Project, (item: Expression, project: Project) => void>;
         onExpressionBinItemRemoved: EventDispatcher<Project, (item: Expression, project: Project) => void>;
+        /** Returns the expression that was picked by the user for some operation. In the future this may also be used during drag-n-drop operations. */
+        readonly pickedExpression: Expression;
+        private _pickedExpression;
         constructor(
         /** The title of the project. */ title: string, 
         /** The project's description. */ description?: string);
@@ -3313,6 +3316,7 @@ declare namespace FlowScript {
         addToBin(expr: Expression, triggerEvent?: boolean): void;
         removeFromBin(expr: Expression, triggerEvent?: boolean): void;
         isInBin(expr: Expression): boolean;
+        pick(expr: Expression): void;
     }
     /**
      * Holds a collection of projects.

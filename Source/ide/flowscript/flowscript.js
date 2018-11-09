@@ -9940,6 +9940,12 @@ var FlowScript;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Project.prototype, "pickedExpression", {
+            /** Returns the expression that was picked by the user for some operation. In the future this may also be used during drag-n-drop operations. */
+            get: function () { return this._pickedExpression; },
+            enumerable: true,
+            configurable: true
+        });
         // --------------------------------------------------------------------------------------------------------------------
         Project.prototype.save = function () {
             return this.script.saveToStorage(this.title);
@@ -9963,6 +9969,10 @@ var FlowScript;
             }
         };
         Project.prototype.isInBin = function (expr) { return this._expressionBin.indexOf(expr) >= 0; };
+        // --------------------------------------------------------------------------------------------------------------------
+        Project.prototype.pick = function (expr) {
+            this._pickedExpression = expr;
+        };
         return Project;
     }());
     FlowScript.Project = Project;

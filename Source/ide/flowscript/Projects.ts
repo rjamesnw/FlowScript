@@ -20,6 +20,10 @@
         onExpressionBinItemAdded = new EventDispatcher<Project, { (item: Expression, project: Project): void }>(this);
         onExpressionBinItemRemoved = new EventDispatcher<Project, { (item: Expression, project: Project): void }>(this);
 
+        /** Returns the expression that was picked by the user for some operation. In the future this may also be used during drag-n-drop operations. */
+        get pickedExpression() { return this._pickedExpression; }
+        private _pickedExpression: Expression;
+
         // --------------------------------------------------------------------------------------------------------------------
 
         constructor(
@@ -55,6 +59,12 @@
         }
 
         isInBin(expr: Expression) { return this._expressionBin.indexOf(expr) >= 0; }
+
+        // --------------------------------------------------------------------------------------------------------------------
+
+        pick(expr: Expression) {
+            this._pickedExpression = expr;
+        }
 
         // --------------------------------------------------------------------------------------------------------------------
 

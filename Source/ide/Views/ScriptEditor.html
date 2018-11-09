@@ -32,7 +32,8 @@
                 <div id="codeContainer" class="codeContainer">
                     <div>
                         <ul class="nav nav-tabs" role="tablist">
-                            <li role="presentation" class="active"><a href="#editorPanel" aria-controls="editor" role="tab" data-toggle="tab">Code</a></li>
+                            <li role="presentation" class="active"><a href="#editorPanel" aria-controls="editor" role="tab"
+                                    data-toggle="tab">Code</a></li>
                             <li role="presentation"><a href="#outputPanel" aria-controls="profile" role="tab" data-toggle="tab">Output</a></li>
                         </ul>
                         <div class="tab-content">
@@ -47,8 +48,10 @@
                         </div>
                     </div>
                     <br />
-                    <input type="text" placeholder="Version Description" style="width:600px" /> <button id="btnSaveCode" type="button" class="btn btn-primary">Save</button>
-                    <div title="Enable/disable automatically saving changes." style="display:inline-block"><input type="checkbox" /> Auto Save</div>
+                    <input type="text" placeholder="Version Description" style="width:600px" /> <button id="btnSaveCode" type="button"
+                        class="btn btn-primary">Save</button>
+                    <div title="Enable/disable automatically saving changes." style="display:inline-block"><input type="checkbox" />
+                        Auto Save</div>
                     <input type="text" placeholder="Auto Save Seconds" value="30" style="width:50px" title="The number of seconds between each auto save." />
                     <br />Versions:
                     <select></select>
@@ -60,19 +63,23 @@
             <table>
                 <tr>
                     <td valign="top">
-                        Parameters:<br /><input type="text" id="tbParam" /><button id="btnAddParam">+</button><button id="btnRemoveParam">-</button><br /><select id="selParams" size="10"></select>
+                        Parameters:<br /><input type="text" id="tbParam" /><button id="btnAddParam">+</button><button id="btnRemoveParam">-</button><br /><select
+                            id="selParams" size="10"></select>
                         <button id="btnSelectParam" class="btn btn-primary" style="display: none; vertical-align: top">Select</button>
                     </td>
                     <td valign="top">
-                        Local Variables:<br /><input type="text" id="tbLocal" /><button id="btnAddLocal">+</button><button id="btnRemoveLocal">-</button><br /><select id="selLocals" size="10"></select>
+                        Local Variables:<br /><input type="text" id="tbLocal" /><button id="btnAddLocal">+</button><button id="btnRemoveLocal">-</button><br /><select
+                            id="selLocals" size="10"></select>
                         <button id="btnSelectLocal" class="btn btn-primary" style="display: none; vertical-align: top">Select</button>
                     </td>
                     <td valign="top">
-                        Return Variables:<br /><input type="text" id="tbReturn" /><button id="btnAddReturn">+</button><button id="btnRemoveReturn">-</button><br /><select id="selReturns" size="10"></select>
+                        Return Variables:<br /><input type="text" id="tbReturn" /><button id="btnAddReturn">+</button><button
+                            id="btnRemoveReturn">-</button><br /><select id="selReturns" size="10"></select>
                         <button id="btnSelectReturn" class="btn btn-primary" style="display: none; vertical-align: top">Select</button>
                     </td>
                     <td valign="top">
-                        Instance Variables:<br /><input type="text" id="tbInstance" /><button id="btnAddInstance">+</button><button id="btnRemoveInstance">-</button><br /><select id="selInstances" size="10"></select>
+                        Instance Variables:<br /><input type="text" id="tbInstance" /><button id="btnAddInstance">+</button><button
+                            id="btnRemoveInstance">-</button><br /><select id="selInstances" size="10"></select>
                         <button id="btnSelectInstance" class="btn btn-primary" style="display: none; vertical-align: top">Select</button>
                     </td>
                 </tr>
@@ -91,9 +98,18 @@
                         <div class="alert alert-info" style="margin: 2px;">
                             <span style="font-weight: bold;">Selection:</span>
                             <table style="margin-left: 8px">
-                                <tr><td>Title:</td><td><span id="compTitle">...</span></td></tr>
-                                <tr><td>Component Type:</td><td><select id="compType">...</select></td></tr>
-                                <tr><td title="The instance type this component is designed to work with.">Works On:</td><td><span id="instType">...</span></td></tr>
+                                <tr>
+                                    <td>Title:</td>
+                                    <td><span id="compTitle">...</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Component Type:</td>
+                                    <td><select id="compType">...</select></td>
+                                </tr>
+                                <tr>
+                                    <td title="The instance type this component is designed to work with.">Works On:</td>
+                                    <td><span id="instType">...</span></td>
+                                </tr>
                             </table>
                             <br />
                             <button id="btnCancelTypeSelect" class="btn btn-danger" style="display: none;">Cancel type select</button>
@@ -121,7 +137,7 @@
 
     <hr />
     <div title="The item that was 'picked' via the context menu (to be dropped somewhere else).">
-        Picked: <span id="pickedItem">[The Picked ITEM]</span>
+        Picked: <span id="pickedItem" class="blocksContainer active">[The Picked ITEM]</span>
     </div>
     <hr />
     <div>
@@ -134,7 +150,8 @@
 <div id="menu" class="panel panel-default noselect" style="position: absolute; display: none">
     <div class="panel-heading">
         <div style="max-width:600px; white-space:nowrap;" class="alert-dismissable">
-            <button id="menuClose" type="button" class="close" aria-label="Close" style="right: -32px; font-size: 32px; display: inline;"><span aria-hidden="true">&times;</span></button>
+            <button id="menuClose" type="button" class="close" aria-label="Close" style="right: -32px; font-size: 32px; display: inline;"><span
+                    aria-hidden="true">&times;</span></button>
             <span id="menuTitle">Expression Menu</span>&nbsp;
         </div>
     </div>
@@ -146,7 +163,8 @@
             <button id="exprMenu_Drop" class="btn btn-primary btn-sm btn-block" title="Drop the block you just picked here.">Drop</button>
             <button id="exprMenu_Remove" class="btn btn-primary btn-sm btn-block" title="Moves expression to scratch space, or deletes it from the scratch space.">Remove</button>
             <!-- <button id="exprMenu_move" class="btn btn-primary btn-sm btn-block">Move</button> -->
-            <button id="exprMenu_Clone" class="btn btn-primary btn-sm btn-block">Clone Expression</button><button id="exprMenu_SetConstant" class="btn btn-primary btn-sm btn-block">Set Constant Value</button>
+            <button id="exprMenu_Clone" class="btn btn-primary btn-sm btn-block">Clone Expression</button><button id="exprMenu_SetConstant"
+                class="btn btn-primary btn-sm btn-block">Set Constant Value</button>
             <button id="exprMenu_AddLineAbove" class="btn btn-primary btn-sm btn-block">Add Line Above</button>
             <button id="exprMenu_AddLineBelow" class="btn btn-primary btn-sm btn-block">Add Line Below</button>
         </div>
