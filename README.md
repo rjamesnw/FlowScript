@@ -1,10 +1,10 @@
 # FlowScript #
 
-FlowScript is a visual programming language (VPL) used for build client and server applications using a browser. It is built using TypeScript and Net Core + V8.NET. FlowScript started under the name CircuitScript around 2010, but was later renamed to FlowScript in 2014 within a private repo during the prototype phase.  It is now being released in alpha (still a WIP) on GitHub as of Oct 30, 2018. As of Feb 2019 this project is still a WIP.
+FlowScript is a visual programming language (VPL) used for build client and server applications using a browser. It is built using TypeScript and Net Core + V8.NET. FlowScript started under the name CircuitScript around 2010, but was later renamed to FlowScript in 2014 within a private repo during the prototype phase.  It is now being released in pre-alpha (still a WIP) on GitHub as of Oct 30, 2018. As of Feb 2019 this project is still a WIP.
 
 ### Version ###
 
-* Version: Alpha
+* Version: Pre-Alpha (the compiler works, but the "work in progress" is around the IDE mainly)
 * [FlowScript Site](https://flowscript.org) *(Not live; WIP)*
 
 ### How do I get set up? ###
