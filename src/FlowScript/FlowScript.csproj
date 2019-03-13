@@ -97,6 +97,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\fonts\glyphicons-halflings-regular.svg" />
     <None Include="wwwroot\views\Forum.html" />
     <None Include="wwwroot\views\NewProjectForm.html" />
     <None Include="wwwroot\views\ScriptEditor.html" />
