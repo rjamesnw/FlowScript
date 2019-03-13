@@ -1,4 +1,4 @@
-Copyright 2019 Inossis
+###Copyright 2019 Inossis
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software (aka IDE, or Integrated Development Environment) and associated documentation files (the "Software"), to copy, modify, merge, distribute, the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
