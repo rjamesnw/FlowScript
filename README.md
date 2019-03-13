@@ -16,7 +16,7 @@ FlowScript is a visual programming language (VPL) used for build client and serv
 
 ### Contribution guidelines ###
 
-* Writing tests: 
+* Writing tests: There will be simple tests that can be run by opening "https://{your host}/tests/simple/". I'll be expanding these over time.
 * Code review: I will review all pull requests.
 * Other guidelines: 
     1. All code must be documented using JSDoc comments.  That means all class, functions, properties, etc.  The code within the function bodies should have blank lines and comments separating ideas.  Since many other developers may have to work on your code/changes, it can be hard to understand the reasoning for any quirks that may be related on conditions not immediately apparent in the current context, or simply just because of a particular conviction.
