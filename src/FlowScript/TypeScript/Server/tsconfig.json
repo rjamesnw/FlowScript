@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es6",
+    "module": "none",
+    "outFile": "./server.js"
+  },
+  "files": [
+    "../../wwwroot/js/flowscript.d.ts",
+    "../System/globals.server.ts",
+    "../Shared.ts",
+    "Server.ts"
+  ],
+  "include": [
+    "../../node_modules/typescript/lib/tsserverlibrary.d.ts"
+  ]
+}

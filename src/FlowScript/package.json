@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "name": "FlowScript",
+  "private": true,
+  "devDependencies": {},
+  "dependencies": {
+    "@types/jquery": "^3.3.29",
+    "@types/requirejs": "^2.1.31",
+    "monaco-editor": "^0.15.6",
+    "requirejs": "^2.3.6",
+    "typescript": "^3.3.3333"
+  }
+}

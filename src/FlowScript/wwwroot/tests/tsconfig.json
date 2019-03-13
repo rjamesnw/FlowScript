@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es6",
+    "module": "amd",
+    "rootDir": "",
+    "outDir": ""
+  },
+  "include": [
+    "../js/flowscript.d.ts",
+    "**/*.ts"
+  ],
+  "exclude": [ "old" ]
+}

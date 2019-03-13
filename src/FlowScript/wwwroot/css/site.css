@@ -1,0 +1,67 @@
+﻿body {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    padding-top: 50px;
+    padding-bottom: 20px;
+    background-color: #f8f8f8;
+    font-size: 13pt;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+h1 {
+    font-size: 20pt;
+}
+
+h2 {
+    font-size: 20pt;
+}
+
+h3 {
+    font-size: 20pt;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+/*input,
+select,
+textarea {
+    max-width: 280px;
+}*/
+
+.navbar a:hover {
+    cursor: pointer;
+}
+
+/*.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+    cursor: default;
+}*/
+
+/* Some Bootstrap modifications are needed to allow updating of content hidden behind non-visible panels. */
+
+.tab-content > .tab-pane.active {
+    position: relative;
+    pointer-events: auto;
+    left: auto;
+    /*left: -9999px;*/
+    /*-webkit-transition: display 0.15s linear;
+    transition: display 0.15s linear;
+    -webkit-transition: display 0.15s linear;
+    transition: display 0.15s linear;*/
+}
+
+.tab-content > .tab-pane {
+    display: block;
+    position: absolute;
+    pointer-events: none;
+    left: -9999px;
+}

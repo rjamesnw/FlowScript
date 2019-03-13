@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "es3",
+    "rootDir": "TypeScript",
+    "outDir": "wwwroot/js",
+    "declaration": true,
+    "typeRoots": [ "node_modules/@types", "TypeScript/Types" ]
+  }//,
+  //"exclude": [
+  //  "node_modules"
+  //]
+}

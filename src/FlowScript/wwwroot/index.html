@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html data-view>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <!--Depreciated <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+    <meta http-equiv="no-cache">
+    <meta http-equiv="Expires" content="-1">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="description" content="FlowScript IDE - A visual programming editor." />
+
+    <title>FlowScript v0.0.1</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="css/site.css">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js" integrity="sha256-0SGl1PJNDyJwcV5T+weg2zpEMrh7xvlwO4oXgvZCeZk=" crossorigin="anonymous"></script>
+
+    <script>
+        var FlowScript = {
+            debugging: true // (if true, then a reset ["clean slate"] is created on each run, such as clearing the web storage and any other caches, as well as enabling special debug features, if any)
+        };
+    </script>
+
+</head>
+<body data-view-container="index.main.html">
+    <div class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="#">FlowScript</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                        System<span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark" role="menu">
+                        <li class="nav-item"><a class="nav-link" onclick="newProject(); return false;">New Project</a></li>
+                        <li class="dropdown-divider"></li>
+                        <li class="nav-item"><a class="nav-link" onclick="openProject()">Open Project</a></li>
+                        <li class="nav-item"><a class="nav-link" onclick="saveProject()">Save Project</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                        Project<span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark" role="menu">
+                        <li class="nav-item"><a class="nav-link" onclick="newComponent()">New Component</a></li>
+                        <li class="dropdown-divider"></li>
+                        <li class="nav-item"><a class="nav-link" onclick="saveComponent()">Save Component</a></li>
+                        <li class="nav-item"><a class="nav-link" onclick="saveComponentAs()">Save Component As...</a></li>
+                        <li class="nav-item"><a class="nav-link" onclick="saveAll()">Save All</a></li>
+                        <li class="dropdown-divider"></li>
+                        <li class="nav-item"><a class="nav-link" onclick="addResource()">Add Resource</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                        Graphs<span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark" role="menu">
+                        <li class="nav-item"><a class="nav-link" onclick="addGraph()">Add Graph</a></li>
+                        <li class="nav-item nav-link" class="dropdown-divider">Graphs:</li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                        Help<span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark" role="menu">
+                        <li class="nav-item"><a class="nav-link" onclick="loadForum()">Open Community Forum</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <br />
+
+    <div class="body-content" style="padding: 8px;">
+        <div id="renderBody" data-view-container>
+            <div>
+                <br />
+                Welcome to FlowScript! To get started, use the menu above to open or create a project.<br>
+                <br>
+
+                <h2>What is FlowScript?</h2>
+                In a nutshell, FlowScript is a <i>type</i> of visual programming language (VPL). The goal of FlowScript is to
+                reduce the amount of typing involved, and to help constrain the connections between components (functions and objects),
+                such that there would be less coding errors, and thus, less time taken for debugging. The end result when compiling is pure
+                efficient JavaScript, which can easily integrate with any client and server environment. We hope you'll find the somewhat
+                new concept very pleasant to work worth, allowing you to focus more on the flow of creativity, and less on syntax
+                and semantics.
+                <br />
+                <br />
+                FlowScript helps you build web projects without needing to write lots of code, if any at all.
+                This runtime system is built from scratch with ZERO dependencies on anything else (some might be used for the editor only).
+                It uses JavaScript on the client side, and JavaScript on the server side;
+                however, the server is built with ASP.Net Core.
+                This allows running JavaScript server side and the future <i>possibility</i> of spawning multi-threaded C# tasks server side as well
+                (C# support is TBD).
+                <br />
+                <br />
+                <h2>How this works:</h2>
+                FlowScript is based on the concept of "blocks", but not the type of blocks most visual programming languages (VPL) use.
+                The problem with typical VPLs is the massive amounts of blocks with connecting lines.
+                On the other hand, the problem with text editors is the developer, and their ability to create typing mistakes to cause great headaches, causing increased development time.
+                We think we've found a great solution to the problem.  Being a fan of hybrid solutions, we decided to merge the two ideas - a visual programming system using text blocks. ;)
+                <br />
+                <br />
+                Make sure your pop-up blockers are turned off, as the editor will spawn new windows if you need to design web pages.
+                This can be very handy if you have multiple monitors!
+                <br />
+                <br />
+                <h2>Can I trust this system to be efficient and fast?</h2>
+                The development of the FlowScript system is backed by years of experience in dozens of languages, from assembly
+                coding, up to various high level languages. Also with many years developing JavaScript libraries, and rigorous testing of
+                the compiled code, you can be assured the output JavaScript is the fastest possible.
+                <br />
+                <br />
+                <h2>What makes FlowScript different from other programming concepts?</h2>
+                The biggest difference is the extensibility and data flow. Here are some main highlights:
+                <ul>
+                    <li>
+                        First, FlowScript allows one to easily create new components
+                        (representing functions and objects) from other components. These components can easily be applied to
+                        other
+                        projects, and
+                        even shared with the FlowScript community. You can even create your libraries using FlowScript, and
+                        output
+                        TypeScript
+                        definitions for end users.
+                    </li>
+                    <li>
+                        Second, FlowScript allows returning
+                        <i>multiple</i> values at once, without the need to return
+                        these values in objects. This was tailored specifically to allow for efficient game development. It
+                        allows multiple
+                        input
+                        and output data points via a special stack system designed to prevent the need to create objects for
+                        returning
+                        these values.
+                    </li>
+                    <li>
+                        Finally, debugging is actually done entirely in JavaScript itself! FlowScript is designed to render
+                        various
+                        statements
+                        and expressions in a step-sequencer that resembles a form of assembly language processing. This allows
+                        stepping
+                        through code and analyzing state entirely in the IDE. When ready, the final release compiled output is
+                        rendered as
+                        pure well-formatted JavaScript (and soon, optional TypeScript definition files as well).
+                    </li>
+                </ul>
+
+                <br />
+                <br />
+                <button id="btnStart" class="btn btn-primary">Give it a spin! -></button>
+
+            </div>
+        </div>
+    </div>
+
+    <hr />
+
+    <footer>
+        <p>FlowScript © 2019</p>
+    </footer>
+
+    <script src="/js/flowscript.js"></script>
+    <script src="/js/client.js"></script>
+</body>
+</html>

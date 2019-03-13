@@ -1,0 +1,20 @@
+// FlowScript Core
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es6", // (Makes sure we take advantage of Node's built-in async functionality.)
+    "outFile": "../../wwwroot/js/flowscript.js",
+    "declaration": true
+    //"lib": [
+    //    "es5", "dom"
+    //],
+    //"types": [
+    //]
+  },
+  "include": [
+    "_references.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

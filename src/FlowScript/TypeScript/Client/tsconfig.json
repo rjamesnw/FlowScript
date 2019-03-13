@@ -1,0 +1,32 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es6",
+    "module": "amd",
+    "outFile": "../../wwwroot/js/client.js",
+    "types": [
+      "requirejs",
+      "jquery",
+      "bootstrap"
+    ]
+  },
+  "files": [
+    "../../wwwroot/js/flowscript.d.ts",
+    "../Shared.ts",
+    "TreeView.ts",
+    "TypeTreeView.ts",
+    "ProjectUI.ts",
+    "Menu.ts",
+    "ListEditor.ts",
+    "TextEditor.ts",
+    "TextEditor.Monaco.ts",
+    "ScriptEditor.ts",
+    "tests/tests.ts",
+    "Client.ts"
+  ],
+  "include": [
+    "../../node_modules/monaco-editor/monaco.d.ts",
+    "../../node_modules/typescript/lib/typescriptServices.d.ts"
+  ],
+  "exclude": [ "old" ]
+}

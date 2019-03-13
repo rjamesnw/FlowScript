@@ -1,0 +1,132 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
+    <UserSecretsId>aa23e8af-ed79-4c53-982a-4088992e3592</UserSecretsId>
+    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+    <DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="libs\v8-x64.dll" />
+    <None Remove="libs\v8-x64._dll" />
+    <None Remove="libs\v8-x86.dll" />
+    <None Remove="libs\v8-x86._dll" />
+    <None Remove="libs\VroomJsNative-x64.dll" />
+    <None Remove="libs\VroomJsNative-x86.dll" />
+    <None Remove="libs\VroomJsNative32.so" />
+    <None Remove="libs\VroomJsNative64.so" />
+    <None Remove="TypeScript\Client\Client.ts" />
+    <None Remove="TypeScript\Client\Component_.ts" />
+    <None Remove="TypeScript\Client\Property_.ts" />
+    <None Remove="TypeScript\Server\Server.ts" />
+    <None Remove="TypeScript\Shared.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include=".JSServer\IJSContext.cs" />
+    <Compile Include=".JSServer\IJSServer.cs" />
+    <Compile Include=".JSServer\Integrations\ChakraIntegration.cs" />
+    <Compile Include=".JSServer\Integrations\V8DotNetIntegration.cs" />
+    <Compile Include=".JSServer\Integrations\VroomIntegration.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="libs\v8-x64._dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libs\v8-x86._dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libs\VroomJsNative-x64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libs\VroomJsNative-x86.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libs\VroomJsNative32.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libs\VroomJsNative64.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ChakraCore.NET.Core" Version="1.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.2" />
+    <PackageReference Include="MySql.Data" Version="8.0.15" />
+    <PackageReference Include="MySql.Data.EntityFrameworkCore" Version="8.0.15" />
+    <PackageReference Include="MySql.Data.EntityFrameworkCore.Design" Version="8.0.15" />
+    <PackageReference Include="VroomJs" Version="1.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="TypeScript\Types\" />
+  </ItemGroup>
+
+
+  <ItemGroup Condition="$([MSBuild]::IsOsPlatform(OSPlatform.Windows))">
+    <EmbeddedResource Include="libs\v8-x86.dll;libs\v8-x64.dll;libs\VroomJsNative-x86.dll;libs\VroomJsNative-x64.dll" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([MSBuild]::IsOsPlatform(OSPlatform.Linux))">
+    <EmbeddedResource Include="libs\VroomJsNative32.so;libs\VroomJsNative64.so" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <None Include="..\..\..\..\V8.NET\Source\bin\Debug\V8_Net_Proxy_x64.dll" Link="libs\V8_Net_Proxy_x64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\..\..\V8.NET\Source\bin\Debug\V8_Net_Proxy_x86.dll" Link="libs\V8_Net_Proxy_x86.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <None Include="..\..\..\..\V8.NET\Source\bin\Release\V8_Net_Proxy_x64.dll" Link="libs\V8_Net_Proxy_x64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\..\..\V8.NET\Source\bin\Release\V8_Net_Proxy_x86.dll" Link="libs\V8_Net_Proxy_x86.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\views\Forum.html" />
+    <None Include="wwwroot\views\NewProjectForm.html" />
+    <None Include="wwwroot\views\ScriptEditor.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\V8.NET\Source\V8.Net\V8.Net-Standard.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="TypeScript\Client\Client.ts" />
+    <TypeScriptCompile Include="TypeScript\Server\Server.ts" />
+    <TypeScriptCompile Include="TypeScript\Shared.ts" />
+    <TypeScriptCompile Include="wwwroot\tests\simple\Tests.ts" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptTarget>ES2015</TypeScriptTarget>
+    <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
+    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
+    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>
+    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
+    <TypeScriptOutFile>wwwroot\boot.js</TypeScriptOutFile>
+    <TypeScriptOutDir>TypeScript\Output</TypeScriptOutDir>
+    <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptSourceMap>True</TypeScriptSourceMap>
+    <TypeScriptMapRoot>wwwroot</TypeScriptMapRoot>
+    <TypeScriptSourceRoot>TypeScript</TypeScriptSourceRoot>
+  </PropertyGroup>
+
+</Project>

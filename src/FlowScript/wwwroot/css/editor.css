@@ -1,0 +1,120 @@
+.codeContainer .editor-container {
+    /*position: relative;*/
+    padding: 20px;
+    width: auto;
+    width: 640px;
+    height: 480px;
+    max-width: 100%;
+    font-family: Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+}
+
+.codeContainer .editor {
+    position: absolute;
+    max-height: 10000px;
+    top: 6px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.codeContainer .output {
+    position: absolute;
+    max-height: 10000px;
+    top: 6px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.codeContainer .editor-area {
+    height: auto;
+    padding-bottom: 50px;
+    height: calc(100% - 220px);
+    /* margin-bottom:20px; */
+}
+
+.codeContainer .typescript-ref {
+    position: absolute;
+    border: 1px solid white;
+    opacity: 0.7;
+}
+
+.codeContainer .typescript-error {
+    position: absolute;
+    border-bottom: 1px solid red;
+}
+
+.codeContainer .langauge-title h2 {
+    padding: 5px 10px;
+    font-size: 14pt;
+    color: black;
+    background: #eee;
+    border: 1px solid black;
+    display: block;
+    margin: 0px;
+    height: 30px;
+    line-height: 30px;
+}
+
+.codeContainer #javascript-run {
+    margin: 0px;
+    margin-top: 10px;
+    padding: 5px;
+    background: #999;
+    color: white;
+}
+
+/*Shermie Added*/
+.codeContainer .active {
+    font-weight: bold;
+    color: black;
+    /*background-color: #ffffd7;*/
+    /*border: 2px solid #FFEFEFAF;*/
+}
+
+/*Shermie added*/
+.codeContainer .label-paramDoc {
+    padding-left: 15px;
+    color: #3333ff;
+}
+
+    /*Shermie added*/
+    .codeContainer .label-paramDoc span, .label-detail, .label-doc {
+        color: #0066cc;
+    }
+
+.codeContainer .label-kind {
+    background: #666;
+    color: white;
+    padding: 0px 3px;
+    margin-right: 3px;
+}
+
+.codeContainer .label-kind-property {
+    background: green;
+}
+
+.codeContainer .label-kind-method {
+    background: blue;
+}
+
+.codeContainer .label-kind-interface {
+    background: #666;
+}
+
+.codeContainer .label-kind-variable {
+    background: orangered;
+}
+
+.codeContainer .label-type {
+    padding-left: 10px;
+    color: blue;
+    visibility: hidden;
+}
+
+/*Shermie Added*/
+.codeContainer .label-doc {
+    /*color: #1a8cff;*/
+    padding-left: 15px;
+    white-space: normal;
+}

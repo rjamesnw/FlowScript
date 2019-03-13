@@ -6,14 +6,6 @@
 *.user
 *.userosscache
 *.sln.docstates
-**/flowscript/**/*.js
-**/flowscript/**/*.map
-**/scripts/**/*.js
-**/scripts/**/*.map
-**/server/**/*.js
-**/server/**/*.map
-!Source/ide/scripts/*.js
-!Source/ide/scripts/ace/**/*.js
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -29,6 +21,15 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
+**/Server/*.d.ts
+**/Server/*.js.map
+**/wwwroot/js/*.js.map
+**/wwwroot/js/*.d.ts
+**/wwwroot/js/*.js
+node-modules/
+monaco-editor/
+**/libs/V8.NET/
+*.git
 
 # Visual Studio 2015 cache/options directory
 .vs/

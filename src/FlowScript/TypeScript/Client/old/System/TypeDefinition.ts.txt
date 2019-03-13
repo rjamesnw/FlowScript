@@ -1,0 +1,24 @@
+﻿// ############################################################################################################################
+
+namespace FlowScript {
+    // ========================================================================================================================
+
+    export interface ISavedTypeDefinition extends ISavedComponent { }
+   
+    // ========================================================================================================================
+
+    /** Defines a single type within the system. */
+    export class TypeDefinition extends Component {
+        /** Instance variables for this component. */
+        get instanceProperties() { return this._instanceProperties; }
+        protected _instanceProperties = new PropertyCollection(this); // (holds vars that get rendered as object instance-based properties; these are completely separate from parameters and local vars, which are viewed together as one big list)
+
+        constructor(parent: NamespaceObject, componentType: ComponentTypes, typeName: string, signatureTitle: string, script?: IFlowScript) {
+            super(parent, componentType, typeName, signatureTitle, script);
+        }
+    }
+
+    // ========================================================================================================================
+}
+
+// ############################################################################################################################
