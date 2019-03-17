@@ -6,7 +6,6 @@ module FlowScript.Core.DOM {
     // Core HTML Components
     // ========================================================================================================================
 
-<<<<<<< HEAD:src/FlowScript/TypeScript/System/components/Core.DOM.ts
     /** Defines the HTML namespace type. */
     export class HTML extends NamespaceObject { // (a type that is inferred by the given arguments)
 
@@ -33,47 +32,31 @@ module FlowScript.Core.DOM {
 
         onInit() {
             super.onInit();
-=======
-    export class HTMLReaderModes extends Enum<Number> {
-        constructor(parent: Type) {
-            super(parent, "HTMLReaderModes", {
-                /** There's no more to read (end of HTML). */
-                End: -1,
-                /** Reading hasn't yet started. */
-                NotStarted: 0,
-                /** A tag was just read. The 'runningText' property holds the text prior to the tag, and the tag name is in 'tagName'. */
-                Tag: 1,
-                /** An attribute was just read from the last tag. The name will be placed in 'attributeName' and the value (if value) in 'attributeValue'.*/
-                Attribute: 2,
-                /** An ending tag bracket was just read (no more attributes). */
-                EndOfTag: 3,
-                /** A template token in the form '{{...}}' was just read. */
-                TemplateToken: 4
-            });
->>>>>>> 20a79577a5a7963be48507c6c36717d4172d9e7c:Source/ide/flowscript/components/Core.HTML.ts
         }
     }
 
     // ========================================================================================================================
 
-    export class HTMLReader extends FSObject {
+    /** Attaches an event listener to an element that supports DOM related events.
+      */
+    export class On extends Component {
         // --------------------------------------------------------------------------------------------------------------------
 
-<<<<<<< HEAD:src/FlowScript/TypeScript/System/components/Core.DOM.ts
         constructor(parent: NamespaceObject) {
             super(parent, ComponentTypes.Text, "On", "on $eventName do $block");
         }
-=======
-        HTMLReaderModes: HTMLReaderModes;
->>>>>>> 20a79577a5a7963be48507c6c36717d4172d9e7c:Source/ide/flowscript/components/Core.HTML.ts
 
-        isMarkupDeclaration: Component;
+        onInit() {
+            // Setup the expected parameters and return types:
 
-        CloneTypes = new Enum<boolean>(this, "CloneTypes", { Shallow: false, Deep: true });
+            var sys = this.script.System;
+
+            super.onInit();
+        }
 
         // --------------------------------------------------------------------------------------------------------------------
+    }
 
-<<<<<<< HEAD:src/FlowScript/TypeScript/System/components/Core.DOM.ts
     // ========================================================================================================================
     // Node Components 
 
@@ -94,79 +77,49 @@ module FlowScript.Core.DOM {
         constructor(parent: NamespaceObject) {
             super(parent, ComponentTypes.Text, "Node_appendChild", "append child node $newChild");
         }
-=======
-        constructor(parent: Type) {
-            super(parent, null, "Node");
-        }
 
         onInit() {
-            // Setup the expected parameters and return types:
->>>>>>> 20a79577a5a7963be48507c6c36717d4172d9e7c:Source/ide/flowscript/components/Core.HTML.ts
-
             var sys = this.script.System;
+            this.defineParameter("newChild", [sys.HTML.Node]);
+            this.defineDefaultReturnVar(sys.HTML.Node);
+            super.onInit();
+        }
+    }
 
-            this.HTMLReaderModes = new HTMLReaderModes(this);
+    // ========================================================================================================================
 
-            this.defineInstanceProperty("__splitRegEx", [sys.String],
-                /<!(?:--[\S\s]*?--)?[\S\s]*?>|<script\b[\S\s]*?<\/script[\S\s]*?>|<style\b[\S\s]*?<\/style[\S\s]*?>|<\![A-Z0-9]+|<\/[A-Z0-9]+|<[A-Z0-9]+|\/?>|&[A-Z]+;?|&#[0-9]+;?|&#x[A-F0-9]+;?|(?:'[^<>]*?'|"[^<>]*?")|=|\s+|\{\{[^\{\}]*?\}\}/gi.toString(),
-                null, true
-            ).setDescription("(The RegEx will identify areas that MAY need to delimited for parsing [not a guarantee].  The area outside of the delimiters is usually"
-                +" defined by the delimiter types, so the delimiters are moved out into their own array for quick parsing (this also allows the host browser's native"
-                +" environment to do much of the parsing instead of JavaScript).");
+    export class NodeList extends FSObject {
+        // --------------------------------------------------------------------------------------------------------------------
 
-<<<<<<< HEAD:src/FlowScript/TypeScript/System/components/Core.DOM.ts
         constructor(parent: NamespaceObject) {
             super(parent, null, "NodeList");
         }
-=======
-            this.defineInstanceProperty("partIndex", [sys.Integer]);
->>>>>>> 20a79577a5a7963be48507c6c36717d4172d9e7c:Source/ide/flowscript/components/Core.HTML.ts
 
-            this.defineInstanceProperty("textStartIndex", [sys.Integer])
-                .setDescription("The start index of the running text.");
+        onInit() {
+            super.onInit();
+        }
 
-            this.defineInstanceProperty("textEndIndex", [sys.Integer])
-                .setDescription("The end index of the running text. This is also the start index of the next tag, if any (since text runs between tags)."
-                +" (this advances with every read so text can be quickly extracted from the source HTML instead of adding array items [just faster])");
+        // --------------------------------------------------------------------------------------------------------------------
+    }
 
-            this.defineInstanceProperty("__lastTextEndIndex", [sys.Integer])
-                .setDescription("For backing up from a read ([)see '__readNext()' && '__goBack()').");
+    // ========================================================================================================================
 
-            this.defineInstanceProperty("nonDelimiters", [sys.Array.createTemplateType([sys.String])])
-                .setDescription("A list of text parts that correspond to each delimiter (i.e. TDTDT [T=Text, D=Delimiter]).");
+    export class NamedNodeMap extends FSObject {
+        // --------------------------------------------------------------------------------------------------------------------
 
-<<<<<<< HEAD:src/FlowScript/TypeScript/System/components/Core.DOM.ts
         constructor(parent: NamespaceObject) {
             super(parent, null, "NamedNodeMap");
         }
-=======
-            this.defineInstanceProperty("delimiters", [sys.Array.createTemplateType([sys.String])])
-                .setDescription("A list of the delimiters that correspond to each of the text parts (i.e. TDTDT [T=Text, D=Delimiter]).");
->>>>>>> 20a79577a5a7963be48507c6c36717d4172d9e7c:Source/ide/flowscript/components/Core.HTML.ts
 
-            this.defineInstanceProperty("text", [sys.String]).setDescription("The text that was read.");
-            this.defineInstanceProperty("delimiter", [sys.String]).setDescription("The delimiter that was read.");
-            this.defineInstanceProperty("runningText", [sys.String]).setDescription("The text that runs between indexes 'textStartIndex' and 'textEndIndex-1' (inclusive).");
-            this.defineInstanceProperty("tagBracket", [sys.String]).setDescription("The bracket sequence before the tag name, such as '<' or '</'. */.");
-            this.defineInstanceProperty("tagName", [sys.String]).setDescription("The tag name, if a tag was read.");
-            this.defineInstanceProperty("attributeName", [sys.String]).setDescription("The attribute name, if attribute was read.");
-            this.defineInstanceProperty("attributeValue", [sys.String]).setDescription("The attribute value, if attribute was read.");
-            var readMode = this.defineInstanceProperty("readMode", [this.HTMLReaderModes]).setDescription("The attribute value, if attribute was read.");
-            this.defineInstanceProperty("strictMode", [sys.Boolean]).setDescription([
-                "If true, then the parser will produce errors on ill-formed HTML (eg. 'attribute=' with no value).",
-                "This can greatly help identify possible areas of page errors."]);
-            
+        onInit() {
+            super.onInit();
+        }
 
-            this.isMarkupDeclaration = new ComponentBuilder(this, ComponentTypes.Expression, "isMarkupDeclaration", "$reader is markup declaration?")
-                .defineInstanceType(this).defineParameter("$reader", [this]).defineReturn(null, sys.Boolean)
-                .addStatement(sys.Comparison.Equals, [readMode.createExpression(), this.HTMLReaderModes.createExpression("Tag")]).Component
-                .setDescription("Returns true if tag current tag block is a mark-up declaration in the form \"<!...>\", where '...' is any text EXCEPT the start of a comment ('--').");
+        // --------------------------------------------------------------------------------------------------------------------
+    }
 
-            //this.isSupported = new ComponentBuilder(this, ComponentTypes.Expression, "isSupported", "$feature and $version are supported?")
-            //    .defineInstanceType(this).defineParameter("feature", [sys.String]).defineParameter("version", [sys.String]).defineReturn(null, sys.Boolean)
-            //    .addStatement(sys.Code, ["$this.isSupported($feature, $version)"]).Component;
+    // ========================================================================================================================
 
-<<<<<<< HEAD:src/FlowScript/TypeScript/System/components/Core.DOM.ts
     export class NodeTypes extends Enum<Number> {
         constructor(parent: NamespaceObject) {
             super(parent, "NodeTypes", {
@@ -198,60 +151,115 @@ module FlowScript.Core.DOM {
             });
         }
     }
-=======
-            //this.isEqualNode = new ComponentBuilder(this, ComponentTypes.Expression, "isEqualNode", "$node is equal?")
-            //    .defineInstanceType(this).defineParameter("node", [sys.HTML.Node]).defineReturn(null, sys.Boolean)
-            //    .addStatement(sys.Code, ["$this.isEqualNode($node)"]).Component;
 
-            //this.lookupPrefix = new ComponentBuilder(this, ComponentTypes.Expression, "lookupPrefix", "lookup prefix $namespaceURI")
-            //    .defineInstanceType(this).defineParameter("namespaceURI", [sys.String]).defineReturn(null, sys.String)
-            //    .addStatement(sys.Code, ["$this.lookupPrefix($namespaceURI)"]).Component;
->>>>>>> 20a79577a5a7963be48507c6c36717d4172d9e7c:Source/ide/flowscript/components/Core.HTML.ts
+    // ========================================================================================================================
 
-            //this.isDefaultNamespace = new ComponentBuilder(this, ComponentTypes.Expression, "isDefaultNamespace", "$prefix is the default?")
-            //    .defineInstanceType(this).defineParameter("prefix", [sys.String]).defineReturn(null, sys.Boolean)
-            //    .addStatement(sys.Code, ["$this.isDefaultNamespace($prefix)"]).Component;
+    export class Node extends FSObject {
+        // --------------------------------------------------------------------------------------------------------------------
 
-            //this.compareDocumentPosition = new ComponentBuilder(this, ComponentTypes.Expression, "compareDocumentPosition", "compare position of $node")
-            //    .defineInstanceType(this).defineParameter("node", [sys.HTML.Node]).defineReturn(null, sys.Boolean)
-            //    .addStatement(sys.Code, ["$this.compareDocumentPosition($node)"]).Component;
+        removeChild: Component;
+        appendChild: Component;
+        isSupported: Component;
+        isEqualNode: Component;
+        lookupPrefix: Component;
+        isDefaultNamespace: Component;
+        compareDocumentPosition: Component;
+        normalize: Component;
+        isSameNode: Component;
+        hasAttributes: Component;
+        lookupNamespaceURI: Component;
+        cloneNode: Component;
+        hasChildNodes: Component;
+        replaceChild: Component;
+        insertBefore: Component;
 
-            //this.normalize = new ComponentBuilder(this, ComponentTypes.Expression, "normalize")
-            //    .defineInstanceType(this).addStatement(sys.Code, ["$this.normalize()"]).Component;
+        CloneTypes = new Enum<boolean>(this, "CloneTypes", { Shallow: false, Deep: true });
 
-            //this.isSameNode = new ComponentBuilder(this, ComponentTypes.Expression, "isSameNode", "$node is the same?")
-            //    .defineInstanceType(this).defineParameter("node", [sys.HTML.Node]).defineReturn(null, sys.Boolean)
-            //    .addStatement(sys.Code, ["$this.isSameNode($node)"]).Component;
+        // --------------------------------------------------------------------------------------------------------------------
 
-            //this.hasAttributes = new ComponentBuilder(this, ComponentTypes.Expression, "hasAttributes", "attributes exist?")
-            //    .defineInstanceType(this).defineReturn(null, sys.Boolean)
-            //    .addStatement(sys.Code, ["$this.hasAttributes()"]).Component;
-
-<<<<<<< HEAD:src/FlowScript/TypeScript/System/components/Core.DOM.ts
         constructor(parent: NamespaceObject) {
             super(parent, null, "Node");
         }
-=======
-            //this.lookupNamespaceURI = new ComponentBuilder(this, ComponentTypes.Expression, "lookupNamespaceURI", "lookup namespace URI by $prefix")
-            //    .defineInstanceType(this).defineParameter("prefix", [sys.String]).defineReturn(null, sys.String)
-            //    .addStatement(sys.Code, ["$this.lookupNamespaceURI($prefix)"]).Component;
->>>>>>> 20a79577a5a7963be48507c6c36717d4172d9e7c:Source/ide/flowscript/components/Core.HTML.ts
 
-            //this.cloneNode = new ComponentBuilder(this, ComponentTypes.Expression, "cloneNode", "$cloneType clone this node")
-            //    .defineInstanceType(this).defineEnumProperty("cloneType", this.CloneTypes, true).defineReturn(null, sys.HTML.Node)
-            //    .addStatement(sys.Code, ["$this.cloneNode($prefix)"]).Component;
+        onInit() {
+            // Setup the expected parameters and return types:
 
-            //this.hasChildNodes = new ComponentBuilder(this, ComponentTypes.Expression, "hasChildNodes", "child nodes exist?")
-            //    .defineInstanceType(this).defineReturn(null, sys.Boolean)
-            //    .addStatement(sys.Code, ["$this.hasChildNodes()"]).Component;
+            var sys = this.script.System;
 
-            //this.replaceChild = new ComponentBuilder(this, ComponentTypes.Expression, "replaceChild", "replace $oldChild with $newChild")
-            //    .defineInstanceType(this).defineParameter("oldChild", [sys.HTML.Node]).defineParameter("newChild", [sys.HTML.Node]).defineReturn(null, sys.HTML.Node)
-            //    .addStatement(sys.Code, ["$this.replaceChild($newChild, $oldChild)"]).Component;
+            this.defineInstanceProperty("nodeType", [sys.Double]);
+            this.defineInstanceProperty("previousSibling", [sys.HTML.Node]);
+            this.defineInstanceProperty("localName", [sys.String]);
+            this.defineInstanceProperty("namespaceURI", [sys.String]);
+            this.defineInstanceProperty("textContent", [sys.String]);
+            this.defineInstanceProperty("parentNode", [sys.HTML.Node]);
+            this.defineInstanceProperty("nextSibling", [sys.HTML.Node]);
+            this.defineInstanceProperty("nodeValue", [sys.String]);
+            this.defineInstanceProperty("lastChild", [sys.HTML.Node]);
+            this.defineInstanceProperty("childNodes", [sys.HTML.NodeList]);
+            this.defineInstanceProperty("nodeName", [sys.String]);
+            this.defineInstanceProperty("ownerDocument", [sys.HTML.Document]);
+            this.defineInstanceProperty("attributes", [sys.HTML.NamedNodeMap]);
+            this.defineInstanceProperty("firstChild", [sys.HTML.Node]);
+            this.defineInstanceProperty("prefix", [sys.String]);
 
-            //this.insertBefore = new ComponentBuilder(this, ComponentTypes.Expression, "insertBefore", "insert $newNode before $?existingChild")
-            //    .defineInstanceType(this).defineParameter("newNode", [sys.HTML.Node]).defineParameter("existingChild", [sys.HTML.Node]).defineReturn(null, sys.HTML.Node)
-            //    .addStatement(sys.Code, ["$this.insertBefore($newChild, $oldChild)"]).Component;
+            this.removeChild = new ComponentBuilder(this, ComponentTypes.Expression, "removeChild", "remove child node $oldChild")
+                .defineInstanceType(this).defineParameter("oldChild", [sys.HTML.Node]).defineReturn(null, sys.HTML.Node)
+                .addStatement(sys.Code, ["$this.removeChild($oldChild)"]).Component;
+
+            this.appendChild = new ComponentBuilder(this, ComponentTypes.Expression, "appendChild", "add child node $newChild")
+                .defineInstanceType(this).defineParameter("oldChild", [sys.HTML.Node]).defineReturn(null, sys.HTML.Node)
+                .addStatement(sys.Code, ["$this.removeChild($newChild)"]).Component;
+
+            this.isSupported = new ComponentBuilder(this, ComponentTypes.Expression, "isSupported", "$feature and $version are supported?")
+                .defineInstanceType(this).defineParameter("feature", [sys.String]).defineParameter("version", [sys.String]).defineReturn(null, sys.Boolean)
+                .addStatement(sys.Code, ["$this.isSupported($feature, $version)"]).Component;
+
+            this.isEqualNode = new ComponentBuilder(this, ComponentTypes.Expression, "isEqualNode", "$node is equal?")
+                .defineInstanceType(this).defineParameter("node", [sys.HTML.Node]).defineReturn(null, sys.Boolean)
+                .addStatement(sys.Code, ["$this.isEqualNode($node)"]).Component;
+
+            this.lookupPrefix = new ComponentBuilder(this, ComponentTypes.Expression, "lookupPrefix", "lookup prefix $namespaceURI")
+                .defineInstanceType(this).defineParameter("namespaceURI", [sys.String]).defineReturn(null, sys.String)
+                .addStatement(sys.Code, ["$this.lookupPrefix($namespaceURI)"]).Component;
+
+            this.isDefaultNamespace = new ComponentBuilder(this, ComponentTypes.Expression, "isDefaultNamespace", "$prefix is the default?")
+                .defineInstanceType(this).defineParameter("prefix", [sys.String]).defineReturn(null, sys.Boolean)
+                .addStatement(sys.Code, ["$this.isDefaultNamespace($prefix)"]).Component;
+
+            this.compareDocumentPosition = new ComponentBuilder(this, ComponentTypes.Expression, "compareDocumentPosition", "compare position of $node")
+                .defineInstanceType(this).defineParameter("node", [sys.HTML.Node]).defineReturn(null, sys.Boolean)
+                .addStatement(sys.Code, ["$this.compareDocumentPosition($node)"]).Component;
+
+            this.normalize = new ComponentBuilder(this, ComponentTypes.Expression, "normalize")
+                .defineInstanceType(this).addStatement(sys.Code, ["$this.normalize()"]).Component;
+
+            this.isSameNode = new ComponentBuilder(this, ComponentTypes.Expression, "isSameNode", "$node is the same?")
+                .defineInstanceType(this).defineParameter("node", [sys.HTML.Node]).defineReturn(null, sys.Boolean)
+                .addStatement(sys.Code, ["$this.isSameNode($node)"]).Component;
+
+            this.hasAttributes = new ComponentBuilder(this, ComponentTypes.Expression, "hasAttributes", "attributes exist?")
+                .defineInstanceType(this).defineReturn(null, sys.Boolean)
+                .addStatement(sys.Code, ["$this.hasAttributes()"]).Component;
+
+            this.lookupNamespaceURI = new ComponentBuilder(this, ComponentTypes.Expression, "lookupNamespaceURI", "lookup namespace URI by $prefix")
+                .defineInstanceType(this).defineParameter("prefix", [sys.String]).defineReturn(null, sys.String)
+                .addStatement(sys.Code, ["$this.lookupNamespaceURI($prefix)"]).Component;
+
+            this.cloneNode = new ComponentBuilder(this, ComponentTypes.Expression, "cloneNode", "$cloneType clone this node")
+                .defineInstanceType(this).defineEnumProperty("cloneType", this.CloneTypes, true).defineReturn(null, sys.HTML.Node)
+                .addStatement(sys.Code, ["$this.cloneNode($prefix)"]).Component;
+
+            this.hasChildNodes = new ComponentBuilder(this, ComponentTypes.Expression, "hasChildNodes", "child nodes exist?")
+                .defineInstanceType(this).defineReturn(null, sys.Boolean)
+                .addStatement(sys.Code, ["$this.hasChildNodes()"]).Component;
+
+            this.replaceChild = new ComponentBuilder(this, ComponentTypes.Expression, "replaceChild", "replace $oldChild with $newChild")
+                .defineInstanceType(this).defineParameter("oldChild", [sys.HTML.Node]).defineParameter("newChild", [sys.HTML.Node]).defineReturn(null, sys.HTML.Node)
+                .addStatement(sys.Code, ["$this.replaceChild($newChild, $oldChild)"]).Component;
+
+            this.insertBefore = new ComponentBuilder(this, ComponentTypes.Expression, "insertBefore", "insert $newNode before $?existingChild")
+                .defineInstanceType(this).defineParameter("newNode", [sys.HTML.Node]).defineParameter("existingChild", [sys.HTML.Node]).defineReturn(null, sys.HTML.Node)
+                .addStatement(sys.Code, ["$this.insertBefore($newChild, $oldChild)"]).Component;
 
             /*
                 /removeChild(oldChild: Node): Node;
@@ -300,7 +308,6 @@ module FlowScript.Core.DOM {
     }
 
     // ========================================================================================================================
-<<<<<<< HEAD:src/FlowScript/TypeScript/System/components/Core.DOM.ts
 
     export class Element extends FSObject {
         // --------------------------------------------------------------------------------------------------------------------
@@ -370,8 +377,6 @@ module FlowScript.Core.DOM {
     }
 
     // ========================================================================================================================
-=======
->>>>>>> 20a79577a5a7963be48507c6c36717d4172d9e7c:Source/ide/flowscript/components/Core.HTML.ts
 }
 
 // ############################################################################################################################

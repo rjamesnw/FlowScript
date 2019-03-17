@@ -499,11 +499,7 @@ namespace FlowScript {
         // --------------------------------------------------------------------------------------------------------------------
 
         /** Creates a type from this template type using the supplied types.  This only works for types that represent templates. */
-<<<<<<< HEAD:src/FlowScript/TypeScript/System/Type.ts
         createTemplateType(templateTypes: NamespaceObject[]): NamespaceObject {
-=======
-        createTemplateType(templateTypes: Type[]): Type {
->>>>>>> 20a79577a5a7963be48507c6c36717d4172d9e7c:Source/ide/flowscript/Type.ts
             if (!templateTypes || templateTypes.length == 0) return this;
             if (!this._templateTypes || !this._templateTypes.length)
                 throw "Type '" + this + "' does not represent a template type.";
@@ -515,11 +511,7 @@ namespace FlowScript {
             var templateTypeName = this.name + "<" + typeNames.join(',') + " > ";
             var child = this.resolve(templateTypeName);
             if (child) return child;
-<<<<<<< HEAD:src/FlowScript/TypeScript/System/Type.ts
             var templateType = new NamespaceObject(this, templateTypeName, this.script);
-=======
-            var templateType = new Type(this, templateTypeName, this.script);
->>>>>>> 20a79577a5a7963be48507c6c36717d4172d9e7c:Source/ide/flowscript/Type.ts
             return templateType;
         }
 

@@ -1,6 +1,6 @@
 ﻿// ############################################################################################################################
 
-module FlowScript {
+namespace FlowScript {
     // ========================================================================================================================
     /** Controls access to object instance properties. 
       * Property access security only applies to instance properties of object-based components (components that encapsulate object creation).

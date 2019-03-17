@@ -23,7 +23,7 @@ namespace FlowScript
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                //.UseKestrel()
+                //.UseKestrel() // Request Filtering: https://stackoverflow.com/questions/51773340/asp-net-core-api-404-not-found-master
                 //.UseWebRoot(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"))
                 //.UseContentRoot(Directory.GetCurrentDirectory())
                 //.UseApplicationInsights()

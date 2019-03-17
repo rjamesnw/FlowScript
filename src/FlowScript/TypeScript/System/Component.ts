@@ -670,11 +670,7 @@ namespace FlowScript {
         }
 
         /** Defines a new local instance related variable for this component. */
-<<<<<<< HEAD:src/FlowScript/TypeScript/System/Component.ts
         defineInstanceProperty(name: string, validTypes: NamespaceObject[], initialValue?: any, validation?: string, isConst?: boolean, isAlias?: boolean): Property {
-=======
-        defineInstanceProperty(name: string, validTypes: Type[], initialValue?: any, validation?: string, isConst?: boolean, isAlias?: boolean): Property {
->>>>>>> 20a79577a5a7963be48507c6c36717d4172d9e7c:Source/ide/flowscript/Component.ts
             name = this._validateInstancePropertyName(name);
             var p = new Property(null, validTypes, name, { initialValue: initialValue, validation: validation, isInstance: true, isConst: isConst, isAlias: isAlias });
             p._explicitlyDefined = true;

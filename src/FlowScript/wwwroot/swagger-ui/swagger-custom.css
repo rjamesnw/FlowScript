@@ -1,0 +1,27 @@
+﻿.topbar {
+    background: #222 !important;
+}
+
+#select { /*Select API Dropdown*/
+    background: #666 !important;
+}
+
+.download-url-wrapper {
+    display: none !important;
+}
+
+.url {
+    display: none !important;
+}
+
+#info a {
+    color: #007bff !important;
+    text-decoration: none !important;
+}
+
+    #api_info a:hover,
+    #api_info a:focus,
+    #api_info a:active {
+        color: #0056b3 !important;
+        text-decoration: underline !important;
+    }

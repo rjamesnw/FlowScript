@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>FlowScript</name>
+    </assembly>
+    <members>
+        <member name="T:FlowScript.API.FileController">
+            <summary> A controller for handling files. </summary>
+            <seealso cref="T:Microsoft.AspNetCore.Mvc.ControllerBase"/>
+        </member>
+        <member name="M:FlowScript.API.FileController.Get">
+            <summary> Returns a list of files and directories in the root. </summary>
+            <returns> An enumerator that allows foreach to be used to process the matched items. </returns>
+        </member>
+        <member name="M:FlowScript.API.FileController.Get(System.String)">
+            <summary> Returns a list of files and directories in the root based on a pattern. </summary>
+            <param name="pattern"> The pattern to get. </param>
+            <returns> An enumerator that allows foreach to be used to process the matched items. </returns>
+        </member>
+        <member name="M:FlowScript.API.FileController.Get(System.String,System.String)">
+            <summary> Returns a list of files and directories in the root based on a sub-path and pattern. </summary>
+            <param name="path"> Full pathname of the file. </param>
+            <param name="pattern"> The pattern to get. </param>
+            <returns> An enumerator that allows foreach to be used to process the matched items. </returns>
+        </member>
+        <member name="T:FlowScript.API.ProjectsController">
+            <summary> A controller for handling projects. </summary>
+            <seealso cref="T:Microsoft.AspNetCore.Mvc.ControllerBase"/>
+        </member>
+        <member name="T:FlowScript.API.ProjectInfo">
+            <summary> Holds information about a project in the 'Projects' folder. </summary>
+        </member>
+        <member name="F:FlowScript.API.ProjectInfo.ID">
+            <summary> This is a GUID assigned to the project when it gets created. </summary>
+        </member>
+        <member name="T:FlowScript.API.APIResponseBase">
+            <summary> A based class for all responses. </summary>
+        </member>
+        <member name="P:FlowScript.API.APIResponse.Message">
+            <summary> A message, usually when there's an error. </summary>
+        </member>
+        <member name="M:FlowScript.ServerScriptManager.GetServer(System.String)">
+            <summary> Gets a server by name. </summary>
+            <param name="name"> The name. </param>
+            <returns> The server. </returns>
+        </member>
+        <member name="M:FlowScript.ServerScriptManager.GetServer(System.Int32)">
+            <summary> Gets a server by index. See <see cref="P:FlowScript.ServerScriptManager.Count"/> to get the number of servers being managed. </summary>
+            <param name="name"> The name. </param>
+            <returns> The server. </returns>
+        </member>
+        <member name="M:FlowScript.ServerScriptManager.AddServer(FlowScript.IJSServer)">
+            <summary>
+                Creates a server by the given name.  If a server already exists it is returned. If a name is not specific then a
+                GUID is created.
+            </summary>
+            <param name="name"> The name. </param>
+            <returns> The new server. </returns>
+        </member>
+        <member name="M:FlowScript.JSServer.Integrations.Chakra.ChakraContext.RunFile(System.String)">
+            <summary> Executes the given file by path and name. </summary>
+            <param name="filename">
+                Path and filename of the file. If a relative path is given, it is relative to the content root.
+            </param>
+            <returns> A JSServer. </returns>
+        </member>
+        <member name="T:FlowScript.JSServer.Integrations.Chakra.ChakraServer">
+            <summary> Returns the Chakra JavaScript wrapper integration. </summary>
+        </member>
+        <member name="M:FlowScript.JSServer.Integrations.Chakra.ChakraServer.CreateContext(System.String)">
+            <summary> Creates a new Chakra context. </summary>
+            <param name="name"> The name. </param>
+            <returns> The new context. </returns>
+        </member>
+        <member name="M:FlowScript.JSServer.Integrations.V8DotNet.V8DotNetContext.RunFile(System.String)">
+            <summary> Executes the given file by path and name. </summary>
+            <param name="filename">
+                Path and filename of the file. If a relative path is given, it is relative to the content root.
+            </param>
+        </member>
+        <member name="T:FlowScript.JSServer.Integrations.V8DotNet.V8DotNetServer">
+            <summary> Returns the V8.NET JavaScript wrapper integration. </summary>
+        </member>
+        <member name="M:FlowScript.JSServer.Integrations.V8DotNet.V8DotNetServer.CreateContext(System.String)">
+            <summary> Creates a new VroomJS context. </summary>
+            <param name="name"> The name. </param>
+            <returns> The new context. </returns>
+        </member>
+        <member name="M:FlowScript.JSServer.Integrations.VroomJS.VroomJSContext.RunFile(System.String)">
+            <summary> Executes the given file by path and name. </summary>
+            <param name="filename">
+                Path and filename of the file. If a relative path is given, it is relative to the content root.
+            </param>
+            <returns> A JSServer. </returns>
+        </member>
+        <member name="T:FlowScript.JSServer.Integrations.VroomJS.VroomJSServer">
+            <summary> Returns the VroomJS JavaScript wrapper integration. </summary>
+        </member>
+        <member name="M:FlowScript.JSServer.Integrations.VroomJS.VroomJSServer.CreateContext(System.String)">
+            <summary> Creates a new VroomJS context. </summary>
+            <param name="name"> The name. </param>
+            <returns> The new context. </returns>
+        </member>
+    </members>
+</doc>

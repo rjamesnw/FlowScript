@@ -80,7 +80,7 @@ namespace FlowScript {
 
     //?export interface IIndexableObject { [index: string]: any }
 
-    export declare module NativeTypes {
+    export declare namespace NativeTypes {
         export interface IFunction extends Function { }
         export interface IObject extends Object { }
         export interface IArray<T> extends Array<T> { }
@@ -96,7 +96,7 @@ namespace FlowScript {
         export interface IWindow extends Window { }
     }
 
-    export declare module NativeStaticTypes {
+    export declare namespace NativeStaticTypes {
         export var StaticFunction: typeof Function;
         export var StaticObject: typeof Object;
         export var StaticArray: typeof Array;

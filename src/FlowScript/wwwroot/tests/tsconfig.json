@@ -8,7 +8,7 @@
   },
   "include": [
     "../js/flowscript.d.ts",
-    "**/*.ts"
+    "**/*.ts", "../../API/Response.cs"
   ],
   "exclude": [ "old" ]
 }

@@ -1,7 +1,7 @@
 ﻿// ############################################################################################################################
 ///// <reference path="flowscriptrt.common.ts" />
 /// <reference path="flowscriptrt.ts" />
-/// <reference path="type.ts" />
+/// <reference path="namespaceobject.ts" />
 /// <reference path="NamedReference.ts" />
 /// <reference path="flowscriptmain.ts" />
 /// <reference path="expressions.ts" />

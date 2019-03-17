@@ -62,7 +62,6 @@
 
         // --------------------------------------------------------------------------------------------------------------------
 
-<<<<<<< HEAD:src/FlowScript/TypeScript/Client/old/System/Projects.ts.txt
         private _findChildNode(node: HTMLElement, fstype: NamespaceObject): HTMLElement { //?
             if (node) {
                 for (var i = 0, len = node.childNodes.length; i < len; ++i)
@@ -71,22 +70,6 @@
             }
             else return null;
         }
-=======
-        pick(expr: Expression) {
-            this._pickedExpression = expr;
-        }
-
-        // --------------------------------------------------------------------------------------------------------------------
-
-        //private _findChildNode(node: HTMLElement, fstype: Type): HTMLElement { //?
-        //    if (node) {
-        //        for (var i = 0, len = node.childNodes.length; i < len; ++i)
-        //            if ((<any>node.childNodes[i])["$__fs_type"] == fstype)
-        //                return <HTMLElement>node.childNodes[i];
-        //    }
-        //    else return null;
-        //}
->>>>>>> 20a79577a5a7963be48507c6c36717d4172d9e7c:Source/ide/flowscript/Projects.ts
 
         // --------------------------------------------------------------------------------------------------------------------
     }

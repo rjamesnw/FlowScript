@@ -2,7 +2,7 @@
 
 /** Contains components used for comparisons.
   */
-module FlowScript.Core.Comparison {
+namespace FlowScript.Core.Comparison {
 
     /** Defines the Comparison namespace type. */
     export class Comparison extends NamespaceObject {
