@@ -1,12 +1,15 @@
 {
   "extends": "../../tsconfig-base.json",
+  "references": [
+    { "path": "../System" }
+  ],
   "compilerOptions": {
     "target": "es6",
     "module": "none",
     "outFile": "./server.js"
   },
   "files": [
-    "../../wwwroot/js/flowscript.d.ts",
+    //"../../wwwroot/js/flowscript.d.ts",
     "../System/globals.server.ts",
     "../Shared.ts",
     "Server.ts"

@@ -2,6 +2,7 @@
 {
   "extends": "../../tsconfig-base.json",
   "compilerOptions": {
+    "composite": true,
     "target": "es6", // (Makes sure we take advantage of Node's built-in async functionality.)
     "outFile": "../../wwwroot/js/flowscript.js",
     "declaration": true
@@ -11,8 +12,37 @@
     //"types": [
     //]
   },
-  "include": [
-    "_references.ts"
+  "files": [
+    "flowscriptrt.ts",
+    "namespaceobject.ts",
+    "NamedReference.ts",
+    "flowscriptmain.ts",
+    "expressions.ts",
+    "property.ts",
+    "component.ts",
+    "statement.ts",
+    "block.ts",
+    "line.ts",
+    "enum.ts",
+    "event.ts",
+    "message.ts",
+    "table.ts",
+    "thread.ts",
+    "components/core.ts",
+    "components/core.httprequest.ts",
+    "components/core.controlflow.ts",
+    "components/core.math.ts",
+    "components/core.binary.ts",
+    "components/core.comparison.ts",
+    "components/core.DOM.ts",
+    "components/core.HTML.ts",
+    "compiler.ts",
+    "simulator.ts",
+    "visualtree.ts",
+    "views.ts",
+    "projects.ts",
+    "system.ts",
+    "bootup.ts" // This MUST be LAST.
   ],
   "exclude": [
     "node_modules"

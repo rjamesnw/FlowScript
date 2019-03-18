@@ -6,6 +6,7 @@
     <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
     <UserSecretsId>aa23e8af-ed79-4c53-982a-4088992e3592</UserSecretsId>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+    <TypeScriptBuildMode>true</TypeScriptBuildMode>
     <DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
     <AssemblyVersion>1.0.0.5</AssemblyVersion>
     <FileVersion>1.0.0.5</FileVersion>
@@ -70,6 +71,7 @@
     <PackageReference Include="MySql.Data.EntityFrameworkCore" Version="8.0.15" />
     <PackageReference Include="MySql.Data.EntityFrameworkCore.Design" Version="8.0.15" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" />
+    <PackageReference Include="V8.Net" Version="1.1.0" />
     <PackageReference Include="VroomJs" Version="1.2.3" />
   </ItemGroup>
 
@@ -85,15 +87,6 @@
 
   <ItemGroup Condition="$([MSBuild]::IsOsPlatform(OSPlatform.Linux))">
     <EmbeddedResource Include="libs\VroomJsNative32.so;libs\VroomJsNative64.so" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <None Include="..\..\..\..\V8.NET\Source\bin\Debug\V8_Net_Proxy_x64.dll" Link="libs\V8_Net_Proxy_x64.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\..\..\..\V8.NET\Source\bin\Debug\V8_Net_Proxy_x86.dll" Link="libs\V8_Net_Proxy_x86.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
@@ -113,14 +106,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\V8.NET\Source\V8.Net\V8.Net-Standard.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <TypeScriptCompile Include="TypeScript\Client\Client.ts" />
     <TypeScriptCompile Include="TypeScript\Server\Server.ts" />
     <TypeScriptCompile Include="TypeScript\Shared.ts" />
     <TypeScriptCompile Include="wwwroot\tests\simple\Tests.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="C:\Users\jwilkin2\.nuget\packages\v8.net\1.1.0\contentFiles\any\netstandard2.0\V8_Net_Proxy_x64.dll" Link="libs\V8_Net_Proxy_x64.dll" />
+    <Content Update="C:\Users\jwilkin2\.nuget\packages\v8.net\1.1.0\contentFiles\any\netstandard2.0\V8_Net_Proxy_x86.dll" Link="libs\V8_Net_Proxy_x86.dll" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

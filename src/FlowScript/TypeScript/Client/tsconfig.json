@@ -1,5 +1,8 @@
 {
   "extends": "../../tsconfig-base.json",
+  "references": [
+    { "path": "../System" }
+  ],
   "compilerOptions": {
     "target": "es6",
     "module": "amd",
@@ -11,7 +14,7 @@
     ]
   },
   "files": [
-    "../../wwwroot/js/flowscript.d.ts",
+    //"../../wwwroot/js/flowscript.d.ts",
     "../Shared.ts",
     "TreeView.ts",
     "TypeTreeView.ts",

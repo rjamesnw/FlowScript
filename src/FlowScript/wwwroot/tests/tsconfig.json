@@ -1,5 +1,8 @@
 {
   "extends": "../../tsconfig-base.json",
+  "references": [
+    { "path": "../../TypeScript/System" }
+  ],
   "compilerOptions": {
     "target": "es6",
     "module": "amd",
@@ -7,8 +10,9 @@
     "outDir": ""
   },
   "include": [
-    "../js/flowscript.d.ts",
-    "**/*.ts", "../../API/Response.cs"
+    //"../js/flowscript.d.ts",
+    "**/*.ts",
+    "../../API/Response.cs"
   ],
   "exclude": [ "old" ]
 }
