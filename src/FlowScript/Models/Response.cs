@@ -15,9 +15,9 @@ namespace FlowScript.API
     public abstract class APIResponseBase : IAPIResponseBase
     {
         public string Type { get; set; }
-        public bool Success { get; set; } = true;
+        public bool Success { get; set; }
 
-        public APIResponseBase() { Type = GetType().Name; }
+        public APIResponseBase(bool success = true) { Type = GetType().Name; Success = success; }
     }
 
     // ########################################################################################################################
@@ -34,7 +34,7 @@ namespace FlowScript.API
         /// <summary> A message, usually when there's an error. </summary>
         public string Message { get; set; }
 
-        public APIResponse(string message = null) { Message = message; }
+        public APIResponse(string message = null, bool success = true) : base(success) { Message = message; }
 
         public static implicit operator APIResponse(string s) => new APIResponse(s);
     }
@@ -52,8 +52,8 @@ namespace FlowScript.API
 
         object IDataResponse.Data { get => Data; set => Data = (T)value; }
 
-        public DataResponse(T data = default(T)) { Data = data; }
-        public DataResponse(string errorMessage) : base(errorMessage) { Success = false; }
+        public DataResponse(T data = default(T), bool success = true, string message = null) : base(message, success) { Data = data; }
+        public DataResponse(string errorMessage) : base(errorMessage, false) { Success = false; }
 
         public static implicit operator DataResponse<T>(T d) => new DataResponse<T>(d);
     }
@@ -63,6 +63,7 @@ namespace FlowScript.API
     public static class ResponseExtensions
     {
         public static DataResponse<T> AsResponse<T>(this T v) => new DataResponse<T>(v);
+        public static DataResponse<object> AsError(this string msg) => new DataResponse<object>(msg);
     }
 
     // ########################################################################################################################

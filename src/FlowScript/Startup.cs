@@ -3,16 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using FlowScript.API;
 using FlowScript.JSServer.Integrations;
 using FlowScript.JSServer.Integrations.Chakra;
 using FlowScript.JSServer.Integrations.V8DotNet;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.PlatformAbstractions;
+using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Swagger;
+using CoreXT;
 
 namespace FlowScript
 {
@@ -31,7 +35,6 @@ namespace FlowScript
             services.AddSwaggerGen(o =>
             {
                 o.SwaggerDoc("v1", new Info { Title = "FlowScript API", Version = "v1" });
-
                 var basePath = PlatformServices.Default.Application.ApplicationBasePath;
                 var xmlPath = Path.Combine(basePath, "FlowScript.xml");
                 o.IncludeXmlComments(xmlPath);
@@ -71,6 +74,15 @@ namespace FlowScript
                     if (_StartupException != null) throw new Exception("FlowScript Startup Error: ", _StartupException);
                     return Task.CompletedTask;
                 });
+
+            app.UseExceptionHandler(a => a.Run(async context =>
+            {
+                var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+                var exception = exceptionHandlerPathFeature.Error;
+                var result = JsonConvert.SerializeObject(exception.GetFullErrorMessage().AsError());
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(result);
+            }));
 
             app.UseSwagger(o => // (this adds the middleware to serve the json configuration for the swagger support)
             {

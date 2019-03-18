@@ -65,7 +65,9 @@
             // ... setup drag-n-drop for this menu ...
 
             this.menuRoot.addEventListener("mousedown", (ev: MouseEvent) => {
-                this._dragOfsX = this.x - mouseX; this._dragOfsY = this.y - mouseY; this._dragStart = true;
+                this._dragOfsX = this.x - mouseX;
+                this._dragOfsY = this.y - mouseY; // (get the offset from x,y to where the user actually clicked on the window)
+                this._dragStart = true;
                 ev.preventDefault();
                 return false;
             }, false);
@@ -75,15 +77,23 @@
                 return false;
             }, true);
             window.addEventListener("mousemove", (ev: MouseEvent) => {
-                if (this._dragStart) this.setPos(mouseX + this._dragOfsX, mouseY + this._dragOfsY);
+                if (this._dragStart) {
+                    this.setPos(mouseX + this._dragOfsX, mouseY + this._dragOfsY);
+                    this.moveInView();
+                }
+                ev.preventDefault();
+            }, true);
+            window.addEventListener("resize", (ev: UIEvent) => {
                 this.moveInView();
                 ev.preventDefault();
             }, true);
         }
 
-        setPos(x: number, y: number): this {
+        setPos(x: number, y: number, ofsX?: number, ofsY?: number): this {
             if (x === void 0) x = mouseX;
             if (y === void 0) y = mouseY;
+            x += (ofsX || 0);
+            y += (ofsY || 0);
             this.x = x;
             this.y = y;
             this.menuRoot.style.left = x + 'px';

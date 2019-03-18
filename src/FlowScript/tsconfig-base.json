@@ -1,4 +1,5 @@
 {
+  "compileOnSave": true,
   "compilerOptions": {
     "noImplicitAny": true,
     "noEmitOnError": true,
@@ -9,7 +10,7 @@
     "outDir": "wwwroot/js",
     "declaration": true,
     "typeRoots": [ "node_modules/@types", "TypeScript/Types" ]
-  }//,
+  } //,
   //"exclude": [
   //  "node_modules"
   //]

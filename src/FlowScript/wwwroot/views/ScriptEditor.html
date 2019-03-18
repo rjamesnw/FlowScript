@@ -24,7 +24,7 @@
 
     <!-- Tab panes -->
     <div class="tab-content">
-        <div role="tabpanel" class="tab-pane fade in active" id="editor">
+        <div role="tabpanel" class="tab-pane fade show active" id="editor">
             Script:<br /><br />
             <div id="editorContainer">
                 <div id="blocksContainer" class="blocksContainer active">[]</div>
@@ -147,15 +147,15 @@
 
 </div>
 
-<div id="menu" class="panel panel-default noselect" style="position: absolute; display: none">
-    <div class="panel-heading">
-        <div style="max-width:600px; white-space:nowrap;" class="alert-dismissable">
+<div id="menu" class="card noselect" style="position: absolute; display: none">
+    <div class="card-header">
+        <div style="max-width:600px; min-width:250px;" class="alert-dismissable">
             <button id="menuClose" type="button" class="close" aria-label="Close" style="right: -32px; font-size: 32px; display: inline;"><span
                     aria-hidden="true">&times;</span></button>
             <span id="menuTitle">Expression Menu</span>&nbsp;
         </div>
     </div>
-    <div id="menuBody" class="panel-body" data-view-container>
+    <div id="menuBody" class="card-body" data-view-container>
         <!-- The menu body is the view container; Each DIV here will be a view within it -->
 
         <div id="exprMenu" data-view title="Expression Menu">

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
@@ -31,7 +32,7 @@ namespace FlowScript.API
         [HttpGet("{pattern}")]
         public IDataResponse Get(string pattern) // Read
         {
-            return Directory.EnumerateFileSystemEntries(_HostingEnvironment.ContentRootPath, pattern).AsResponse();
+            return Directory.EnumerateFileSystemEntries(_HostingEnvironment.ContentRootPath, WebUtility.UrlDecode(pattern)).AsResponse();
         }
 
         /// <summary> Returns a list of files and directories in the root based on a sub-path and pattern. </summary>
@@ -41,10 +42,12 @@ namespace FlowScript.API
         [HttpGet("{path}/{pattern}")]
         public IDataResponse Get(string path, string pattern) // Read
         {
-            path = ("" + path).Replace('/', '\\');
+            path = ("" + WebUtility.UrlDecode(path)).Replace('/', '\\');
             if (path.StartsWith('\\') || path.Contains("..") || path.Contains(':'))
-                return $"For security reasons, a path cannot contain ':' or '..', and you cannot start a path using '\\' or '/'.\r\nPath given: {path}".AsResponse();
-            return Directory.EnumerateFileSystemEntries(Path.Combine(_HostingEnvironment.ContentRootPath, path), pattern).AsResponse();
+                return $"For security reasons, a path cannot contain ':' or '..', and you cannot start a path using '\\' or '/'.\r\nPath given: {path}".AsError();
+            var finalPath = Path.Combine(_HostingEnvironment.ContentRootPath, path);
+            if (!Directory.Exists(finalPath)) return $"The path '{finalPath}' does not exist.".AsError();
+            return Directory.EnumerateFileSystemEntries(finalPath, WebUtility.UrlDecode(pattern)).AsResponse();
         }
 
         // POST api/values

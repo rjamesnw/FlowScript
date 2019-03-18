@@ -675,11 +675,11 @@
                 this.menu.hide();
         }
 
-        showBlockMenu(menuName: string, menuTitle?: string, hideSelections?: { [index: string]: boolean }, x?: number, y?: number) {
+        showBlockMenu(menuName: string, menuTitle?: string, hideSelections?: { [index: string]: boolean }, x?: number, y?: number, ofsX?: number, ofsY?: number) {
             if (this.selectedNode)
                 this.selectedNode._ShowSelectedStyle();
             if (this.menu) {
-                this.menu.setPos(x, y).show(menuName, menuTitle, hideSelections);
+                this.menu.setPos(x, y, ofsX, ofsY).show(menuName, menuTitle, hideSelections);
                 this.menu.onHide = ScriptEditor._hideNodeMenu;
             }
         }
@@ -761,7 +761,7 @@
                     }
                 }
                 else {
-                    this.showBlockMenu(menuName, menuTitle, hideSelections, promptX, promptY);
+                    this.showBlockMenu(menuName, menuTitle, hideSelections, promptX, promptY, 0, 20);
                 }
             }
         }
@@ -905,8 +905,11 @@
             if (this.currentProject && this.currentProject.pickedExpression) {
                 var expr = this.currentProject.pickedExpression;
                 var vn = expr.createVisualTree();
-                vn.onNodeSelected.add((subject, title, ev) => { this.selectNode(subject, "exprMenu", title, { 
-                    exprMenu_Pick: false, exprMenu_Drop: false, exprMenu_Remove: false, exprMenu_AddLineAbove: false, exprMenu_AddLineBelow: false }); });
+                vn.onNodeSelected.add((subject, title, ev) => {
+                    this.selectNode(subject, "exprMenu", title, {
+                        exprMenu_Pick: false, exprMenu_Drop: false, exprMenu_Remove: false, exprMenu_AddLineAbove: false, exprMenu_AddLineBelow: false
+                    });
+                });
                 this.pickedContainer.appendChild(vn.render());
             }
         }
