@@ -54,7 +54,7 @@ namespace FlowScript {
     export interface IHTMLElementClickEvent { (ev: Event): void; }
     export interface IVisualNodeSelectedEvent { (subject: VisualNode, title?: string, ev?: Event): void; }
 
-    export interface IVisualNodeType<T extends VisualNode> { new (item: any, nodeType?: VisualNodeTypes): T }
+    export interface IVisualNodeType<T extends VisualNode> { new(item: any, nodeType?: VisualNodeTypes): T }
 
     export interface IVisualNodeElement extends HTMLElement {
         $__fs_vnode: VisualNode;
@@ -287,7 +287,7 @@ namespace FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        protected _castTo<T>(type: { new (...args: any[]): T; }, throwOnError = true): T {
+        protected _castTo<T>(type: { new(...args: any[]): T; }, throwOnError = true): T {
             var item = this.item;
             if (typeof item != 'object')
                 if (throwOnError)
@@ -457,6 +457,8 @@ namespace FlowScript {
         // --------------------------------------------------------------------------------------------------------------------
 
         protected _doSelect(ev: Event, title: string, subject = this): void {
+            if (subject == this) ev.stopPropagation(); // (don't let other elements get triggered, we will handle this now)
+
             this.onNodeSelected.trigger(subject, title, ev);
             // ... by default, propagate all events up to the root for easy handling by a single function ...
             if (this._parent)
@@ -508,37 +510,41 @@ namespace FlowScript {
                     element.onclick = (ev: Event) => this._doSelect(ev, element.title);
                 }
 
-            this._renderChildren();
+            element.onclick = (ev: Event) => {
+                var arg = this.expression;
+                if (arg != null)
+                    this._doSelect(ev, "Expression: Component (" + comp.name + ")");
+                else
+                    this._doSelect(ev, "Component (" + comp.name + ")");
+            };
 
-            return element;
+
+            return this._renderChildren(element);
         }
 
         renderReturnTargets(index: number, count: number, parentElement: IVisualNodeElement): IVisualNodeElement {
             var element = this.createVisualElement("div", parentElement);
             element.className = "returns";
-            this._renderChildren();
-            return element;
+            return this._renderChildren(element);
         }
 
         renderReturnTarget(index: number, count: number, parentElement: IVisualNodeElement): IVisualNodeElement {
             var element = this.createVisualElement("span", parentElement);
             element.className = "return";
-            this._renderChildren();
-            return element;
+            return this._renderChildren(element);
         }
 
         renderArguments(index: number, count: number, parentElement: IVisualNodeElement): IVisualNodeElement {
             var element = this.createVisualElement("div", parentElement);
             element.className = "arguments";
-            this._renderChildren();
-            return element;
+            return this._renderChildren(element);
         }
 
         renderArgument(index: number, count: number, parentElement: IVisualNodeElement): IVisualNodeElement {
             var element = this.createVisualElement("span", parentElement);
             element.className = "argument";
-            this._renderChildren();
-            return element;
+            var comp = this.expression;
+            return this._renderChildren(element);
         }
 
         renderComponentTitlePart(index: number, count: number, parentElement: IVisualNodeElement): IVisualNodeElement {
@@ -553,8 +559,7 @@ namespace FlowScript {
             element.className = "parameter";
             element.title = this.title;
             element.onclick = (ev: Event) => this._doSelect(ev, (<IVisualNodeElement>ev.currentTarget).$__fs_vnode.title);
-            this._renderChildren();
-            return element;
+            return this._renderChildren(element);
         }
 
         renderBlock(index: number, count: number, parentElement: IVisualNodeElement): IVisualNodeElement {
@@ -576,9 +581,9 @@ namespace FlowScript {
                     lineContainer.className = "line emptyLine";
                     lineContainer.innerHTML = "-?-";
                 }
-                else this._renderChildren();
+                else return this._renderChildren(element);
             }
-            else this._renderChildren();
+            else return this._renderChildren(element);
 
             return element;
         }
@@ -603,9 +608,7 @@ namespace FlowScript {
             var statementsContainer = this.createContainerElement("div", element);
             statementsContainer.className = "statements";
 
-            this._renderChildren();
-
-            return element;
+            return this._renderChildren(element);
         }
 
         renderStatement(index: number, count: number, parentElement: IVisualNodeElement): IVisualNodeElement {
@@ -615,11 +618,9 @@ namespace FlowScript {
             var element = this.createVisualElement("span", parentElement);
             element.className = "statement";
             element.title = "Statement expression for component '" + statement.component.fullTypeName + "' (" + statement.component.title + ").";
-            element.onclick = (ev: Event) => { this._doSelect(ev, "Statement Expression (" + statement.component.name + ")"); ev.stopPropagation(); };
+            element.onclick = (ev: Event) => this._doSelect(ev, "Statement Expression (" + statement.component.name + ")");
 
-            this._renderChildren();
-
-            return element;
+            return this._renderChildren(element);
         }
 
         renderProperty(index: number, count: number, parentElement: IVisualNodeElement): IVisualNodeElement {
