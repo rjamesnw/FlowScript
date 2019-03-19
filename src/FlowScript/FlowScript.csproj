@@ -138,4 +138,8 @@
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
 
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="xcopy /S /D /Y &quot;$(ProjectDir)node_modules\monaco-editor\*.ts&quot; &quot;$(ProjectDir)wwwroot\js\monaco-editor\&quot;&#xD;&#xA;xcopy /S /D /Y &quot;$(ProjectDir)node_modules\monaco-editor\*.js&quot; &quot;$(ProjectDir)wwwroot\js\monaco-editor\&quot;&#xD;&#xA;xcopy /S /D /Y &quot;$(ProjectDir)node_modules\monaco-editor\*.js.map&quot; &quot;$(ProjectDir)wwwroot\js\monaco-editor\&quot;&#xD;&#xA;xcopy /S /D /Y &quot;$(ProjectDir)node_modules\monaco-editor\*.css&quot; &quot;$(ProjectDir)wwwroot\js\monaco-editor\&quot;&#xD;&#xA;" />
+  </Target>
+
 </Project>

@@ -11,6 +11,7 @@
     export interface ITreeViewRenameHandler<TSource extends {}, TItem extends {}> { (tv: TreeView<TSource, TItem>, selectedOption: ITreeViewItem<TItem>, newValue: string): void }
     export interface ITreeViewRemoveHandler<TSource extends {}, TItem extends {}> { (tv: TreeView<TSource, TItem>, selectedOption: ITreeViewItem<TItem>): void }
 
+    /** A base class for derived TreeView controls, such as 'TypeTreeView'. */
     export class TreeView<TSource extends {}, TItem extends {}> {
 
         get scriptEditor(): ScriptEditor { return this._scriptEditor; }

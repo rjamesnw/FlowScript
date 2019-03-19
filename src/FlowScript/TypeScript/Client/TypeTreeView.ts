@@ -1,6 +1,7 @@
 ﻿namespace FlowScript.UI {
     // ========================================================================================================================
 
+    /** Contains nested TreeView nodes that represents namespace nodes and components in the current project. */
     export class TypeTreeView extends TreeView<IFlowScript, NamespaceObject>
     {
         _onTypeChanging: (node: ITreeViewItem<NamespaceObject>) => any;
@@ -119,7 +120,7 @@
 
             // ... render child types ...
 
-            if (item.nestedTypes && item.nestedTypes.length) {
+            if (item.nestedItems && item.nestedItems.length) {
                 // ... first, since there are children, add a class to the parent li container ...
 
                 treeViewItemContainer.className = "parent_li";
@@ -132,8 +133,8 @@
 
                 // ... and finally render the child items ...
 
-                for (var i = 0, n = item.nestedTypes.length; i < n; ++i)
-                    this._onRenderHandler(item.nestedTypes[i], childItemsContainer);
+                for (var i = 0, n = item.nestedItems.length; i < n; ++i)
+                    this._onRenderHandler(item.nestedItems[i], childItemsContainer);
             }
 
             parentElement.appendChild(treeViewItemContainer);

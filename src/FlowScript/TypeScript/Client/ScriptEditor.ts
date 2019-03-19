@@ -458,10 +458,10 @@
                     case "exprMenu_AddLineAbove": this._onAddBlockLineAbove(); break;
                     case "exprMenu_AddLineBelow": this._onAddBlockLineBelow(); break;
 
-                    case "typeMenu_Edit": this._onEditType(); break;
-                    case "typeMenu_Rename": this._onRenameType(); break;
-                    case "typeMenu_Add": this._onAddType(); break;
-                    case "typeMenu_Remove": this._onRemoveType(); break;
+                    case "typeMenu_Edit": this._onEditNSItem(); break;
+                    case "typeMenu_Rename": this._onRenameNSItem(); break;
+                    case "typeMenu_Add": this._onAddNSItem(); break;
+                    case "typeMenu_Remove": this._onRemoveNSItem(); break;
                 }
             };
         }
@@ -633,7 +633,7 @@
 
         //  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
 
-        private _onEditType() {
+        private _onEditNSItem() {
             var comp: Component = this.typeTree.selectedItem instanceof Component ? <Component>this.typeTree.selectedItem : null;
             if (comp) {
                 if (comp.componentType == ComponentTypes.Functional || comp.componentType == ComponentTypes.Code) {
@@ -646,7 +646,7 @@
             else alert("Type nodes act like namespaces, and do not have blocks or code to edit.");
         }
 
-        private _onRenameType() {
+        private _onRenameNSItem() {
             var selType: NamespaceObject = this.typeTree.selectedItem;
             if (selType) {
                 var type = this.typeTree.selectedNode.$__treeItem;
@@ -655,13 +655,38 @@
                         (el, oldValue, newValue) => { type.name = newValue; this.typeTree.refresh(); this.refreshComponentDetails(); })
                 }
             }
-            else alert("The selected type is not a component.");
+            else alert("No type node is selected. Select a node item to rename it.");
         }
 
-        private _onAddType() {
+        private _onAddNSItem() {
+            var selType: NamespaceObject = this.typeTree.selectedItem;
+            if (selType) {
+                var nsItem = this.typeTree.selectedNode.$__treeItem;
+                if (nsItem) {
+                    var name = "NewFunctionalComponent", _name = name, i = 2;
+                    while (nsItem.exists(_name)) _name = name + (i++);
+                    new Component(nsItem, ComponentTypes.Functional, _name, "New Functional Component")
+                    this.typeTree.refresh();
+                    this.refreshComponentDetails();
+                }
+            }
+            else alert("No type node is selected. Select a type node to add a new element under.");
         }
 
-        private _onRemoveType() {
+        private _onRemoveNSItem() {
+            var selType: NamespaceObject = this.typeTree.selectedItem;
+            if (selType) {
+                var nsItem = this.typeTree.selectedNode.$__treeItem;
+                if (nsItem)
+                    if (!nsItem.parent)
+                        alert("You cannot remove the root node, it is required.");
+                    else {
+                        nsItem.parent.remove(nsItem);
+                        this.typeTree.refresh();
+                        this.refreshComponentDetails();
+                    }
+            }
+            else alert("No type node is selected. Select a type node to remove it.");
         }
 
         // --------------------------------------------------------------------------------------------------------------------

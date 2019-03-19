@@ -63,6 +63,13 @@ namespace FlowScript.UI {
 
                     require(['vs/editor/editor.main'], (main: typeof monaco) => {
 
+                        if (!main) {
+                            var msg = "initialize(): Failed loading 'vs/editor/editor.main'. Make sure 'node_modules\\monaco-editor' exists, as the project will copy it to 'wwwroot\\js'.";
+                            (console.error || console.log)(msg);
+                            throw msg;
+                            return;
+                        }
+
                         console.log("initialize(): Creating the Monaco editor ...");
 
                         main.languages.typescript.typescriptDefaults.addExtraLib("var ctx: { x: string, y: string };");
@@ -92,8 +99,12 @@ namespace FlowScript.UI {
 
                         var sync = () => {
                             if (this._tsServiceProxy)
-                                this._tsServiceProxy.getEmitOutput(this._editor.getModel().uri.toString())
-                                    .then((r) => { this._outputEditor.setValue(r.outputFiles[0].text); });
+                                setTimeout(() => {
+                                    this._tsServiceProxy.getEmitOutput(this._editor.getModel().uri.toString())
+                                        .then((r) => {
+                                            this._outputEditor.setValue(r.outputFiles[0].text);
+                                        });
+                                }, 500);
                         };
 
                         this._editor.onDidChangeModelContent(sync)

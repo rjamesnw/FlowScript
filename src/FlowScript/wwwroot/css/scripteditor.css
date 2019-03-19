@@ -177,8 +177,9 @@
             .tree li span::before {
                 content: "";
                 padding-right: 6px;
-                font-family: "Glyphicons Halflings";
-                font-weight: normal;
+                font-family: "Font Awesome 5 Free";
+                /*font-family: "Glyphicons Halflings";*/
+                font-weight: 900;
                 font-size: 12px;
                 color: #000;
             }
@@ -190,35 +191,40 @@
             }
 
             .tree li span.op::before {
-                content: "[Op]";
+                /*content: "[Op]";*/
+                font-family: "Font Awesome 5 Brands";
+                content: "\f2dd";
             }
 
             .tree li span.Comment::before {
-                content: "\e111";
+                content: "\f27a";
             }
 
             .tree li span.ControlFlow::before {
-                content: "\e110";
+                content: "\f542";
+                /*content: "\e110";*/
             }
 
             .tree li span.CodeBlock::before {
-                content: "\e032";
+                content: "{ }";
+                /*content: "\f542";*/
             }
 
             .tree li span.Functional::before {
-                content: "\e012";
+                font-family: "Font Awesome 5 Free";
+                content: "\f0cb";
             }
 
             .tree li span.Text::before {
-                content: "\e241";
+                content: "\f10d";
             }
 
             .tree li span.Code::before {
-                content: "\e022";
+                content: "\f3b9";
             }
 
             .tree li span.Event::before {
-                content: "\e162";
+                content: "\f0e7";
             }
 
     .tree > ul > li::before, .tree > ul > li::after {
@@ -240,11 +246,13 @@
     }
 
         .tree li.parent_li > span + ul::before {
-            content: "\e252";
+            /*content: "\e252";*/
+            content: "\f0d7";
             position: absolute;
-            margin: -5px 0 0 -25px;
-            font-family: "Glyphicons Halflings";
-            font-weight: normal;
-            font-size: 10px;
+            margin: -9px 0 0 -24px;
+            font-family: "Font Awesome 5 Free";
+            /*font-family: "Glyphicons Halflings";*/
+            font-weight: 900;
+            font-size: 15px;
             color: #999;
         }

@@ -138,12 +138,12 @@ namespace FlowScript {
         private _superType: Component = null;
 
         /** The nested child types under this type. */
-        get nestedTypes() { return this._nestedTypes; }
-        protected _nestedTypes: NamespaceObject[];
+        get nestedItems() { return this._nestedItems; }
+        protected _nestedItems: NamespaceObject[];
 
         /** A named index of each nested child type. */
-        get nestedTypesIndex() { return this._nestedTypesIndex; }
-        protected _nestedTypesIndex: { [index: string]: NamespaceObject };
+        get nestedNSIndex() { return this._nestedNSIndex; }
+        protected _nestedNSIndex: { [index: string]: NamespaceObject };
 
         /** Holds a list of template parameters required for template component types. */
         get templateTypes() { return this._templateTypes; }
@@ -155,8 +155,13 @@ namespace FlowScript {
             if (!value) throw "Type error: A valid type name is required.";
             var newName = typeof value === 'string' ? value : '' + value;
             if (newName.substring(0, 3) == '$__') throw "Names cannot start with the special system reserved prefix of '$__'.";
+            if (newName.indexOf('.') >= 0) throw "Names cannot contain a dot '.' as that is used as a namespace item separator.";
             if (this.parent && this.parent.exists(newName, this)) throw "A type by the name '" + newName + "' already exists.";
+            if (this._name && this.parent && this.parent._nestedNSIndex)
+                delete this.parent._nestedNSIndex[this._name]; // (if '_nestedTypesIndex' exists, then there is a parent, and this item is being renamed; '_nestedTypesIndex' is undefined when this is set in the constructor)
             this._name = newName;
+            if (this.parent && this.parent._nestedNSIndex)
+                this.parent._nestedNSIndex[this._name] = this;
         }
         private _name: string;
 
@@ -224,7 +229,7 @@ namespace FlowScript {
                 throw "Type error: A valid parent object is required.  If this is a root type, pass in 'null' as the parent value.";
 
             if (name !== void 0)
-                this.name = name;
+                this.name = name; // (this MUST be first before adding to allow the normal add process to index this item by name [creates the named index object])
 
             if (parent)
                 parent.add(this); // (sets the script reference as well)
@@ -243,8 +248,8 @@ namespace FlowScript {
                 this._initialized = true;
             }
 
-            if (this._nestedTypes)
-                for (var types = this._nestedTypes, i = 0, n = types.length; i < n; ++i)
+            if (this._nestedItems)
+                for (var types = this._nestedItems, i = 0, n = types.length; i < n; ++i)
                     types[i].initialize();
         }
 
@@ -266,9 +271,9 @@ namespace FlowScript {
             super.save(target);
 
             target.nestedTypes = [];
-            if (this.nestedTypes)
-                for (var i = 0, n = this.nestedTypes.length; i < n; ++i)
-                    target.nestedTypes[i] = this._nestedTypes[i].save();
+            if (this.nestedItems)
+                for (var i = 0, n = this.nestedItems.length; i < n; ++i)
+                    target.nestedTypes[i] = this._nestedItems[i].save();
 
             return target;
         }
@@ -283,7 +288,7 @@ namespace FlowScript {
 
                 if (target.nestedTypes)
                     for (var i = 0, n = target.nestedTypes.length; i < n; ++i)
-                        this.nestedTypes[i] = NamespaceObject.load(this, <ISavedComponent>target.nestedTypes[i]);
+                        this.nestedItems[i] = NamespaceObject.load(this, <ISavedComponent>target.nestedTypes[i]);
             }
 
             return this;
@@ -369,33 +374,35 @@ namespace FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        /** Checks if a type exists.  You can also provide a nested type path.
+        /** Checks if a namespace item exists.  You can also provide a nested type path.
           * For example, if the current type is 'A.B' within the 'A.B.C.D' namespace, then you could pass in 'C.D'.
           */
         exists(name: string, ignore?: NamespaceObject): boolean;
-        /** Checks if the given type exists under this type.
+        /** Checks if the given namespace item exists under this item.
           */
         exists(type: NamespaceObject, ignore?: NamespaceObject): boolean;
         exists(nameOrType: any, ignore?: NamespaceObject): boolean {
-            if (nameOrType === void 0 || nameOrType === null || !this._nestedTypesIndex) return false;
+            if (nameOrType === void 0 || nameOrType === null || !this._nestedNSIndex) return false;
             var paramType = typeof nameOrType;
             if (paramType === 'object' && nameOrType instanceof NamespaceObject) {
-                var type = this._nestedTypesIndex[(<NamespaceObject>nameOrType)._name];
+                var type = this._nestedNSIndex[(<NamespaceObject>nameOrType)._name];
                 return !!type && type != ignore;
             }
             var t = this.resolve(nameOrType);
             return !!t && t != ignore;
         }
 
-        /** Resolves a type path under this type.  You can provide a nested type path if desired.
+        /** Resolves a namespace path under this item.  You can provide a nested path if desired.
           * For example, if the current type is 'A.B' within the 'A.B.C.D' namespace, then you could pass in 'C.D'.
+          * If not found, then null is returned.
           * @param {function} requiredType A required type reference that the returned type must be an instance of.
           */
         resolve<T extends { new(...args: any[]): any }>(typePath: string, requiredType?: T): NamespaceObject {
+            if (typePath === void 0 || typePath === null || !this._nestedNSIndex) return null;
             var parts = (typeof typePath !== 'string' ? '' + typePath : typePath).split('.'), t: NamespaceObject = this;
             for (var i = (parts[0] ? 0 : 1), n = parts.length; i < n; ++i) {
                 // (note: 'parts[0]?0:1' is testing if the first entry is empty, which then starts at the next one [to support '.X.Y'])
-                var type = t._nestedTypesIndex[parts[i]];
+                var type = t._nestedNSIndex[parts[i]];
                 if (!type)
                     return null;
                 else
@@ -426,12 +433,12 @@ namespace FlowScript {
                 throw "Type error: Cannot add a type that is already the child of another type.";
             (<NamespaceObject>typeOrName)._parent = this;
             (<NamespaceObject>typeOrName)._script = isFlowScriptObject(this) ? <IFlowScript><any>this : this._script || (<NamespaceObject>typeOrName)._script;
-            if (!this._nestedTypes)
-                this._nestedTypes = [];
-            if (!this._nestedTypesIndex)
-                this._nestedTypesIndex = {};
-            this._nestedTypes.push(typeOrName);
-            this._nestedTypesIndex[(<NamespaceObject>typeOrName).name] = typeOrName;
+            if (!this._nestedItems)
+                this._nestedItems = [];
+            if (!this._nestedNSIndex)
+                this._nestedNSIndex = {};
+            this._nestedItems.push(typeOrName);
+            this._nestedNSIndex[(<NamespaceObject>typeOrName).name] = typeOrName;
             return typeOrName;
         }
 
@@ -448,7 +455,7 @@ namespace FlowScript {
 
             if (typeof typeOrName == 'object' && typeOrName instanceof NamespaceObject) {
                 var t = <NamespaceObject>typeOrName;
-                if (!this._nestedTypesIndex[t.name])
+                if (!this._nestedNSIndex[t.name])
                     throw "Cannot remove type: There is no child type '" + typeOrName + "' under '" + this.fullTypeName + "'.";
                 parent = this;
             }
@@ -458,9 +465,9 @@ namespace FlowScript {
             }
 
             if (t && parent) {
-                delete parent._nestedTypesIndex[t.name];
-                var i = parent._nestedTypes.indexOf(t);
-                if (i >= 0) parent._nestedTypes.splice(i, 1);
+                delete parent._nestedNSIndex[t.name];
+                var i = parent._nestedItems.indexOf(t);
+                if (i >= 0) parent._nestedItems.splice(i, 1);
                 t._parent = null;
                 t._script = null;
             }
