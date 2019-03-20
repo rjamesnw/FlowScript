@@ -61,20 +61,8 @@ interface Array<T> {
 
 // ############################################################################################################################
 
-/** The base namespace for all FlowScript types. */
-namespace FlowScript {
-    export var rootName = "FlowScript";
-    // ========================================================================================================================
 
-    export var undefined: any = void 0;
-    //export var 'undefined' = 'undefined';
-    //export var 'object' = 'object';
-    //export var 'function' = 'function';
-    //export var 'string' = 'string';
-    //export var 'number' = 'number';
-    //export var 'boolean' = 'boolean';
-
-
+namespace FlowScriptGlobals {
     // ========================================================================================================================
     // Integrate native types
 
@@ -94,6 +82,7 @@ namespace FlowScript {
         export interface IXMLHttpRequest extends XMLHttpRequest { }
         export interface IHTMLElement extends HTMLElement { }
         export interface IWindow extends Window { }
+        export interface IStorage extends Storage { }
     }
 
     export declare namespace NativeStaticTypes {
@@ -110,6 +99,7 @@ namespace FlowScript {
         export var StaticXMLHttpRequest: typeof XMLHttpRequest;
         export var StaticHTMLElement: typeof HTMLElement;
         export var StaticWindow: typeof Window;
+        export var StaticStorage: typeof Storage;
     }
 
     export interface IStaticGlobals extends Window {
@@ -127,12 +117,29 @@ namespace FlowScript {
         XMLHttpRequest: typeof NativeStaticTypes.StaticXMLHttpRequest;
         HTMLElement: typeof NativeStaticTypes.StaticHTMLElement;
         Window: typeof NativeStaticTypes.StaticWindow;
+        Storage: typeof NativeStaticTypes.StaticStorage;
     }
+}
+
+/** The base namespace for all FlowScript types. */
+namespace FlowScript {
+    export var rootName = "FlowScript";
+    // ========================================================================================================================
+
+    export var undefined: any = void 0;
+    //export var 'undefined' = 'undefined';
+    //export var 'object' = 'object';
+    //export var 'function' = 'function';
+    //export var 'string' = 'string';
+    //export var 'number' = 'number';
+    //export var 'boolean' = 'boolean';
+
+    export import Globals = FlowScriptGlobals;
 
     /** A reference to the host's global environment (convenient for nested TypeScript code, or when using strict mode [where this=undefined]).
       * This provides a faster, cleaner, consistent, and reliable method of referencing the global environment scope without having to resort to workarounds.
       */
-    export var global: IStaticGlobals = function () { }.constructor("return this")(); // (note: this is named as 'global' to support the NodeJS "global" object as well [for compatibility, or to ease portability])
+    export var global: Globals.IStaticGlobals = function () { }.constructor("return this")(); // (note: this is named as 'global' to support the NodeJS "global" object as well [for compatibility, or to ease portability])
 
     // =======================================================================================================================
 
@@ -163,7 +170,7 @@ namespace FlowScript {
     namespace Polyfills {
         // -------------------------------------------------------------------------------------------------------------------
 
-        interface _window extends NativeTypes.IWindow { [name: string]: any }
+        interface _window extends Window { [name: string]: any }
         var window = <_window>global;
         var String = global.String;
         var Array = global.Array;
@@ -959,7 +966,7 @@ namespace FlowScript {
         */
         export function erase(obj: { [name: string]: any }, release = true): {} {
             for (var p in obj)
-                if ((p != "__proto__" && p != 'constructor' && <NativeTypes.IObject>obj).hasOwnProperty(p))
+                if ((p != "__proto__" && p != 'constructor' && <Globals.NativeTypes.IObject>obj).hasOwnProperty(p))
                     if (release || p == 'dispose' && typeof obj[p] != 'function')
                         obj[p] = void 0;
             return obj;
@@ -1109,7 +1116,7 @@ namespace FlowScript {
             // (Note: There must be exactly 65 characters [64 + 1 for padding])
             // (Note: 'String' objects MUST be used in order for the encoding functions to populate the reverse lookup indexes)
 
-            function __CreateCharIndex(str: NativeTypes.IString) {
+            function __CreateCharIndex(str: String) {
                 if (str.length < 65)
                     throw "65 characters expected for base64 encoding characters (last character is for padding), but only " + str.length + " are specified.";
                 if (typeof str !== "object" || !(str instanceof String))
@@ -1545,19 +1552,117 @@ namespace FlowScript {
 
         // ------------------------------------------------------------------------------------------------------------------
 
-        export function getStorage(type: StorageType): Storage { // (known issues source: http://caniuse.com/#search=web%20storage)
+        /** Returns the requested storage type, or throws an error if not supported. 
+         * @param type The type of storage to return.
+         * @param ignoreIfMissing If true, then null is returned if the storage type is not supported (default is false, which throws an exception instead).
+         */
+        export function getStorage(type: StorageType, ignoreIfMissing = false): Storage { // (known issues source: http://caniuse.com/#search=web%20storage)
             switch (type) {
                 case StorageType.Local:
                     if (!hasLocalStorage)
-                        throw "Local storage is either not supported, or disabled. Note that local storage is sometimes disabled in mobile browsers while in 'private' mode, or in IE when loading files directly from the file system.";
+                        if (ignoreIfMissing)
+                            return null;
+                        else
+                            throw "Storage.getStorage(): Local storage is either not supported, or disabled. Note that local storage is sometimes disabled in mobile browsers while in 'private' mode, or in IE when loading files directly from the file system.";
                     return localStorage;
                 case StorageType.Session:
                     if (!hasSessionStorage)
-                        throw "Session storage is either not supported, or disabled. Note that local storage is sometimes disabled in mobile browsers while in 'private' mode, or in IE when loading files directly from the file system.";
+                        if (ignoreIfMissing)
+                            return null;
+                        else
+                            throw "Storage.getStorage(): Session storage is either not supported, or disabled. Note that local storage is sometimes disabled in mobile browsers while in 'private' mode, or in IE when loading files directly from the file system.";
                     return sessionStorage;
             }
-            throw "Invalid web storage type value: '" + type + "'";
+            throw "Storage.getStorage(): Invalid web storage type value: '" + type + "'";
+        }
 
+        // ------------------------------------------------------------------------------------------------------------------
+
+        /** Returns the current size of a selected storage (in bytes).
+         * @param type The type of storage to check.
+         * @param ignoreErrors If true, 0 is returned instead of an exception if a storage is not supported.
+         */
+        export function getStorageSize(type: StorageType | Storage, ignoreErrors = false): number { // (known issues source: http://caniuse.com/#search=web%20storage)
+            var store = type instanceof global.Storage ? type : getStorage(type, ignoreErrors);
+            if (store == null) return 0;
+            var size = 0;
+            for (var i = 0, n = store.length, v: any; i < n; ++i)
+                size += (store.key(i).length + (v = store.getItem(store.key(i)), typeof v == "string" ? v.length : 0)) * 2; // (*2 since it's Unicode, not ASCII)
+            return size;
+        }
+
+        /** Returns the total storage size allowed for a selected storage (in bytes).
+         * WARNIG: This removes all current items, clears the storage, detects the size, and restores the values when done.
+         * @param type The type of storage to check.
+         * @param ignoreErrors If true, 0 is returned instead of an exception if a storage is not supported.
+         */
+        export function getStorageTotalSize(type: StorageType | Storage, ignoreErrors = false): number { // (known issues source: http://caniuse.com/#search=web%20storage)
+            var store = type instanceof global.Storage ? type : getStorage(type, ignoreErrors);
+            if (store == null) return 0;
+            var test = (_size: number) => { try { store.setItem("_", ""); store.setItem('_', new Array(_size + 1).join('0')); } catch (_ex) { return false; } return true; }
+            // ... step 1: backup and clear the storage ...
+            var size = 0, i = 0, backup = emptyStorage(store), low = 0, high = 1024 * 1024, upperLimit = 1024 * 1024 * 1024; // (note: actually buffer size is *2 due to Unicode characters)
+            store.clear();
+            // ... step 2: find the upper starting point: start with 1mb and double until we throw, or >=1gb is reached ...
+            while (high < upperLimit && test(high)) {
+                low = high; // (low will start at the last working size)
+                high *= 2;
+            }
+            var half = ~~((high - low + 1) / 2); // (~~ is a faster Math.floor())
+            // ... step 3: starting with the halfway point and do a binary search ...
+            high -= half;
+            while (high > 0) {
+                while (high > 0 && test(high)) high += ~~(half /= 2);
+                while (high > 0 && !test(high)) high -= ~~(half /= 2);
+            }
+            // ... step 4: restore the cleared items and return the detected size ...
+            Storage.store(store, backup);
+            return high * 2; // (*2 because of Unicode storage)
+        }
+
+        export var localStorageMaxSize = getStorageTotalSize(StorageType.Local, true);
+        export var sessionStorageMaxSize = getStorageTotalSize(StorageType.Session, true);
+
+        /** Returns the remaining storage size not yet used (in bytes).
+         * @param type The type of storage to check.
+         * @param ignoreErrors If true, 0 is returned instead of an exception if a storage is not supported.
+         */
+        export function getStorageSizeRemaining(type: StorageType | Storage, ignoreErrors = false): number { // (known issues source: http://caniuse.com/#search=web%20storage)
+            var store = type instanceof global.Storage ? type : getStorage(type, ignoreErrors);
+            if (store == null) return 0;
+            switch (type) {
+                case StorageType.Local: return localStorageMaxSize - getStorageSize(store, ignoreErrors);
+                case StorageType.Session: return sessionStorageMaxSize - getStorageSize(store, ignoreErrors);
+            }
+            return 0;
+        }
+
+        // ------------------------------------------------------------------------------------------------------------------
+
+        /** Empties the specified storage and returns a backup of all the items, or null if 'ignoreErrors' is true and the storage is not supported.  */
+        export function emptyStorage(type: StorageType | Storage, ignoreErrors = false): {} | null {
+            var store = type instanceof global.Storage ? type : getStorage(type, ignoreErrors);
+            if (store = null) return null;
+            var o: Object = {};
+            for (var i = 0, n = store.length, v: any; i < n; ++i)
+                o[store.key(i)] = store.getItem(store.key(i));
+            store.clear();
+            return o;
+        }
+
+        /** Adds the specified data to the selected storage target, optionally clearing the whole storage first (does not clear by default).  */
+        export function store(type: StorageType | Storage, data: Object, clearFirst = false, ignoreErrors = false): Object {
+            if (typeof data == 'object') {
+                var store = type instanceof global.Storage ? type : getStorage(type, ignoreErrors);
+                if (store = null) return null;
+                if (clearFirst) store.clear();
+                for (var p in data)
+                    if (data.hasOwnProperty(p))
+                        store.setItem(p, data[p]);
+            }
+            else if (!ignoreErrors)
+                throw "Storage.store(): Only an object with keys and values is supported.";
+            return data;
         }
 
         // ------------------------------------------------------------------------------------------------------------------
@@ -1750,7 +1855,7 @@ namespace FlowScript {
         function __() { this.constructor = derivedType; }
         __.prototype = baseType.prototype;
         // ... copy any already defined properties in the derived prototype to be replaced, if any ...
-        var newProto: NativeTypes.IObject = new (<any>__)();
+        var newProto: Globals.NativeTypes.IObject = new (<any>__)();
         for (let p in derivedType.prototype)
             if (derivedType.prototype.hasOwnProperty(p))
                 newProto[p] = derivedType.prototype[p];

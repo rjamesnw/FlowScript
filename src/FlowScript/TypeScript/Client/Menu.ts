@@ -19,9 +19,12 @@
         x = 0;
         y = 32;
 
+        private _dragMouseStartX: number;
+        private _dragMouseStartY: number;
         private _dragOfsX: number;
         private _dragOfsY: number;
         private _dragStart = false;
+        private _moved = false; // (this is true when movement is detected, and only reset on mouse down; supports dragging via buttons [any window part] for mobile reasons)
 
         get isVisible(): boolean { return this.menuRoot && this.menuRoot.style && this.menuRoot.style.display != "none"; }
 
@@ -48,7 +51,7 @@
 
             this.menuBody.rootNode.addEventListener("click", (ev) => { // (watch for click on any button)
                 var el = <HTMLElement>ev.target;
-                if (el && el.nodeName == "BUTTON" && el.id) {
+                if (!this._moved && el && el.nodeName == "BUTTON" && el.id) {
                     if (this.onOptionSelected)
                         this.onOptionSelected(this, (<HTMLElement>ev.target).id);
                     ev.stopImmediatePropagation();
@@ -65,23 +68,32 @@
             // ... setup drag-n-drop for this menu ...
 
             this.menuRoot.addEventListener("mousedown", (ev: MouseEvent) => {
-                this._dragOfsX = this.x - mouseX;
-                this._dragOfsY = this.y - mouseY; // (get the offset from x,y to where the user actually clicked on the window)
-                this._dragStart = true;
-                ev.preventDefault();
-                return false;
+                if (!this._dragStart) {
+                    this._dragMouseStartX = mouseX;
+                    this._dragMouseStartY = mouseY;
+                    this._dragOfsX = this.x - mouseX;
+                    this._dragOfsY = this.y - mouseY; // (get the offset from x,y to where the user actually clicked on the window)
+                    this._dragStart = true;
+                    this._moved = false;
+                    //ev.preventDefault();
+                    return false;
+                }
             }, false);
             window.addEventListener("mouseup", (ev: MouseEvent) => {
-                this._dragStart = false;
-                ev.preventDefault();
-                return false;
+                if (this._dragStart) {
+                    this._dragStart = false;
+                    ev.stopImmediatePropagation();
+                    ev.preventDefault();
+                    return false;
+                }
             }, true);
             window.addEventListener("mousemove", (ev: MouseEvent) => {
-                if (this._dragStart) {
+                if (this._dragStart && this._dragMouseStartX != mouseX && this._dragMouseStartY != mouseY) {
                     this.setPos(mouseX + this._dragOfsX, mouseY + this._dragOfsY);
                     this.moveInView();
+                    this._moved = true;
+                    ev.preventDefault();
                 }
-                ev.preventDefault();
             }, true);
             window.addEventListener("resize", (ev: UIEvent) => {
                 this.moveInView();
@@ -139,6 +151,7 @@
             if (this.menuTitle)
                 this.menuTitle.innerHTML = menuTitle || menuView.rootElement.title || "";
             this.menuRoot.style.display = "";
+            this.moveInView();
             return this;
         }
 

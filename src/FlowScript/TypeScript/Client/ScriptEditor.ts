@@ -652,7 +652,7 @@
                 var type = this.typeTree.selectedNode.$__treeItem;
                 if (type) {
                     renamePrompt(this.typeTree.selectedNode, type.name, "Rename type to:",
-                        (el, oldValue, newValue) => { type.name = newValue; this.typeTree.refresh(); this.refreshComponentDetails(); })
+                        (el, oldValue, newValue) => { type.name = newValue; this.typeTree.refresh(); this.refreshComponentDetails(); this.hideTypeMenu(false); })
                 }
             }
             else alert("No type node is selected. Select a node item to rename it.");
@@ -668,6 +668,7 @@
                     new Component(nsItem, ComponentTypes.Functional, _name, "New Functional Component")
                     this.typeTree.refresh();
                     this.refreshComponentDetails();
+                    this.hideTypeMenu(false);
                 }
             }
             else alert("No type node is selected. Select a type node to add a new element under.");
