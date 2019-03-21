@@ -41,6 +41,7 @@
     "visualtree.ts",
     "views.ts",
     "projects.ts",
+    "filemanager.ts",
     "system.ts",
     "bootup.ts" // This MUST be LAST.
   ],

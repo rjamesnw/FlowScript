@@ -1526,10 +1526,11 @@ namespace FlowScript {
 
         function _storageAvailable(storageType: "localStorage" | "sessionStorage"): boolean { // (https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API#Testing_for_support_vs_availability)
             try {
-                var storage = window[storageType],
-                    x = '$__storage_test__$';
-                storage.setItem(x, x);
-                storage.removeItem(x);
+                var storage = window[storageType], x = '$__storage_test__$';
+                if (storage.length == 0) { // (if items exist we can skip the test [if even one item exists at max size then the test will cause a false negative])
+                    storage.setItem(x, x); // (no items exist, so we should test this)
+                    storage.removeItem(x);
+                }
                 return true;
             }
             catch (e) {
@@ -1591,6 +1592,9 @@ namespace FlowScript {
             return size;
         }
 
+        /** How far the initial exponential scan goes before the binary search test begins during auto-detection (defaults to 1GB when undefined). */
+        export var storageSizeTestLimit: number;
+
         /** Returns the total storage size allowed for a selected storage (in bytes).
          * WARNIG: This removes all current items, clears the storage, detects the size, and restores the values when done.
          * @param type The type of storage to check.
@@ -1599,29 +1603,58 @@ namespace FlowScript {
         export function getStorageTotalSize(type: StorageType | Storage, ignoreErrors = false): number { // (known issues source: http://caniuse.com/#search=web%20storage)
             var store = type instanceof global.Storage ? type : getStorage(type, ignoreErrors);
             if (store == null) return 0;
-            var test = (_size: number) => { try { store.setItem("_", ""); store.setItem('_', new Array(_size + 1).join('0')); } catch (_ex) { return false; } return true; }
+            try { var maxsize = +store.getItem("$__fs_maxsize"); if (maxsize > 0) return maxsize; } catch (ex) { } // (return a cached value, which is faster)
+            var testkey = "$__fs_test"; // (NOTE: Test key is part of the storage!!! The key length should also be even.)
+            var test = function (_size: number) { try { store.removeItem(testkey); store.setItem(testkey, new Array(_size + 1).join('0')); } catch (_ex) { return false; } return true; }
             // ... step 1: backup and clear the storage ...
-            var size = 0, i = 0, backup = emptyStorage(store), low = 0, high = 1024 * 1024, upperLimit = 1024 * 1024 * 1024; // (note: actually buffer size is *2 due to Unicode characters)
-            store.clear();
-            // ... step 2: find the upper starting point: start with 1mb and double until we throw, or >=1gb is reached ...
-            while (high < upperLimit && test(high)) {
-                low = high; // (low will start at the last working size)
-                high *= 2;
+            var backup = emptyStorage(store), low = 0, high = 1, upperLimit = ~~(((storageSizeTestLimit || 1024 * 1024 * 1024) + 1) / 2), upperTest; // (note: actually buffer size is *2 due to Unicode characters)
+            if (testkey in backup) delete backup[testkey]; // (this is only in case of previous failures that may have caused the test entry to remain)
+            var error: any = null;
+            try {
+                // ... step 2: find the upper starting point: start with 1mb and double until we throw, or >=1gb is reached ...
+                while ((upperTest = test(high)) && high < upperLimit) {
+                    low = high; // (low will start at the last working size)
+                    high *= 2;
+                }
+                if (!upperTest) { // (when 'upperTest' is false, the change from low to high passed the max storage boundary, so now we need to run the binary search detection)
+                    var half = ~~((high - low + 1) / 2); // (~~ is a faster Math.floor())
+                    // ... step 3: starting with the halfway point and do a binary search ...
+                    high -= half;
+                    while (half > 0)
+                        high += (half = ~~(half / 2)) * (test(high) ? 1 : -1);
+                    high = testkey.length + high;
+                }
+                if (high > upperLimit) high = upperLimit;
             }
-            var half = ~~((high - low + 1) / 2); // (~~ is a faster Math.floor())
-            // ... step 3: starting with the halfway point and do a binary search ...
-            high -= half;
-            while (high > 0) {
-                while (high > 0 && test(high)) high += ~~(half /= 2);
-                while (high > 0 && !test(high)) high -= ~~(half /= 2);
-            }
+            catch (ex) { console.log("getStorageTotalSize(): Error: ", ex); error = ex; high = 0; } // (in case of any unforeseen errors we don't want to lose the backed up data)
+            store.removeItem(testkey);
             // ... step 4: restore the cleared items and return the detected size ...
             Storage.store(store, backup);
+            if (error && !ignoreErrors) throw error;
+            if (high > 0 && !error)
+                try { store.setItem("$__fs_maxsize", '' + (high * 2)); } catch (ex) { console.log("getStorageTotalSize(): Could not cache storage max size - out of space."); }
             return high * 2; // (*2 because of Unicode storage)
         }
 
-        export var localStorageMaxSize = getStorageTotalSize(StorageType.Local, true);
-        export var sessionStorageMaxSize = getStorageTotalSize(StorageType.Session, true);
+        //function getStorageTotalSize(upperLimit/*in bytes*/) {
+        //    var store = localStorage, testkey = "$__test"; // (NOTE: Test key is part of the storage!!! It should also be an even number of characters)
+        //    var test = function (_size) { try { store.removeItem(testkey); store.setItem(testkey, new Array(_size + 1).join('0')); } catch (_ex) { return false; } return true; }
+        //    var backup = {};
+        //    for (var i = 0, n = store.length; i < n; ++i) backup[store.key(i)] = store.getItem(store.key(i));
+        //    store.clear(); // (you could iterate over the items and backup first then restore later)
+        //    var low = 0, high = 1, _upperLimit = (upperLimit || 1024 * 1024 * 1024) / 2, upperTest = true;
+        //    while ((upperTest = test(high)) && high < _upperLimit) { low = high; high *= 2; }
+        //    if (!upperTest) {
+        //        var half = ~~((high - low + 1) / 2); // (~~ is a faster Math.floor())
+        //        high -= half;
+        //        while (half > 0) high += (half = ~~(half / 2)) * (test(high) ? 1 : -1);
+        //        high = testkey.length + high;
+        //    }
+        //    if (high > _upperLimit) high = _upperLimit;
+        //    store.removeItem(testkey);
+        //    for (var p in backup) store.setItem(p, backup[p]);
+        //    return high * 2; // (*2 because of Unicode storage)
+        //}
 
         /** Returns the remaining storage size not yet used (in bytes).
          * @param type The type of storage to check.
@@ -1640,11 +1673,11 @@ namespace FlowScript {
         // ------------------------------------------------------------------------------------------------------------------
 
         /** Empties the specified storage and returns a backup of all the items, or null if 'ignoreErrors' is true and the storage is not supported.  */
-        export function emptyStorage(type: StorageType | Storage, ignoreErrors = false): {} | null {
+        export function emptyStorage(type: StorageType | Storage, ignoreErrors = false): Object | null {
             var store = type instanceof global.Storage ? type : getStorage(type, ignoreErrors);
-            if (store = null) return null;
+            if (store == null) return null;
             var o: Object = {};
-            for (var i = 0, n = store.length, v: any; i < n; ++i)
+            for (var i = 0, n = store.length; i < n; ++i)
                 o[store.key(i)] = store.getItem(store.key(i));
             store.clear();
             return o;
@@ -1654,7 +1687,7 @@ namespace FlowScript {
         export function store(type: StorageType | Storage, data: Object, clearFirst = false, ignoreErrors = false): Object {
             if (typeof data == 'object') {
                 var store = type instanceof global.Storage ? type : getStorage(type, ignoreErrors);
-                if (store = null) return null;
+                if (store == null) return null;
                 if (clearFirst) store.clear();
                 for (var p in data)
                     if (data.hasOwnProperty(p))
@@ -1664,6 +1697,16 @@ namespace FlowScript {
                 throw "Storage.store(): Only an object with keys and values is supported.";
             return data;
         }
+
+        export var localStorageMaxSize = getStorageTotalSize(StorageType.Local, true);
+        console.log("Maximum local storage: " + localStorageMaxSize);
+        console.log("Local storage used space: " + getStorageSize(StorageType.Local));
+        console.log("Free local storage: " + getStorageSizeRemaining(StorageType.Local));
+
+        export var sessionStorageMaxSize = getStorageTotalSize(StorageType.Session, true);
+        console.log("Maximum local session storage: " + sessionStorageMaxSize);
+        console.log("Local session storage used space: " + getStorageSize(StorageType.Session));
+        console.log("Free local session storage: " + getStorageSizeRemaining(StorageType.Session));
 
         // ------------------------------------------------------------------------------------------------------------------
 
