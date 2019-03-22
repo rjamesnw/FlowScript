@@ -1,15 +1,15 @@
 ﻿namespace FlowScript {
     // ========================================================================================================================
 
-    export class Project {
+    export class Project extends TrackableObject {
         // --------------------------------------------------------------------------------------------------------------------
 
-        /** The script instance for this project. */
-        get script() { return this._script; }
-        protected _script: IFlowScript;
+        //x /** The script instance for this project. */
+        //x get script() { return this._script; }
+        //x protected _script: IFlowScript;
 
-        /** The root directory for this project. */
-        readonly directoryRoot: FileSystem.Directory;
+        /** The file storage directory for this project. */
+        readonly directory: FileSystem.Directory;
 
         // --------------------------------------------------------------------------------------------------------------------
         // Create a type of trash-bin to hold expressions so the user can restore them, or delete permanently.
@@ -33,13 +33,21 @@
             /** The title of the project. */ public title: string,
             /** The project's description. */ public description?: string
         ) {
-            this._script = FlowScript.createNew();
+            super(FlowScript.createNew());
+            if (!FileSystem.isValidFileName(title))
+                throw "The project title '" + title + "' must also be a valid file name. Don't include special directory characters, such as: \\ / ? % * ";
+            this.directory = FileSystem.fileManager.createDirectory(this._id);
         }
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        save(): string {
-            return this.script.saveToStorage(this.title);
+        save(): ISavedTrackableObject {
+            var projectJson = JSON.stringify(this);
+            var json = this.script.serialize();
+            this.directory.createFile(this._id + ".fsproj", projectJson);
+            this.directory.createFile(this.script.safeFullTypeName + ".fs", json);
+            //x return Storage.saveProjectData(projectName, scriptName || "Script", json, scriptVersion);
+            //x return this.script.saveToStorage(this.title);
         }
 
         // --------------------------------------------------------------------------------------------------------------------

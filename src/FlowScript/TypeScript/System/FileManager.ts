@@ -268,16 +268,30 @@ namespace FlowScript.FileSystem {
             this.root = new Directory(this);
         }
 
-        // --------------------------------------------------------------------------------------------------------------------
+        /** Creates a directory under the user root endpoint. */
+        createDirectory(path: string): Directory {
+            var item = this.add(path);
+            if (!(item instanceof Directory)) return null;
+            return item;
+        }
+
+       // --------------------------------------------------------------------------------------------------------------------
     }
 
     // ========================================================================================================================
+
+    export var restrictedFilenameRegex = /\/\\\?%\*:\|"<>\./g;
+
+    export function isValidFileName(name: string) {
+        return name && restrictedFilenameRegex.test(name);
+    }
 
     /** Manages the global file system for FlowScript by utilizing local storage space and remote server space. 
      * The file manager tries to keep recently accessed files local (while backed up to remove), and off-loads
      * less-accessed files to save space.
      */
     export var fileManager: FileManager;
+
 
     // ========================================================================================================================
 }
