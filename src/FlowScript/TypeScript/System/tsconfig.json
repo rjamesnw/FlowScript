@@ -16,6 +16,8 @@
     "flowscriptrt.ts",
     "namespaceobject.ts",
     "NamedReference.ts",
+    "user.ts",
+    "filemanager.ts",
     "flowscriptmain.ts",
     "expressions.ts",
     "property.ts",
@@ -41,7 +43,6 @@
     "visualtree.ts",
     "views.ts",
     "projects.ts",
-    "filemanager.ts",
     "system.ts",
     "bootup.ts" // This MUST be LAST.
   ],

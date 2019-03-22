@@ -4,6 +4,8 @@
 // ############################################################################################################################
 // Extend the array with some LINQ-style functions.
 
+type Writeable<T> = { -readonly [P in keyof T]: T[P] }; // (now supported since 2.8! :))
+
 interface Array<T> {
     last: () => T;
     first: () => T;
@@ -1102,10 +1104,10 @@ namespace FlowScript {
             export enum Base64Modes {
                 /** Use standard Base64 encoding characters. */
                 Standard,
-                /** Use Base64 encoding that is compatible with URIs (to help encode query values). */
+                /** Use Base64 encoding that is compatible with URI query values. */
                 URI,
                 /** Use custom user-supplied Base64 encoding characters (the last character is used for padding, so there should be 65 characters total).
-                * Set 'Security.__64BASE_ENCODING_CHARS_CUSTOM' to your custom characters for this option (defaults to standard characters).
+                * Set 'Encoding.__64BASE_ENCODING_CHARS_CUSTOM' to your custom characters for this option (defaults to standard characters).
                 */
                 Custom
             };
@@ -1131,10 +1133,10 @@ namespace FlowScript {
 
             /** Applies a base-64 encoding to the a value.  The characters used are selected based on the specified encoding 'mode'.
             * The given string is scanned for character values greater than 255 in order to auto detect the character bit depth to use.
-            * @param (string) value The string value to encode.  If the value is not a string, it will be converted to one.
-            * @param (Base64Modes) mode Selects the type of encoding characters to use (default is Standard).
-            * @param (boolean) usePadding If true (default), Base64 padding characters are added to the end of strings that are no divisible by 3.
-            *                             Exception: If the mode is URI encoding, then padding is false by default.
+            * @param {string} value The string value to encode.  If the value is not a string, it will be converted to one.
+            * @param {Base64Modes} mode Selects the type of encoding characters to use (default is Standard).
+            * @param {boolean} usePadding If true (default), Base64 padding characters are added to the end of strings that are no divisible by 3.
+            *                             Exception: If the mode is URI encoding, then padding is false by default since padding may contain invalid characters for query values.
             */
             export function base64Encode(value: string, mode: Base64Modes = Base64Modes.Standard, usePadding?: boolean): string {
                 if (value === void 0 || value === null) value = ""; else value = "" + value;
@@ -1206,8 +1208,8 @@ namespace FlowScript {
 
             /** Decodes a base-64 encoded string value.  The characters used for decoding are selected based on the specified encoding 'mode'.
             * The given string is scanned for character values greater than 255 in order to auto detect the character bit depth to use.
-            * @param (string) value The string value to encode.  If the value is not a string, it will be converted to one.
-            * @param (Base64Modes) mode Selects the type of encoding characters to use (default is Standard).
+            * @param {string} value The string value to encode.  If the value is not a string, it will be converted to one.
+            * @param {Base64Modes} mode Selects the type of encoding characters to use (default is Standard).
             */
             export function base64Decode(value: string, mode: Base64Modes = Base64Modes.Standard): string {
                 if (value === void 0 || value === null) value = ""; else value = "" + value;

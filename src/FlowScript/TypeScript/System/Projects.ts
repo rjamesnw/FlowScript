@@ -8,6 +8,9 @@
         get script() { return this._script; }
         protected _script: IFlowScript;
 
+        /** The root directory for this project. */
+        readonly directoryRoot: FileSystem.Directory;
+
         // --------------------------------------------------------------------------------------------------------------------
         // Create a type of trash-bin to hold expressions so the user can restore them, or delete permanently.
 

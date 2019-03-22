@@ -20,13 +20,13 @@ namespace FlowScript {
     export class TrackableObject {
         // --------------------------------------------------------------------------------------------------------------------
         static objects: { [id: string]: any } = {};
-        static register(obj: TrackableObject): string { var id = obj._id || (obj._id = Utilities.createGUID(false)); TrackableObject.objects[id] = obj; return id; }
+        static register(obj: TrackableObject): string { var id = obj._id || ((<Writeable<TrackableObject>>obj)._id = Utilities.createGUID(false)); TrackableObject.objects[id] = obj; return id; }
         //? static unreconciledQueue: IUnreconciledReference[];
         // --------------------------------------------------------------------------------------------------------------------
         /** The globally unique identified for this object, which allows tracking this object on multiple machines.  */
-        _id: string = TrackableObject.register(this);
+        readonly _id: string = TrackableObject.register(this);
         /** The constructor function name used to create this object instance. */
-        _type: string = Utilities.getFunctionName(this.constructor);
+        readonly _type: string = Utilities.getFunctionName(this.constructor);
         // --------------------------------------------------------------------------------------------------------------------
         /** The script instance this object belongs to. Derived types should override this to return the proper reference. */
         get script(): IFlowScript { return this._script; }
@@ -42,8 +42,8 @@ namespace FlowScript {
         }
         load(target?: ISavedTrackableObject): this {
             if (target) {
-                this._id = target.id;
-                this._type = target.type;
+                (<Writeable<TrackableObject>>this)._id = target.id;
+                (<Writeable<TrackableObject>>this)._type = target.type;
             }
             return this;
         }
