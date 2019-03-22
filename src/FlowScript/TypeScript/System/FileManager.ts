@@ -203,6 +203,23 @@ namespace FlowScript.FileSystem {
     export class Directory extends DirectoryItem {
         constructor(fileManager: FileManager) { super(fileManager); }
 
+        /** Returns the directory path minus the filename (up to the last name that is followed by a directory separator,). 
+         * Since the file API does not support special character such as '.' or '..', these are ignored as directory characters (but not removed).
+         * Examples:
+         * - "/A/B/C/" => "/A/B/C"
+         * - "A/B/C" => "A/B"
+         * - "//A/B/C//" => "/A/B/C"
+         * - "/" => "/"
+         * - "" => ""
+         */
+        static getDirectoryPath(filepath: string) { // "/" 2:[0:,1:]
+            if (!filepath) return "";
+            var parts = filepath.replace(/\\/g, '/').split('/'), i1 = 0, i2 = parts.length - 2;
+            while (i1 < parts.length && !parts[i1]) i1++;
+            while (i2 > i1 && !parts[i2]) i2--;
+            return (i1 > 0 ? "/" : "") + parts.slice(i1, i2 + 1).join('/');
+        }
+
         getFile(filePath: string): File {
             var item = this.resolve(filePath);
             if (!(item instanceof File)) return null;
@@ -213,6 +230,10 @@ namespace FlowScript.FileSystem {
             var item = this.resolve(path);
             if (!(item instanceof Directory)) return null;
             return item;
+        }
+
+        createFile(filePath: string): File {
+
         }
 
         getJSONStructure() {
@@ -275,7 +296,7 @@ namespace FlowScript.FileSystem {
             return item;
         }
 
-       // --------------------------------------------------------------------------------------------------------------------
+        // --------------------------------------------------------------------------------------------------------------------
     }
 
     // ========================================================================================================================
