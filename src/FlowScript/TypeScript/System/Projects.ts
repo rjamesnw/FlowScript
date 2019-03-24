@@ -44,7 +44,7 @@
         save(): ISavedTrackableObject {
             var projectJson = JSON.stringify(this);
             var json = this.script.serialize();
-            this.directory.createFile(this._id + ".fsproj", projectJson);
+            this.directory.createFile(this._id + ".fsp", projectJson);
             this.directory.createFile(this.script.safeFullTypeName + ".fs", json);
             //x return Storage.saveProjectData(projectName, scriptName || "Script", json, scriptVersion);
             //x return this.script.saveToStorage(this.title);

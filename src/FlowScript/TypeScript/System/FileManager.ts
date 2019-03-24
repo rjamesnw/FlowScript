@@ -20,8 +20,16 @@ namespace FlowScript.FileSystem {
         reviewTimerHandle = void 0;
     }
 
+    /** Returns slits and returns the path parts, validating each one and throwign an exception if any are invalid. */
+    export function getPathParts(path: string) {
+        var parts = (typeof path !== 'string' ? '' + path : path).replace(/\\/g, '/').split('/');
+        for (var i = 0, n = parts.length; i < n; ++i)
+            if (!isValidFileName(parts[i])) throw "The path '" + path + "' contains invalid characters in '" + parts[i] + "'.";
+        return parts;
+    }
+
     export class DirectoryItem {
-        private _fileManager: FileManager;
+        protected _fileManager: FileManager;
 
         /** Holds the UTC time the item was stored locally. If this is undefined then the item is in memory only, which might result in data loss if not stored on the server. */
         storedLocally: Date;
@@ -70,15 +78,17 @@ namespace FlowScript.FileSystem {
         //get type(): string { return this._type; }
         //private _type: string;
 
-        private _childItems: DirectoryItem[] = [];
-        private _childItemsByName: { [index: string]: DirectoryItem } = {};
+        protected _childItems: DirectoryItem[] = [];
+        protected _childItemsByName: { [index: string]: DirectoryItem } = {};
+
+        get hasChildren() { return !!(this._childItems && this._childItems.length); }
 
         /** The full path + item name. */
         get absolutePath(): string { return this._parent && this._parent.absolutePath + '/' + this._name || this._name; }
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        constructor(fileManager: FileManager) { this._fileManager = fileManager; }
+        constructor(fileManager: FileManager, parent?: DirectoryItem) { this._fileManager = fileManager; this.parent = parent; }
 
         toString() { return this.absolutePath; }
 
@@ -92,7 +102,7 @@ namespace FlowScript.FileSystem {
           */
         exists(item: DirectoryItem, ignore?: DirectoryItem): boolean;
         exists(nameOrItem: DirectoryItem | string, ignore?: DirectoryItem): boolean {
-            if (nameOrItem === void 0 || nameOrItem === null || !this._childItems) return false;
+            if (nameOrItem === void 0 || nameOrItem === null || !this.hasChildren) return false;
             if (typeof nameOrItem === 'object' && nameOrItem instanceof DirectoryItem) {
                 var item = this._childItemsByName[nameOrItem._name];
                 return !!item && item != ignore;
@@ -102,15 +112,15 @@ namespace FlowScript.FileSystem {
         }
 
         /** Resolves a namespace path under this item.  You can provide a nested path if desired.
-          * For example, if the current item is 'A.B' within the 'A.B.C.D' namespace, then you could pass in 'C.D'.
+          * For example, if the current item is 'A/B' within the 'A/B/C/D' path, then you could pass in 'C/D'.
           * If not found, then null is returned.
           * @param {function} typeFilter The type that the returned item must be a derivative of.
           */
         resolve<T extends DirectoryItem>(itemPath: string, typeFilter?: new (...args: any[]) => T): T {
-            if (itemPath === void 0 || itemPath === null || !this._childItems) return null;
-            var parts = (typeof itemPath !== 'string' ? '' + itemPath : itemPath).split('.'), t: DirectoryItem = this;
+            if (itemPath === void 0 || itemPath === null || !this.hasChildren) return null;
+            var parts = getPathParts(itemPath), t: DirectoryItem = this;
             for (var i = (parts[0] ? 0 : 1), n = parts.length; i < n; ++i) {
-                // (note: 'parts[0]?0:1' is testing if the first entry is empty, which then starts at the next one [to support '.X.Y'])
+                // (note: 'parts[0]?0:1' is testing if the first entry is empty, which then starts at the next one [to support '/X/Y'])
                 var item = t._childItemsByName[parts[i]];
                 if (!item)
                     return null;
@@ -155,7 +165,7 @@ namespace FlowScript.FileSystem {
             if (itemOrName === void 0 || itemOrName === null)
                 throw "Cannot remove an empty name/path from directory '" + this.absolutePath + "'.";
 
-            if (!this._childItems) return null;
+            if (!this.hasChildren) return null;
 
             var parent: DirectoryItem; // (since types can be added as roots to other types [i.e. no parent references], need to remove item objects as immediate children, not via 'resolve()')
 
@@ -201,7 +211,7 @@ namespace FlowScript.FileSystem {
     }
 
     export class Directory extends DirectoryItem {
-        constructor(fileManager: FileManager) { super(fileManager); }
+        constructor(fileManager: FileManager, parent?: DirectoryItem) { super(fileManager, parent); }
 
         /** Returns the directory path minus the filename (up to the last name that is followed by a directory separator,). 
          * Since the file API does not support special character such as '.' or '..', these are ignored as directory characters (but not removed).
@@ -212,7 +222,7 @@ namespace FlowScript.FileSystem {
          * - "/" => "/"
          * - "" => ""
          */
-        static getDirectoryPath(filepath: string) { // "/" 2:[0:,1:]
+        static getPath(filepath: string) {
             if (!filepath) return "";
             var parts = filepath.replace(/\\/g, '/').split('/'), i1 = 0, i2 = parts.length - 2;
             while (i1 < parts.length && !parts[i1]) i1++;
@@ -232,12 +242,32 @@ namespace FlowScript.FileSystem {
             return item;
         }
 
-        createFile(filePath: string): File {
+        /** Creates a directory under the user root endpoint. */
+        createDirectory(path: string): Directory {
+            if (path === void 0 || path === null || !this.hasChildren) return null;
+            var parts = getPathParts(path), item: Directory = this; // (if path is empty it should default to this directory)
+            for (var i = (parts[0] ? 0 : 1), n = parts.length; i < n; ++i) {
+                // (note: 'parts[0]?0:1' is testing if the first entry is empty, which then starts at the next one [to support '/X/Y'])
+                var childItem = item._childItemsByName[parts[i]];
+                if (!childItem)
+                    item = new Directory(this._fileManager, this); // (create new directory names along the route)
+                else if (childItem instanceof Directory)
+                    item = childItem; // (directory found, go in and continue)
+                else
+                    throw "Cannot create path '" + path + "' under '" + this + "': '" + item + "' is not a directory.";
+            }
+            return item;
+        }
 
+        createFile(filePath: string, contents?: string): File {
+            var filename = File.getName(filePath);
+            var directoryPath = Directory.getPath(filePath);
+            if (!filename) throw "A file name is required.";
+            var dir = this.createDirectory(directoryPath);
+            return new File(this._fileManager, dir, contents);
         }
 
         getJSONStructure() {
-
         }
     }
 
@@ -246,7 +276,21 @@ namespace FlowScript.FileSystem {
         set contents(value: string) { this._contents = value; this.touch(); }
         private _contents: string; // (a binary string with the file contents)
 
-        constructor(fileManager: FileManager, content?: string) { super(fileManager); if (content !== void 0) this._contents = content; }
+        constructor(fileManager: FileManager, parent?: DirectoryItem, content?: string) { super(fileManager, parent); if (content !== void 0) this._contents = content; }
+
+        /** Returns the directory path minus the filename (up to the last name that is followed by a directory separator,). 
+        * Since the file API does not support special character such as '.' or '..', these are ignored as directory characters (but not removed).
+        * Examples:
+        * - "/A/B/C/" => ""
+        * - "A/B/C" => "C"
+        * - "/" => ""
+        * - "" => ""
+        */
+        static getName(filepath: string) {
+            if (!filepath) return "";
+            var parts = filepath.replace(/\\/g, '/').split('/');
+            return parts[parts.length - 1] || "";
+        }
 
         toBase64() { return Utilities.Encoding.base64Encode(this.contents); }
         fromBase64(contentsB64: string) { this.contents = Utilities.Encoding.base64Decode(contentsB64); }
@@ -276,7 +320,7 @@ namespace FlowScript.FileSystem {
         static get currentUser() { if (FlowScript.currentUser) return FlowScript.currentUser; throw "'FlowScript.currentUser' is required!"; } // (added for convenience, and to make sure TS knows it needs to be defined before this class)
 
         /** The API endpoint to the directory for the current user. */
-        static get currentUserEndpoint() { return Utilities.append(this.apiEndpoint, currentUser._id, '/'); }
+        static get currentUserEndpoint() { return combine(this.apiEndpoint, currentUser._id); }
 
         /** The root directory represents the API endpoint at 'FileManager.apiEndpoint'. */
         readonly root: Directory;
@@ -289,11 +333,32 @@ namespace FlowScript.FileSystem {
             this.root = new Directory(this);
         }
 
-        /** Creates a directory under the user root endpoint. */
-        createDirectory(path: string): Directory {
-            var item = this.add(path);
-            if (!(item instanceof Directory)) return null;
-            return item;
+        /** Gets a directory under the current user root endpoint. 
+         * @param userId This is optional, and exists only to reference files imported from other users. When undefined/null, the current user is assumed.
+         */
+        getDirectory(path: string, userId?: string): Directory {
+            return this.root.getDirectory(combine(userId || currentUser._id, path));
+        }
+
+        /** Creates a directory under the current user root endpoint. 
+         * @param userId This is optional, and exists only to reference files imported from other users. When undefined/null, the current user is assumed.
+         */
+        createDirectory(path: string, userId?: string): Directory {
+            return this.root.createDirectory(combine(userId || currentUser._id, path));
+        }
+
+        /** Gets a file under the current user root endpoint.  
+         * @param userId This is optional, and exists only to reference files imported from other users. When undefined/null, the current user is assumed.
+         */
+        getFile(filePath: string, userId?: string): File {
+            return this.root.getFile(combine(userId || currentUser._id, filePath));
+        }
+
+        /** Creates a file under the current user root endpoint.  
+         * @param userId This is optional, and exists only to reference files imported from other users. When undefined/null, the current user is assumed.
+         */
+        createFile(filePath: string, contents?: string, userId?: string): File {
+            return this.root.createFile(combine(userId || currentUser._id, filePath), contents);
         }
 
         // --------------------------------------------------------------------------------------------------------------------
@@ -301,10 +366,16 @@ namespace FlowScript.FileSystem {
 
     // ========================================================================================================================
 
-    export var restrictedFilenameRegex = /\/\\\?%\*:\|"<>\./g;
+    export var restrictedFilenameRegex = /\/\\\?%\*:\|"<>/g;
 
+    /** Returns true if a given filename contains invalid characters. */
     export function isValidFileName(name: string) {
         return name && restrictedFilenameRegex.test(name);
+    }
+
+    /** Combine two paths into one. */
+    export function combine(path1: string, path2: string) {
+        return Utilities.append(path1, path2, '/');
     }
 
     /** Manages the global file system for FlowScript by utilizing local storage space and remote server space. 
