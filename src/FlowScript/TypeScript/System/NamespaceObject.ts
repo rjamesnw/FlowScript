@@ -63,12 +63,12 @@ namespace FlowScript {
         defaultType: NamespaceObject;
     }
 
-    export interface ISavedType extends ISavedTrackableObject {
+    export interface ISavedNamespaceObject extends ISavedTrackableObject {
         name: string;
         /** Am optional help tip for this type. */
         description?: string;
         comment: string;
-        nestedTypes: ISavedType[];
+        nestedTypes: ISavedNamespaceObject[];
     }
 
     // ========================================================================================================================
@@ -261,14 +261,14 @@ namespace FlowScript {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        save(target?: ISavedType): ISavedType {
-            target = target || <ISavedType>{};
+        save(target?: ISavedNamespaceObject): ISavedNamespaceObject {
+            target = target || <ISavedNamespaceObject>{};
+
+            super.save(target);
 
             target.name = this.name;
             target.comment = this.comment;
             target.description = this.description;
-
-            super.save(target);
 
             target.nestedTypes = [];
             if (this.nestedItems)
@@ -278,7 +278,7 @@ namespace FlowScript {
             return target;
         }
 
-        load(target?: ISavedType): this {
+        load(target?: ISavedNamespaceObject): this {
             if (target) {
                 this.name = target.name;
                 this.comment = target.comment;
@@ -294,7 +294,7 @@ namespace FlowScript {
             return this;
         }
 
-        static load(parent: NamespaceObject, target?: ISavedType): NamespaceObject {
+        static load(parent: NamespaceObject, target?: ISavedNamespaceObject): NamespaceObject {
             if (target) {
                 var compInfo = <ISavedComponent>target;
                 var type: NamespaceObject;

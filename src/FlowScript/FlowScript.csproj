@@ -26,6 +26,7 @@
     <None Remove="TypeScript\Client\Property_.ts" />
     <None Remove="TypeScript\Server\Server.ts" />
     <None Remove="TypeScript\Shared.ts" />
+    <None Remove="TypeScript\System\EventDispatcher.ts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -109,6 +110,7 @@
     <TypeScriptCompile Include="TypeScript\Client\Client.ts" />
     <TypeScriptCompile Include="TypeScript\Server\Server.ts" />
     <TypeScriptCompile Include="TypeScript\Shared.ts" />
+    <TypeScriptCompile Include="TypeScript\System\EventDispatcher.ts" />
     <TypeScriptCompile Include="wwwroot\tests\simple\Tests.ts" />
   </ItemGroup>
 

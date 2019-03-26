@@ -1,0 +1,16 @@
+// FlowScript Core
+{
+  "extends": "../../../tsconfig-base.json",
+  "compilerOptions": {
+    "composite": true,
+    "target": "es6", // (Makes sure we take advantage of Node's built-in async functionality.)
+    "outFile": "../../../wwwroot/js/flowscriptrt.js",
+    "declaration": true
+  },
+  "files": [
+    "FlowScriptRT.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

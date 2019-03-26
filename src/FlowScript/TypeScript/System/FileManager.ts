@@ -276,7 +276,11 @@ namespace FlowScript.FileSystem {
         set contents(value: string) { this._contents = value; this.touch(); }
         private _contents: string; // (a binary string with the file contents)
 
-        constructor(fileManager: FileManager, parent?: DirectoryItem, content?: string) { super(fileManager, parent); if (content !== void 0) this._contents = content; }
+        constructor(fileManager: FileManager, parent?: DirectoryItem, content?: string) {
+            super(fileManager, parent);
+            if (content !== void 0)
+                this._contents = content;
+        }
 
         /** Returns the directory path minus the filename (up to the last name that is followed by a directory separator,). 
         * Since the file API does not support special character such as '.' or '..', these are ignored as directory characters (but not removed).
@@ -317,10 +321,10 @@ namespace FlowScript.FileSystem {
         static apiEndpoint = "/api/files";
 
         /** Just a local property that checks for and returns 'FlowScript.currentUser'. */
-        static get currentUser() { if (FlowScript.currentUser) return FlowScript.currentUser; throw "'FlowScript.currentUser' is required!"; } // (added for convenience, and to make sure TS knows it needs to be defined before this class)
+        static get currentUser() { if (FlowScript.User.current) return FlowScript.User.current; throw "'FlowScript.currentUser' is required!"; } // (added for convenience, and to make sure TS knows it needs to be defined before this class)
 
         /** The API endpoint to the directory for the current user. */
-        static get currentUserEndpoint() { return combine(this.apiEndpoint, currentUser._id); }
+        static get currentUserEndpoint() { return combine(this.apiEndpoint, FileManager.currentUser._id); }
 
         /** The root directory represents the API endpoint at 'FileManager.apiEndpoint'. */
         readonly root: Directory;
@@ -336,29 +340,29 @@ namespace FlowScript.FileSystem {
         /** Gets a directory under the current user root endpoint. 
          * @param userId This is optional, and exists only to reference files imported from other users. When undefined/null, the current user is assumed.
          */
-        getDirectory(path: string, userId?: string): Directory {
-            return this.root.getDirectory(combine(userId || currentUser._id, path));
+        getDirectory(path?: string, userId?: string): Directory {
+            return this.root.getDirectory(combine(userId || FileManager.currentUser._id, path));
         }
 
         /** Creates a directory under the current user root endpoint. 
          * @param userId This is optional, and exists only to reference files imported from other users. When undefined/null, the current user is assumed.
          */
         createDirectory(path: string, userId?: string): Directory {
-            return this.root.createDirectory(combine(userId || currentUser._id, path));
+            return this.root.createDirectory(combine(userId || FileManager.currentUser._id, path));
         }
 
         /** Gets a file under the current user root endpoint.  
          * @param userId This is optional, and exists only to reference files imported from other users. When undefined/null, the current user is assumed.
          */
         getFile(filePath: string, userId?: string): File {
-            return this.root.getFile(combine(userId || currentUser._id, filePath));
+            return this.root.getFile(combine(userId || FileManager.currentUser._id, filePath));
         }
 
         /** Creates a file under the current user root endpoint.  
          * @param userId This is optional, and exists only to reference files imported from other users. When undefined/null, the current user is assumed.
          */
         createFile(filePath: string, contents?: string, userId?: string): File {
-            return this.root.createFile(combine(userId || currentUser._id, filePath), contents);
+            return this.root.createFile(combine(userId || FileManager.currentUser._id, filePath), contents);
         }
 
         // --------------------------------------------------------------------------------------------------------------------

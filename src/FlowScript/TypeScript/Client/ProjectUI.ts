@@ -14,7 +14,7 @@ namespace FlowScript.UI {
 
         get scriptEditor(): ScriptEditor {
             if (!this._scriptEditor)
-                throw "There is no editor set for project '" + this.title + "': You must call 'setEditor()' first to associated an editor.";
+                throw "There is no editor set for project '" + this.name + "': You must call 'setEditor()' first to associated an editor.";
             return this._scriptEditor;
         }
         private _scriptEditor: ScriptEditor;
@@ -74,7 +74,7 @@ namespace FlowScript.UI {
         }
 
         private _onRender() {
-            this.scriptEditor.view.setElementValueById("txtProjTitle", this.title);
+            this.scriptEditor.view.setElementValueById("txtProjTitle", this.name);
             this.scriptEditor.view.setElementValueById("txtProjDesc", this.description);
 
             this.scriptEditor.typeTree.setSource(this.script); // (build the type tree)

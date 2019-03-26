@@ -75,10 +75,8 @@ function saveProject() {
     if (!FlowScript.UI.ProjectUI.currentProject)
         alert("No project is currently active.");
     else {
-        var key = FlowScript.UI.ProjectUI.currentProject.save();
-        var dataSaved = FlowScript.Storage.loadProjectData(key);
-        console.log("Save data:", dataSaved);
-        alert("Project saved under '" + key + "': " + dataSaved);
+        FlowScript.UI.ProjectUI.currentProject.saveToStorage();
+        alert("Project saved.");
     }
 }
 

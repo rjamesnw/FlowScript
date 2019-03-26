@@ -9,89 +9,6 @@ namespace FlowScript {
     }
 
     // ========================================================================================================================
-    // A simple event dispatcher.
-
-    export interface IEventDispatcher<TOwner extends {}> { target: TOwner; }
-    export interface IEventDispatcherHandler { (...args: any[]): any };
-    export interface IEventDispatcherHandlerInfo<TOwner extends {}> { handler: IEventDispatcherHandler; removeOnTrigger: boolean; data: any; }
-
-    /** Represents an event dispatcher manager. */
-    export class EventDispatcher<TOwner extends {}, THandler extends IEventDispatcherHandler> implements IEventDispatcher<TOwner> {
-        get target() { return this._owner; }
-        private _owner: TOwner;
-
-        protected _handlers: IEventDispatcherHandlerInfo<TOwner>[] = [];
-
-        /** Constructs a new event dispatcher.
-          * If 'synchronous' is false (default), then a 'setTimeout()' if 0 is used to trigger events.  This allows following
-          * code to complete before events trigger, as objects can be created and attached before they get configured.  If
-          * 'synchronous' is true, calling 'trigger()' calls all event handlers immediately.
-          */
-        constructor(owner: TOwner, public synchronous = false) {
-            this._owner = owner;
-            if (synchronous && typeof setTimeout != 'function')
-                throw "Asynchronous events are not supported in this environment.";
-        }
-
-        /** Locate the index of a handler by function reference. */
-        indexOf(func: THandler): number {
-            for (var i = 0, n = this._handlers.length; i < n; ++i)
-                if (this._handlers[i].handler == func)
-                    return i;
-            return -1;
-        }
-
-        /** Add a handler for this event dispatcher.  If the function already exists, the current entry is updated. */
-        add(func: THandler, data?: any, removeOnTrigger?: boolean): IEventDispatcherHandlerInfo<TOwner> {
-            var i = this.indexOf(func);
-            if (i >= 0) {
-                var handlerInfo = this._handlers[i];
-                if (removeOnTrigger !== void 0)
-                    handlerInfo.removeOnTrigger = removeOnTrigger;
-            }
-            else this._handlers.push(handlerInfo = { handler: func, removeOnTrigger: removeOnTrigger, data: data });
-            return handlerInfo;
-        }
-
-        /** Remove a handler from this event dispatcher. */
-        remove(func: THandler): IEventDispatcherHandlerInfo<TOwner> {
-            var i = this.indexOf(func);
-            if (i >= 0)
-                return this._handlers.splice(i, 1)[0];
-            else
-                return void 0;
-        }
-
-        /** Remove all handlers from this event dispatcher. */
-        clear(): void {
-            this._handlers.length = 0;
-        }
-
-        /** Trigger this event by calling all the handlers. */
-        trigger: THandler;
-
-        static _ctor = (() => {
-            EventDispatcher.prototype.trigger = <any>(function trigger(...args: any[]) {
-                var _this = <EventDispatcher<{}, any>>this;
-                args.push(void 0, _this);
-                var dataIndex = args.length - 2;
-                function _trigger() {
-                    for (var i = 0, n = _this._handlers.length; i < n; ++i) {
-                        var h = <IEventDispatcherHandlerInfo<any>>_this._handlers[i];
-                        args[dataIndex] = h.data;
-                        h.handler.apply(_this._owner || _this, args);
-                        if (h.removeOnTrigger) { _this._handlers.splice(i, 1); --i; --n; }
-                    }
-                }
-                if (_this.synchronous || typeof setTimeout != 'function')
-                    _trigger();
-                else
-                    setTimeout(_trigger, 0);
-            });
-        })();
-    }
-
-    // ========================================================================================================================
 
     export interface IParented { _parent: {}; }
 
@@ -129,13 +46,13 @@ namespace FlowScript {
         /** Saves the script to data objects (calls this.save()) and uses the JSON object to serialize them into a string. */
         serialize(): string;
 
-        /** Serializes and saves this script to local storage under a specified name. The storage key name is returned.
-          * @param {string} projectName The name of the project this script should be saved under. 
-          * @param {string} scriptName A script name, or null/undefined to use the default name "Script" (which assumes the
-          * working script for the project).
-          * @param {string|number} scriptVersion An optional version identifier. It allows multiple versions of scripts with the same name. 
-          */
-        saveToStorage(projectName: string, scriptName?: string, scriptVersion?: string | number): string;
+        ///** Serializes and saves this script to local storage under a specified name. The storage key name is returned.
+        //  * @param {string} projectName The name of the project this script should be saved under. 
+        //  * @param {string} scriptName A script name, or null/undefined to use the default name "Script" (which assumes the
+        //  * working script for the project).
+        //  * @param {string|number} scriptVersion An optional version identifier. It allows multiple versions of scripts with the same name. 
+        //  */
+        //saveToStorage(projectName: string, scriptName?: string, scriptVersion?: string | number): string;
 
         /** Run the script with the supplied arguments. */
         run(args: ICallerArguments): RuntimeContext;
@@ -180,7 +97,7 @@ namespace FlowScript {
 
     // ========================================================================================================================
 
-    export interface ISavedScript extends ISavedType { url: string; system: ISavedType; main: ISavedComponent; }
+    export interface ISavedScript extends ISavedNamespaceObject { url: string; system: ISavedNamespaceObject; main: ISavedComponent; }
 
     class FlowScript extends NamespaceObject implements IFlowScript {
         // --------------------------------------------------------------------------------------------------------------------
@@ -342,18 +259,17 @@ namespace FlowScript {
             return target;
         }
 
-        /** Saves the script to data objects (calls this.save()) and uses the JSON object to serialize them into a string. */
-        serialize(): string {
-            var saveData = this.save();
-            var json = Utilities.Data.JSON.stringify(saveData);
+        /** Saves the script to data objects (calls this.save() when 'source' is undefined) and uses the JSON object to serialize the result into a string. */
+        serialize(source = this.save()): string {
+            var json = Utilities.Data.JSON.stringify(source);
             return json;
         }
 
-        /** Serializes and saves this script to local storage under a specified name. The storage key name is returned. */
-        saveToStorage(projectName: string, scriptName?: string, scriptVersion?: string | number): string {
-            var json = this.serialize();
-            return Storage.saveProjectData(projectName, scriptName || "Script", json, scriptVersion);
-        }
+        ///** Serializes and saves this script to local storage under a specified name. The storage key name is returned. */
+        //saveToStorage(projectName: string, scriptName?: string, scriptVersion?: string | number): string {
+        //    var json = this.serialize();
+        //    return Storage.saveProjectData(projectName, scriptName || "Script", json, scriptVersion);
+        //}
 
         // --------------------------------------------------------------------------------------------------------------------
 
@@ -451,68 +367,68 @@ namespace FlowScript {
 
     // ========================================================================================================================
 
-    export module Storage {
+    //x using a virtual file system instead x export module Storage {
 
-        export var projectSaveDataSuffix = "-save";
+    //    export var projectSaveDataSuffix = "-save";
 
-        export function makeProjectDataKeyName(projectName: string, dataTypeName: string, version?: string | number) {
-            if (!projectName) throw "A project name is required.";
-            if (!dataTypeName) throw "A project data type name is required.";
-            if (projectName == delimiter) projectName = ""; // (this is a work-around used to get the prefix part only)
-            if (dataTypeName == delimiter) dataTypeName = ""; // (this is a work-around used to get the prefix part only)
-            return storagePrefix + projectSaveDataSuffix + delimiter + projectName + (dataTypeName ? delimiter + dataTypeName : "") + (version ? delimiter + version : "");
-        }
+    //    export function makeProjectDataKeyName(projectName: string, dataTypeName: string, version?: string | number) {
+    //        if (!projectName) throw "A project name is required.";
+    //        if (!dataTypeName) throw "A project data type name is required.";
+    //        if (projectName == delimiter) projectName = ""; // (this is a work-around used to get the prefix part only)
+    //        if (dataTypeName == delimiter) dataTypeName = ""; // (this is a work-around used to get the prefix part only)
+    //        return storagePrefix + projectSaveDataSuffix + delimiter + projectName + (dataTypeName ? delimiter + dataTypeName : "") + (version ? delimiter + version : "");
+    //    }
 
-        /** Saves project data and returns a storage key that can be used to pull the data directly. */
-        export function saveProjectData(projectName: string, dataTypeName: string, value: string, version?: string | number): string {
-            if (!projectName) throw "A project name is required.";
-            if (!dataTypeName) throw "A project data type name is required.";
-            var store = getStorage(StorageType.Local);
-            var key = makeProjectDataKeyName(projectName, dataTypeName, version);
-            store.setItem(key, value);
-            return key;
-        }
+    //    /** Saves project data and returns a storage key that can be used to pull the data directly. */
+    //    export function saveProjectData(projectName: string, dataTypeName: string, value: string, version?: string | number): string {
+    //        if (!projectName) throw "A project name is required.";
+    //        if (!dataTypeName) throw "A project data type name is required.";
+    //        var store = getStorage(StorageType.Local);
+    //        var key = makeProjectDataKeyName(projectName, dataTypeName, version);
+    //        store.setItem(key, value);
+    //        return key;
+    //    }
 
-        /** Loads project data using a key from a previous save. You can call 'getSavedProjectDataList()' for a list of current saves. */
-        export function loadProjectData(key: string): string;
-        /** Loads project data . */
-        export function loadProjectData(projectName: string, dataTypeName: string, version?: string | number): string;
-        export function loadProjectData(projectNameOrKey: string, dataTypeName?: string, version?: string | number): string {
-            if (arguments.length > 1) {
-                if (!projectNameOrKey) throw "A project name is required.";
-                if (!dataTypeName) throw "A project data type name is required.";
-                var key = makeProjectDataKeyName(projectNameOrKey, dataTypeName, version);
-            }
-            else key = projectNameOrKey;
-            var store = getStorage(StorageType.Local);
-            return store.getItem(key);
-        }
+    //    /** Loads project data using a key from a previous save. You can call 'getSavedProjectDataList()' for a list of current saves. */
+    //    export function loadProjectData(key: string): string;
+    //    /** Loads project data . */
+    //    export function loadProjectData(projectName: string, dataTypeName: string, version?: string | number): string;
+    //    export function loadProjectData(projectNameOrKey: string, dataTypeName?: string, version?: string | number): string {
+    //        if (arguments.length > 1) {
+    //            if (!projectNameOrKey) throw "A project name is required.";
+    //            if (!dataTypeName) throw "A project data type name is required.";
+    //            var key = makeProjectDataKeyName(projectNameOrKey, dataTypeName, version);
+    //        }
+    //        else key = projectNameOrKey;
+    //        var store = getStorage(StorageType.Local);
+    //        return store.getItem(key);
+    //    }
 
-        export interface ISavedProjectDataInfo { projectName: string; dataName: string; version: string | number; toString: typeof Object.prototype.toString }
+    //    export interface ISavedProjectDataInfo { projectName: string; dataName: string; version: string | number; toString: typeof Object.prototype.toString }
 
-        export function getSavedProjectDataList(): ISavedProjectDataInfo[] {
-            var prefix = makeProjectDataKeyName(delimiter, delimiter);
-            var list: ISavedProjectDataInfo[] = [];
-            var store = getStorage(StorageType.Local);
-            var toStrFunc = function () { return this.projectName + (this.dataName ? ", " + this.dataName : "") + (this.version ? ", " + this.version : ""); };
-            for (var i = 0, n = store.length; i < n; ++i) {
-                var key = store.key(i);
-                if (key.substring(0, prefix.length) == prefix) {
-                    var parts = key.split(delimiter);
-                    if (parts.length > 0) {
-                        var _prefix = parts[0];
-                        var projectName = parts.length > 1 ? parts[1] : void 0;
-                        if (projectName) {
-                            var dataName = parts.length > 2 ? parts[2] : void 0;
-                            var version = parts.length > 3 ? parts[3] : void 0;
-                            list.push({ projectName: projectName, dataName: dataName, version: version, toString: toStrFunc });
-                        }
-                    }
-                }
-            }
-            return list;
-        }
-    }
+    //    export function getSavedProjectDataList(): ISavedProjectDataInfo[] {
+    //        var prefix = makeProjectDataKeyName(delimiter, delimiter);
+    //        var list: ISavedProjectDataInfo[] = [];
+    //        var store = getStorage(StorageType.Local);
+    //        var toStrFunc = function () { return this.projectName + (this.dataName ? ", " + this.dataName : "") + (this.version ? ", " + this.version : ""); };
+    //        for (var i = 0, n = store.length; i < n; ++i) {
+    //            var key = store.key(i);
+    //            if (key.substring(0, prefix.length) == prefix) {
+    //                var parts = key.split(delimiter);
+    //                if (parts.length > 0) {
+    //                    var _prefix = parts[0];
+    //                    var projectName = parts.length > 1 ? parts[1] : void 0;
+    //                    if (projectName) {
+    //                        var dataName = parts.length > 2 ? parts[2] : void 0;
+    //                        var version = parts.length > 3 ? parts[3] : void 0;
+    //                        list.push({ projectName: projectName, dataName: dataName, version: version, toString: toStrFunc });
+    //                    }
+    //                }
+    //            }
+    //        }
+    //        return list;
+    //    }
+    //}
 
     // ========================================================================================================================
 

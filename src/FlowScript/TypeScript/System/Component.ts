@@ -61,7 +61,7 @@ namespace FlowScript {
 
     // ========================================================================================================================
 
-    export interface ISavedComponent extends ISavedType {
+    export interface ISavedComponent extends ISavedNamespaceObject {
         componentType: ComponentTypes;
         title: string;
         blocks: ISavedBlock[];

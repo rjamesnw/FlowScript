@@ -1,6 +1,15 @@
 ﻿namespace FlowScript {
     // ========================================================================================================================
 
+    export interface ISavedProject extends ISavedTrackableObject {
+        directory: string;
+        name: string;
+        description: string;
+        /** If this is a string, then it represents a GUID that references a script instead. */
+        script: ISavedScript | string;
+        //comments: string[];
+    }
+
     export class Project extends TrackableObject {
         // --------------------------------------------------------------------------------------------------------------------
 
@@ -30,24 +39,69 @@
         // --------------------------------------------------------------------------------------------------------------------
 
         constructor(
-            /** The title of the project. */ public title: string,
+            /** The title of the project. */ public name: string,
             /** The project's description. */ public description?: string
         ) {
             super(FlowScript.createNew());
-            if (!FileSystem.isValidFileName(title))
-                throw "The project title '" + title + "' must also be a valid file name. Don't include special directory characters, such as: \\ / ? % * ";
+            if (!FileSystem.isValidFileName(name))
+                throw "The project title '" + name + "' must also be a valid file name. Don't include special directory characters, such as: \\ / ? % * ";
             this.directory = FileSystem.fileManager.createDirectory(this._id);
         }
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        save(): ISavedTrackableObject {
-            var projectJson = JSON.stringify(this);
-            var json = this.script.serialize();
-            this.directory.createFile(this._id + ".fsp", projectJson);
-            this.directory.createFile(this.script.safeFullTypeName + ".fs", json);
-            //x return Storage.saveProjectData(projectName, scriptName || "Script", json, scriptVersion);
-            //x return this.script.saveToStorage(this.title);
+        /** Saves the project and related items to a specified object. 
+         * If no object is specified, then a new empty object is created and returned.
+         */
+        save(target?: ISavedProject): ISavedProject {
+            target = target || <ISavedProject>{};
+
+            super.save(target);
+
+            target.name = this.name;
+            target.description = this.description;
+
+            target.script = this.script.save();
+
+            return target;
+        }
+
+        /** Saves the project to a persisted storage, such as the local browser storage, or a remote store, if possible. 
+         * Usually the local storage is attempted first, then the system will try to sync with a remote store.  If there
+         * is no free space in the local store, the system will try to sync with a remote store.  If that fails, the
+         * data will only be in memory and a UI warning will display.
+         */
+        saveToStorage(source = this.save()) {
+            if (!source) return; // (nothing to do)
+            if (typeof source.script == 'object') {
+                var script = source.script;
+                source.script = script.id;
+            }
+
+            var projectJSON = this.serialize(source);
+            var scriptJSON = script && Utilities.Data.JSON.stringify(script) || null;
+
+            this.directory.createFile(this._id + ".fsp", projectJSON); // (fsp: FlowScript Project file)
+
+            if (script && script.id)
+                this.directory.createFile(script.id + ".fs", scriptJSON); // (fs: FlowScript source file)
+        }
+
+        load(target?: ISavedProject): this {
+            if (target) {
+                var _this = <Writeable<this>>this;
+                _this.name = target.name;
+                _this.description = target.description;
+            }
+            return this;
+        }
+
+        // --------------------------------------------------------------------------------------------------------------------
+
+        /** Saves the project to data objects (calls this.save() when 'source' is undefined) and uses the JSON object to serialize the result into a string. */
+        serialize(source = this.save()): string {
+            var json = Utilities.Data.JSON.stringify(source);
+            return json;
         }
 
         // --------------------------------------------------------------------------------------------------------------------
@@ -101,6 +155,13 @@
 
         _projects: Project[] = [];
 
+        /** The file storage directory for all projects. */
+        readonly directory: FileSystem.Directory;
+
+        constructor() {
+            this.directory = FileSystem.fileManager.getDirectory();
+        }
+
         /**
          * Creates a new project with the given title and description.
          * @param title The project title.
@@ -118,6 +179,10 @@
             var project = new (projectType || Project)(title, description);
             this._projects.push(project);
             return project;
+        }
+
+        getProjectsFromStorage(): ISavedProject[] {
+            return null;
         }
     }
 
