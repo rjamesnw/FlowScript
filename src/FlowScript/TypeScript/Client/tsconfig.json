@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig-base.json",
   "references": [
+    { "path": "../System/Runtime" },
     { "path": "../System" }
   ],
   "compilerOptions": {
@@ -14,7 +15,6 @@
     ]
   },
   "files": [
-    //"../../wwwroot/js/flowscript.d.ts",
     "../Shared.ts",
     "TreeView.ts",
     "TypeTreeView.ts",

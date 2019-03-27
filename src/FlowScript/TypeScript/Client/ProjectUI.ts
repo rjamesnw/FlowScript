@@ -4,6 +4,12 @@
 namespace FlowScript.UI {
     // ========================================================================================================================
 
+    function _defaultCreateProjectHandler(solution: Solution, project: ISavedProject) {
+        return new ProjectUI(solution, project.name, project.description);
+    };
+
+    Solution.onCreateProject = _defaultCreateProjectHandler;
+
     /**
      * Extends the 'Projects' class to provide UI integration functions specific to the IDE.
      */

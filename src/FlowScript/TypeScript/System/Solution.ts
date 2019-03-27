@@ -26,7 +26,6 @@
         static set onCreateProject(value) { if (typeof value != 'function') throw "Solution.onCreateProject: Set failed - value is not a function."; this._onCreateProject = value; }
         private static _onCreateProject = _defaultCreateProjectHandler;
 
-
         get count() { return this._projects.length; }
 
         /* All projects for the current user. */

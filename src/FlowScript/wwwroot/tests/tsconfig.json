@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig-base.json",
   "references": [
+    { "path": "../../TypeScript/System/Runtime" },
     { "path": "../../TypeScript/System" }
   ],
   "compilerOptions": {
