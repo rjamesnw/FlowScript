@@ -3,7 +3,7 @@
 namespace FlowScript {
     // ========================================================================================================================
 
-    export interface ISavedTrackableObject { id: string; type: string; }
+    export interface ISavedTrackableObject { id?: string; type?: string; }
 
     export interface IUnreconciledReference {
         /** The ID of an object not yet in the system. */

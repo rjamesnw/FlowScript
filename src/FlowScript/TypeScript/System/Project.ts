@@ -2,11 +2,13 @@
     // ========================================================================================================================
 
     export interface ISavedProject extends ISavedTrackableObject {
-        directory: string;
         name: string;
-        description: string;
+        description?: string;
+        directory?: string;
+        /** File paths related to this project. */
+        files?: string[];
         /** If this is a string, then it represents a GUID that references a script instead. */
-        script: ISavedScript | string;
+        scripts?: (ISavedScript | string)[];
         //comments: string[];
     }
 
@@ -19,6 +21,12 @@
 
         /** The file storage directory for this project. */
         readonly directory: FileSystem.Directory;
+
+        /** A list of all files associated with this project, indexed by the absolute lowercase file path. */
+        readonly files: { [index: string]: FileSystem.File } = {};
+
+        /** A list of user IDs and assigned roles for this project. */
+        readonly userSecurity = new UserAccess();
 
         // --------------------------------------------------------------------------------------------------------------------
         // Create a type of trash-bin to hold expressions so the user can restore them, or delete permanently.
@@ -39,6 +47,7 @@
         // --------------------------------------------------------------------------------------------------------------------
 
         constructor(
+            /** The solution this project belongs to. */ public readonly solution: Solution,
             /** The title of the project. */ public name: string,
             /** The project's description. */ public description?: string
         ) {
@@ -61,7 +70,10 @@
             target.name = this.name;
             target.description = this.description;
 
-            target.script = this.script.save();
+            for (var p in this.files)
+                (target.files || (target.files = [])).push(this.files[p].absolutePath);
+
+            target.scripts = [this.script.save()];
 
             return target;
         }
@@ -73,25 +85,37 @@
          */
         saveToStorage(source = this.save()) {
             if (!source) return; // (nothing to do)
-            if (typeof source.script == 'object') {
-                var script = source.script;
-                source.script = script.id;
-            }
+
+            if (Array.isArray(source.scripts))
+                for (var i = 0, n = source.scripts.length; i < n; ++i) {
+                    var script = source.scripts[i];
+
+                    if (typeof script == 'object' && script.id) {
+                        source.scripts[i] = script.id; // (replaced the object entry with the ID before saving the project graph later; these will be files instead)
+
+                        var scriptJSON = script && Utilities.Data.JSON.stringify(script) || null;
+
+                        var file = this.directory.createFile((script.name || script.id) + ".fs", scriptJSON); // (fs: FlowScript source file)
+                        this.files[file.absolutePath.toLocaleLowerCase()] = file;
+                    }
+                }
 
             var projectJSON = this.serialize(source);
-            var scriptJSON = script && Utilities.Data.JSON.stringify(script) || null;
 
-            this.directory.createFile(this._id + ".fsp", projectJSON); // (fsp: FlowScript Project file)
-
-            if (script && script.id)
-                this.directory.createFile(script.id + ".fs", scriptJSON); // (fs: FlowScript source file)
+            file = this.directory.createFile(this._id + ".fsp", projectJSON); // (fsp: FlowScript Project file)
+            this.files[file.absolutePath.toLocaleLowerCase()] = file;
         }
 
         load(target?: ISavedProject): this {
             if (target) {
                 var _this = <Writeable<this>>this;
+
+                super.load(target);
+
                 _this.name = target.name;
                 _this.description = target.description;
+
+                // TODO: associated files and scripts.
             }
             return this;
         }
@@ -143,47 +167,6 @@
         //}
 
         // --------------------------------------------------------------------------------------------------------------------
-    }
-
-    // ========================================================================================================================
-
-    /**
-     * Holds a collection of projects.
-     */
-    export class Projects {
-        get count() { return this._projects.length; }
-
-        _projects: Project[] = [];
-
-        /** The file storage directory for all projects. */
-        readonly directory: FileSystem.Directory;
-
-        constructor() {
-            this.directory = FileSystem.fileManager.getDirectory();
-        }
-
-        /**
-         * Creates a new project with the given title and description.
-         * @param title The project title.
-         * @param description The project description.
-         */
-        createProject(title: string, description?: string): Project;
-        /**
-         * Creates a new project with the given title and description.
-         * @param title The project title.
-         * @param description The project description.
-         * @param projectType An object of type 'Project' to use to create this project entry.
-         */
-        createProject<T extends Project>(title: string, description?: string, projectType?: { new(title: string, description?: string): T }): T;
-        createProject(title: string, description?: string, projectType?: typeof Project): Project {
-            var project = new (projectType || Project)(title, description);
-            this._projects.push(project);
-            return project;
-        }
-
-        getProjectsFromStorage(): ISavedProject[] {
-            return null;
-        }
     }
 
     // ========================================================================================================================

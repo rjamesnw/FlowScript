@@ -27,6 +27,9 @@ namespace FlowScript {
             });
         }
 
+        /** Holds a mapping of this user ID to global roles associated with the user. */
+        readonly _security = new UserAccess();
+
         /** Scripts owned by this user. */
         scripts: IFlowScript[] = [];
 

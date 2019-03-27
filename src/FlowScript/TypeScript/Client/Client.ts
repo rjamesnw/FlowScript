@@ -12,7 +12,7 @@
 
 var rootViewContainer = FlowScript.Views.buildViews();
 var rootBodyViewContainer = rootViewContainer.getViewContainer("renderBody");
-var projects = new FlowScript.Projects();
+var solution = new FlowScript.Solution();
 var rootPath = "/";
 var rootViewsPath = rootPath + "views";
 
@@ -52,7 +52,7 @@ function createProject() {
         return;
     }
 
-    var newProject = projects.createProject(projectTitle, projectDesc, FlowScript.UI.ProjectUI);
+    var newProject = solution.createProject(projectTitle, projectDesc, FlowScript.UI.ProjectUI);
 
     if (FlowScript.debugging)
         FlowScript.Tests.populateProject(newProject);

@@ -15,6 +15,7 @@
     "NamespaceObject.ts",
     "NamedReference.ts",
     "User.ts",
+    "Security.ts",
     "FileManager.ts",
     "FlowScriptMain.ts",
     "Expressions.ts",
@@ -40,7 +41,8 @@
     "Simulator.ts",
     "Visualtree.ts",
     "Views.ts",
-    "Projects.ts",
+    "Project.ts",
+    "Solution.ts",
     "System.ts",
     "bootup.ts" // This MUST be LAST.
   ],
