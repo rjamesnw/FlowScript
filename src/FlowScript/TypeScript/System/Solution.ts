@@ -16,7 +16,7 @@
 
     /**
     * Holds a collection of projects.
-    * When a project instance is created, the default 'Solution.onCreateProject' handler is used, which can be overidden for derived project types.
+    * When a project instance is created, the default 'Solution.onCreateProject' handler is used, which can be overridden for derived project types.
     */
     export class Solution extends TrackableObject {
         /** The function used to create project instances when a project is created from saved project data.
