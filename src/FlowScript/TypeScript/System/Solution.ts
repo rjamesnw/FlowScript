@@ -65,7 +65,7 @@
         /** Compiles a list of all projects, both locally and remotely. */
         async refreshProjects() {
             return new Promise<Solution[]>((ok, err) => {
-                var unloadedProjects = this._unloadedProjects;
+                //var unloadedProjects = this._unloadedProjects;
 
             });
         }

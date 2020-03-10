@@ -1,0 +1,71 @@
+{
+  "bundle": {
+    "commonSourceDirectory": "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/",
+    "sourceFiles": [
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/EventDispatcher.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/NamespaceObject.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/NamedReference.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/User.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Security.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/FileManager.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/FlowScriptMain.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Expressions.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Property.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Component.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Statement.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Block.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Line.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Enum.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Event.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Message.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Table.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Thread.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Components/Core.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Components/Core.HTTPRequest.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Components/Core.ControlFlow.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Components/Core.Math.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Components/Core.Binary.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Components/Core.Comparison.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Components/Core.DOM.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Components/Core.HTML.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Compiler.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Simulator.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Visualtree.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Views.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Project.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Solution.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/System.ts",
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/bootup.ts"
+    ],
+    "js": {
+      "sections": [
+        {
+          "pos": 0,
+          "end": 607,
+          "kind": "emitHelpers",
+          "data": "typescript:awaiter"
+        },
+        {
+          "pos": 609,
+          "end": 509504,
+          "kind": "text"
+        }
+      ],
+      "sources": {
+        "helpers": [
+          "typescript:awaiter"
+        ]
+      }
+    },
+    "dts": {
+      "sections": [
+        {
+          "pos": 0,
+          "end": 165666,
+          "kind": "text"
+        }
+      ]
+    }
+  },
+  "version": "3.4.1"
+}

@@ -35,8 +35,8 @@ namespace FlowScript.UI {
 
         // --------------------------------------------------------------------------------------------------------------------
 
-        constructor(title: string, description?: string) {
-            super(title, description);
+        constructor(solution: Solution, title: string, description?: string) {
+            super(solution, title, description);
 
             this.onExpressionBinItemAdded.add(this._onExpressionBinItemAdded);
             this.onExpressionBinItemRemoved.add(this._onExpressionBinItemRemoved);

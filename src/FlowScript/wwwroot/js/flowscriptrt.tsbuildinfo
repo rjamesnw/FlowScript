@@ -1,0 +1,27 @@
+{
+  "bundle": {
+    "commonSourceDirectory": "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/",
+    "sourceFiles": [
+      "C:/Data/Visual Studio/Projects/Inossis/FlowScript/src/FlowScript/TypeScript/System/Runtime/FlowScriptRT.ts"
+    ],
+    "js": {
+      "sections": [
+        {
+          "pos": 0,
+          "end": 99351,
+          "kind": "text"
+        }
+      ]
+    },
+    "dts": {
+      "sections": [
+        {
+          "pos": 0,
+          "end": 35227,
+          "kind": "text"
+        }
+      ]
+    }
+  },
+  "version": "3.4.1"
+}

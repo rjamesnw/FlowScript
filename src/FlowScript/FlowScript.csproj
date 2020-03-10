@@ -3,13 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
+    <!--<DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>-->
     <UserSecretsId>aa23e8af-ed79-4c53-982a-4088992e3592</UserSecretsId>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
     <TypeScriptBuildMode>true</TypeScriptBuildMode>
-    <DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
-    <AssemblyVersion>1.0.0.20</AssemblyVersion>
-    <FileVersion>1.0.0.20</FileVersion>
+    <!--<DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>-->
+    <AssemblyVersion>1.0.0.23</AssemblyVersion>
+    <FileVersion>1.0.0.23</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

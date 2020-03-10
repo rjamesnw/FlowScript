@@ -1742,7 +1742,7 @@ namespace FlowScript {
                 var store = getStorage(type);
                 name = makeKeyName(appName, name);
                 if (value !== void 0)
-                    localStorage.setItem(name, ("" + (appVersion || "")) + "\uFFFC" + ("" + (dataVersion || "")) + "\uFFFC" + value);
+                    localStorage.setItem(name, ("" + (appVersion || "")) + delimiter + ("" + (dataVersion || "")) + delimiter + value);
                 else
                     localStorage.removeItem(name);
                 // (note: IE8 has a bug that doesn't allow chars under 0x20 (space): http://caniuse.com/#search=web%20storage)
@@ -1773,8 +1773,8 @@ namespace FlowScript {
             if (value === null) return null;
             if (value === "") return value;
 
-            var i1 = value.indexOf("\uFFFC");
-            var i2 = value.indexOf("\uFFFC", i1 + 1);
+            var i1 = value.indexOf(delimiter);
+            var i2 = value.indexOf(delimiter, i1 + 1);
 
             if (i1 >= 0 && i2 >= 0) {
                 var _appVer = value.substring(0, i1);
